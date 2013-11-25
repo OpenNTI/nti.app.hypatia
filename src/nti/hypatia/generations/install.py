@@ -15,13 +15,14 @@ from zope.generations.generations import SchemaManager
 
 import BTrees
 
+from zope import interface
+
 import zope.intid
 
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
 from hypatia.keyword import KeywordIndex
 from hypatia.text.cosineindex import CosineIndex
-from hypatia import interfaces as hypatia_interfaces
 
 from zc.catalogqueue.queue import CatalogQueue
 from zc.catalogqueue.interfaces import ICatalogQueue
@@ -29,6 +30,7 @@ from zc.catalogqueue.interfaces import ICatalogQueue
 from nti.contentsearch import discriminators
 
 from .. import lexicon
+from .. import interfaces as hypatia_interfaces
 
 class _HypatiaSearchSchemaManager(SchemaManager):
 	"""
@@ -75,6 +77,9 @@ def create_catalog(lexicon, index):
 
 	result['acl'] = KeywordIndex(discriminator=discriminators.get_acl,
 								 family=BTrees.family64)
+	
+	
+	interface.alsoProvides(result, hypatia_interfaces.ISearchCatalog)
 	return result
 
 def install_hypatia(context):
@@ -92,7 +97,7 @@ def install_hypatia(context):
 	catalog.__parent__ = dataserver_folder
 	catalog.__name__ = '++etc++hypatia++catalog'
 	intids.register(catalog)
-	lsm.registerUtility(catalog, provided=hypatia_interfaces.ICatalog)
+	lsm.registerUtility(catalog, provided=hypatia_interfaces.ISearchCatalog)
 
 	return catalog
 
@@ -106,8 +111,8 @@ def install_queue(context):
 
 	queue = CatalogQueue(383)
 	queue.__parent__ = dataserver_folder
-	queue.__name__ = '++etc++catalogqueue'
+	queue.__name__ = '++etc++hypatia++catalogqueue'
 	intids.register(queue)
-	lsm.registerUtility(queue, provided=ICatalogQueue)
+	lsm.registerUtility(queue, provided=ICatalogQueue, name="hypatia")
 
 	return queue

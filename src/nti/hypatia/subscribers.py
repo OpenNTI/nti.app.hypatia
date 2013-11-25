@@ -13,16 +13,12 @@ logger = __import__('logging').getLogger(__name__)
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
-from zc.catalogqueue.interfaces import ICatalogQueue
-
 from nti.contentsearch import discriminators
 
 from nti.dataserver import interfaces as nti_interfaces
 from nti.dataserver.contenttypes.forums import interfaces as frm_interfaces
 
-def queue():
-	result = component.getUtility(ICatalogQueue)
-	return result
+from . import queue
 
 def queue_added(obj):
 	iid = discriminators.get_uid(obj)
