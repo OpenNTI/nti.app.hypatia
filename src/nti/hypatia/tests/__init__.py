@@ -9,11 +9,6 @@ __docformat__ = "restructuredtext en"
 
 import uuid
 
-import nti.dataserver as dataserver
-import nti.contentsearch as contentsearch
-
-import nti.hypatia as hypatia
-
 from nti.appserver.tests.test_application import SharedApplicationTestBase
 from nti.appserver.tests.test_application import WithSharedApplicationMockDS
 from nti.appserver.tests.test_application import WithSharedApplicationMockDSWithChanges
@@ -22,7 +17,7 @@ from nti.dataserver.tests.mock_dataserver import SharedConfiguringTestBase as \
                                                  DSSharedConfiguringTestBase
 
 class ConfiguringTestBase(DSSharedConfiguringTestBase):
-    set_up_packages = (dataserver, hypatia, contentsearch)
+    set_up_packages = ('nti.dataserver', 'nti.hypatia', 'nti.contentsearch')
 
 class ApplicationTestBase(SharedApplicationTestBase):
     pass
