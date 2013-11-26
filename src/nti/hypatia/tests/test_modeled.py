@@ -13,7 +13,7 @@ from nti.dataserver.users import User
 
 from nti.dataserver.contenttypes import Note
 
-# from nti.hypatia import subscribers
+from nti.hypatia import reactor
 from nti.hypatia import queue as catalog_queue
 
 from nti.ntiids.ntiids import make_ntiid
@@ -53,6 +53,20 @@ class TestModeled(ConfiguringTestBase):
 
 		user.deleteContainedObject(note.containerId, note.id)
 		assert_that(queue, has_length(1))
+
+	@mock_dataserver.WithMockDSTrans
+	def test_process_search(self):
+		conn = mock_dataserver.current_transaction
+		user = self._create_user()
+		note = self._create_note('the light of dangai joue finds its mark', user)
+		if conn: conn.add(note)
+		note = user.addContainedObject(note)
+
+		queue = catalog_queue()
+		assert_that(queue, has_length(1))
+
+		reactor.process_queue()
+		assert_that(queue, has_length(0))
 
 if __name__ == '__main__':
 	import unittest
