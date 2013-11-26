@@ -7,6 +7,10 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+from hamcrest import is_
+from hamcrest import has_length
+from hamcrest import assert_that
+
 import BTrees
 
 from hypatia import query
@@ -27,8 +31,6 @@ from nti.ntiids.ntiids import make_ntiid
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
 from nti.hypatia.tests import ConfiguringTestBase
-
-from hamcrest import (assert_that, has_length)
 
 class TestModeled(ConfiguringTestBase):
 
@@ -71,14 +73,20 @@ class TestModeled(ConfiguringTestBase):
 		queue = search_queue()
 		assert_that(queue, has_length(1))
 
-		from IPython.core.debugger import Tracer; Tracer()()
 		reactor.process_queue()
 		assert_that(queue, has_length(0))
 		
 		catalog = search_catalog()
 		content = catalog['content']
 		q = CatalogQuery(catalog, family=BTrees.family64)
-		print(q.query(query.Contains(content, "light")))
+		hits, _ = q.query(query.Contains(content, "light"))
+		assert_that(hits, is_(1))
+
+		hits, _ = q.search(content='"light of dangai"')
+		assert_that(hits, is_(1))
+
+		hits, _ = q.search(content='dangai*')
+		assert_that(hits, is_(1))
 
 if __name__ == '__main__':
 	import unittest
