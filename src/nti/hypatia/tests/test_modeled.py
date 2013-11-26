@@ -88,6 +88,6 @@ class TestModeled(ConfiguringTestBase):
 		hits, _ = q.search(content='dangai*')
 		assert_that(hits, is_(1))
 
-if __name__ == '__main__':
-	import unittest
-	unittest.main()
+# if __name__ == '__main__':
+# 	import unittest
+# 	unittest.main()

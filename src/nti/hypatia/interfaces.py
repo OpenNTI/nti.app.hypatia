@@ -25,6 +25,5 @@ class IIndexReactor(interface.Interface):
 class ISearchCatalogQueue(ICatalogQueue):
     pass
 
-
 class ISearchCatalog(hypatia_interfaces.ICatalog):
     pass
