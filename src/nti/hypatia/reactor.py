@@ -18,14 +18,13 @@ import zope.intid
 
 from nti.dataserver import interfaces as nti_interfaces
 
-from . import queue as catalog_queue
+from . import search_queue
 from . import interfaces as hypatia_interfaces
 
 def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
-	queue = catalog_queue()
-	queue.process(ids, (catalog,), limit)
+	search_queue().process(ids, (catalog,), limit)
 
 @interface.implementer(hypatia_interfaces.IIndexReactor)
 class IndexReactor(object):

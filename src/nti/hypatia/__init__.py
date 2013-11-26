@@ -14,6 +14,10 @@ from zope import component
 
 from .  import interfaces
 
-def queue():
+def search_queue():
     result = component.getUtility(interfaces.ISearchCatalogQueue)
+    return result
+
+def search_catalog():
+    result = component.getUtility(interfaces.ISearchCatalog)
     return result

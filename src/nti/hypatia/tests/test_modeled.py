@@ -7,6 +7,11 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+import BTrees
+
+from hypatia import query
+from hypatia.catalog import CatalogQuery
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
@@ -14,7 +19,8 @@ from nti.dataserver.users import User
 from nti.dataserver.contenttypes import Note
 
 from nti.hypatia import reactor
-from nti.hypatia import queue as catalog_queue
+from nti.hypatia import search_queue
+from nti.hypatia import search_catalog
 
 from nti.ntiids.ntiids import make_ntiid
 
@@ -48,7 +54,7 @@ class TestModeled(ConfiguringTestBase):
 		if conn: conn.add(note)
 		note = user.addContainedObject(note)
 
-		queue = catalog_queue()
+		queue = search_queue()
 		assert_that(queue, has_length(1))
 
 		user.deleteContainedObject(note.containerId, note.id)
@@ -62,11 +68,17 @@ class TestModeled(ConfiguringTestBase):
 		if conn: conn.add(note)
 		note = user.addContainedObject(note)
 
-		queue = catalog_queue()
+		queue = search_queue()
 		assert_that(queue, has_length(1))
 
+		from IPython.core.debugger import Tracer; Tracer()()
 		reactor.process_queue()
 		assert_that(queue, has_length(0))
+		
+		catalog = search_catalog()
+		content = catalog['content']
+		q = CatalogQuery(catalog, family=BTrees.family64)
+		print(q.query(query.Contains(content, "light")))
 
 if __name__ == '__main__':
 	import unittest

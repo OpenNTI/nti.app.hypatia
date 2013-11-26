@@ -20,19 +20,19 @@ from nti.contentsearch import discriminators
 from nti.dataserver import interfaces as nti_interfaces
 from nti.dataserver.contenttypes.forums import interfaces as frm_interfaces
 
-from . import queue
+from . import search_queue
 
 def queue_added(obj):
 	iid = discriminators.get_uid(obj)
-	queue().add(iid)
+	search_queue().add(iid)
 
 def queue_modified(obj):
 	iid = discriminators.get_uid(obj)
-	queue().update(iid)
+	search_queue().update(iid)
 
 def queue_remove(obj):
 	iid = discriminators.get_uid(obj)
-	queue().remove(iid)
+	search_queue().remove(iid)
 
 @component.adapter(nti_interfaces.INote, IIntIdRemovedEvent)
 def _modeled_removed(modeled, event):
