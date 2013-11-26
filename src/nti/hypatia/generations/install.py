@@ -25,11 +25,10 @@ from hypatia.keyword import KeywordIndex
 from hypatia.text.cosineindex import CosineIndex
 
 from zc.catalogqueue.queue import CatalogQueue
-from zc.catalogqueue.interfaces import ICatalogQueue
 
 from nti.contentsearch import discriminators
 
-from .. import lexicon
+from .. import lexicon as hypatia_lexicon
 from .. import interfaces as hypatia_interfaces
 
 class _HypatiaSearchSchemaManager(SchemaManager):
@@ -42,6 +41,7 @@ class _HypatiaSearchSchemaManager(SchemaManager):
 												minimum_generation=generation,
 												package_name='nti.hypatia.generations')
 def evolve(context):
+	# ### from IPython.core.debugger import Tracer; Tracer()()
 	install_queue(context)
 	install_hypatia(context)
 
@@ -90,7 +90,7 @@ def install_hypatia(context):
 	lsm = dataserver_folder.getSiteManager()
 	intids = lsm.getUtility(zope.intid.IIntIds)
 
-	lexicon = lexicon.defaultLexicon()
+	lexicon = hypatia_lexicon.defaultLexicon()
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
 	
 	catalog = create_catalog(lexicon, index)
@@ -113,6 +113,7 @@ def install_queue(context):
 	queue.__parent__ = dataserver_folder
 	queue.__name__ = '++etc++hypatia++catalogqueue'
 	intids.register(queue)
-	lsm.registerUtility(queue, provided=ICatalogQueue, name="hypatia")
+	interface.alsoProvides(queue, hypatia_interfaces.ISearchCatalogQueue)
+	lsm.registerUtility(queue, provided=hypatia_interfaces.ISearchCatalogQueue)
 
 	return queue

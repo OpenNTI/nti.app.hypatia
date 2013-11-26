@@ -11,7 +11,7 @@ import uuid
 
 import nti.dataserver as dataserver
 
-import nti.graphdb as hypatia
+import nti.hypatia as hypatia
 
 from nti.appserver.tests.test_application import SharedApplicationTestBase
 from nti.appserver.tests.test_application import WithSharedApplicationMockDS

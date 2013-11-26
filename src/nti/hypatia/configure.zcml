@@ -12,7 +12,9 @@
 	<utility factory=".generations.install._HypatiaSearchSchemaManager"
 			 name="nti.dataserver-hypatia"
 			 provides="zope.generations.interfaces.IInstallableSchemaManager"/>
-		
+
+	<utility factory=".reactor.IndexReactor" />
+			 		
 	<subscriber handler=".subscribers._modeled_added" />
 	<subscriber handler=".subscribers._modeled_removed" />
 	<subscriber handler=".subscribers._modeled_modified" />

@@ -13,6 +13,8 @@ logger = __import__('logging').getLogger(__name__)
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
+from zope.intid.interfaces import IIntIdRemovedEvent
+
 from nti.contentsearch import discriminators
 
 from nti.dataserver import interfaces as nti_interfaces
@@ -32,7 +34,7 @@ def queue_remove(obj):
 	iid = discriminators.get_uid(obj)
 	queue().remove(iid)
 
-@component.adapter(nti_interfaces.INote, lce_interfaces.IObjectRemovedEvent)
+@component.adapter(nti_interfaces.INote, IIntIdRemovedEvent)
 def _modeled_removed(modeled, event):
 	queue_remove(modeled)
 
@@ -52,6 +54,6 @@ def _topic_added(topic, event):
 def _topic_modified(topic, event):
 	queue_modified(topic)
 
-@component.adapter(frm_interfaces.ITopic, lce_interfaces.IObjectRemovedEvent)
+@component.adapter(frm_interfaces.ITopic, IIntIdRemovedEvent)
 def _topic_removed(topic, event):
 	queue_remove(topic)

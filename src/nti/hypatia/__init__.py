@@ -12,8 +12,8 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
-from zc.catalogqueue.interfaces import ICatalogQueue
+from .  import interfaces
 
 def queue():
-    result = component.getUtility(ICatalogQueue, name="hypatia")
+    result = component.getUtility(interfaces.ISearchCatalogQueue)
     return result
