@@ -18,6 +18,8 @@ from hypatia.text.lexicon import Lexicon, CaseNormalizer, Splitter
 
 from nti.contentsearch import interfaces as search_interfaces
 
+from . import interfaces as hypatia_interfaces
+
 @interface.implementer(text_interfaces.IPipelineElement)
 class StopWordRemover(object):
 
@@ -31,6 +33,10 @@ class StopWordRemover(object):
 			return [w for w in lst if w not in stopwords]
 		return lst
 
+@interface.implementer(hypatia_interfaces.ISearchLexicon)
+class SearchLexicon(Lexicon):
+	pass
+
 def defaultLexicon():
-	result = Lexicon(Splitter(), CaseNormalizer(), StopWordRemover())
+	result = SearchLexicon(Splitter(), CaseNormalizer(), StopWordRemover())
 	return result

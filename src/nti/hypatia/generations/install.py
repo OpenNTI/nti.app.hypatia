@@ -13,21 +13,13 @@ generation = 1
 
 from zope.generations.generations import SchemaManager
 
-import BTrees
-
 from zope import interface
 
 import zope.intid
 
-from hypatia.text import TextIndex
-from hypatia.catalog import Catalog
-from hypatia.keyword import KeywordIndex
-from hypatia.text.cosineindex import CosineIndex
-
 from zc.catalogqueue.queue import CatalogQueue
 
-from nti.contentsearch import discriminators
-
+from .. import catalog as hypatia_catalog
 from .. import lexicon as hypatia_lexicon
 from .. import interfaces as hypatia_interfaces
 
@@ -45,48 +37,6 @@ def evolve(context):
 	install_queue(context)
 	install_hypatia(context)
 
-def create_catalog(lexicon):
-	result = Catalog(family=BTrees.family64)
-	interface.alsoProvides(result, hypatia_interfaces.ISearchCatalog)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['content'] = TextIndex(lexicon=lexicon,
-								  index=index,
-								  discriminator=discriminators.get_object_content,
-								  family=BTrees.family64)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['ngrams'] = TextIndex(lexicon=lexicon,
-								 index=index,
-								 discriminator=discriminators.get_object_ngrams,
-								 family=BTrees.family64)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['title'] = TextIndex(lexicon=lexicon,
-								index=index,
-								discriminator=discriminators.get_title_and_ngrams,
-								family=BTrees.family64)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['redactionExplanation'] = \
-			TextIndex(lexicon=lexicon,
-					  index=index,
-					  discriminator=discriminators.get_redaction_explanation_and_ngrams,
-					  family=BTrees.family64)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['replacementContent'] = \
-						TextIndex(lexicon=lexicon,
-								  index=index,
-								  discriminator=discriminators.get_replacement_content,
-								  family=BTrees.family64)
-
-	result['acl'] = KeywordIndex(discriminator=discriminators.get_acl,
-								 family=BTrees.family64)
-	
-	
-	return result
-
 def install_hypatia(context):
 	conn = context.connection
 	root = conn.root()
@@ -97,7 +47,7 @@ def install_hypatia(context):
 
 	lexicon = hypatia_lexicon.defaultLexicon()
 	
-	catalog = create_catalog(lexicon)
+	catalog = hypatia_catalog.create_catalog(lexicon)
 	catalog.__parent__ = dataserver_folder
 	catalog.__name__ = '++etc++hypatia++catalog'
 	intids.register(catalog)

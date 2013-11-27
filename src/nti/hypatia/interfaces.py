@@ -13,6 +13,7 @@ from zope import interface
 from zc.catalogqueue.interfaces import ICatalogQueue
 
 from hypatia import interfaces as hypatia_interfaces
+from hypatia.text import interfaces as text_interfaces
 
 DEFAULT_HEARTBEAT = 10
 DEFAULT_QUEUE_LIMIT = 10
@@ -26,4 +27,7 @@ class ISearchCatalogQueue(ICatalogQueue):
     pass
 
 class ISearchCatalog(hypatia_interfaces.ICatalog):
+    pass
+
+class ISearchLexicon(text_interfaces.ILexicon):
     pass
