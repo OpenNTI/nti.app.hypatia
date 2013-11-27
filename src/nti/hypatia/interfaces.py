@@ -30,4 +30,8 @@ class ISearchCatalog(hypatia_interfaces.ICatalog):
     pass
 
 class ISearchLexicon(text_interfaces.ILexicon):
-    pass
+
+    def getSimiliarWords(term, threshold=0.75):
+        """
+        return a list of similar words based on the levenshtein distance
+        """

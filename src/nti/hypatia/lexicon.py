@@ -18,6 +18,7 @@ from hypatia.text.lexicon import Lexicon, CaseNormalizer, Splitter
 
 from nti.contentsearch import interfaces as search_interfaces
 
+from .levenshtein import ratio
 from . import interfaces as hypatia_interfaces
 
 @interface.implementer(text_interfaces.IPipelineElement)
@@ -35,7 +36,10 @@ class StopWordRemover(object):
 
 @interface.implementer(hypatia_interfaces.ISearchLexicon)
 class SearchLexicon(Lexicon):
-	pass
+
+	def getSimiliarWords(self, term, threshold=0.75):
+		words = self.words()
+		return [(w, ratio(w, term)) for w in words if ratio(w, term) > threshold]
 
 def defaultLexicon():
 	result = SearchLexicon(Splitter(), CaseNormalizer(), StopWordRemover())
