@@ -17,6 +17,8 @@ from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import interfaces as nti_interfaces
 
+from . import subscribers
+
 @component.adapter(nti_interfaces.IEntity)
 @interface.implementer(search_interfaces.IEntityIndexManager)
 class _HypatiaEntityIndexManager(object):
@@ -30,16 +32,16 @@ class _HypatiaEntityIndexManager(object):
 		return self.entity.username
 
 	def index_content(self, data, *args, **kwargs):
-		pass
+		subscribers.queue_added(data)
 	
 	def update_content(self, data, *args, **kwargs):
-		pass
+		subscribers.queue_modified(data)
 
 	def delete_content(self, data, *args, **kwargs):
-		pass
+		subscribers.queue_remove(data)
 
 	def search(self, query):
-		pass
+		search_interfaces.ISearchQuery(query)
 
 	def suggest(self, query):
 		pass

@@ -31,6 +31,9 @@ def create_catalog(lexicon=None):
 	result = Catalog(family=BTrees.family64)
 	interface.alsoProvides(result, ISearchCatalog)
 
+	result['type'] = KeywordIndex(discriminator=discriminators.get_type,
+								  family=BTrees.family64)
+
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
 	result['content'] = TextIndex(lexicon=lexicon,
 								  index=index,
@@ -42,6 +45,9 @@ def create_catalog(lexicon=None):
 								 index=index,
 								 discriminator=discriminators.get_object_ngrams,
 								 family=BTrees.family64)
+
+	result['tags'] = KeywordIndex(discriminator=discriminators.get_tags,
+								  family=BTrees.family64)
 
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
 	result['title'] = TextIndex(lexicon=lexicon,
