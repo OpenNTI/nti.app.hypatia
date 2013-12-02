@@ -79,8 +79,9 @@ class TestModeled(ConfiguringTestBase):
 		catalog = search_catalog()
 		content = catalog['content']
 		q = CatalogQuery(catalog, family=BTrees.family64)
-		hits, _ = q.query(query.Contains(content, "light"))
+		hits, seq = q.query(query.Contains(content, "light"))
 		assert_that(hits, is_(1))
+		assert_that(seq, has_length(1))
 
 		hits, _ = q.search(content='"light of dangai"')
 		assert_that(hits, is_(1))
@@ -88,6 +89,6 @@ class TestModeled(ConfiguringTestBase):
 		hits, _ = q.search(content='dangai*')
 		assert_that(hits, is_(1))
 
-# if __name__ == '__main__':
-# 	import unittest
-# 	unittest.main()
+if __name__ == '__main__':
+	import unittest
+	unittest.main()

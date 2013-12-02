@@ -21,4 +21,11 @@
 	<subscriber handler=".subscribers._topic_removed" />
 	<subscriber handler=".subscribers._topic_modified" />
 	
+	<adapter factory=".adapters._HypatiaEntityIndexManager"
+			 for="nti.dataserver.interfaces.IEntity"
+			 provides="nti.contentsearch.interfaces.IEntityIndexManager" />
+
+	<utility factory=".query._DefaultQueryParser" />
+	<utility factory=".query._DefaultQueryParser" name="en" />
+	
 </configure>

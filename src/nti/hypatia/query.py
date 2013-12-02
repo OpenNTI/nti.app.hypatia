@@ -34,7 +34,7 @@ def can_use_ngram_field(query):
 	return content_utils.is_covered_by_ngram_computer(query.term, query.language)
 
 @interface.implementer(hypatia_interfaces.ISearchQueryParser)
-class QueryParser(object):
+class _DefaultQueryParser(object):
 
 	def parse(self, query, user=None):
 		query = search_interfaces.ISearchQuery(query)
