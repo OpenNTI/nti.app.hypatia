@@ -15,6 +15,8 @@ from zc.catalogqueue.interfaces import ICatalogQueue
 from hypatia import interfaces as hypatia_interfaces
 from hypatia.text import interfaces as text_interfaces
 
+from nti.contentsearch import interfaces as search_interfaces
+
 DEFAULT_HEARTBEAT = 10
 DEFAULT_QUEUE_LIMIT = 10
 
@@ -35,3 +37,8 @@ class ISearchLexicon(text_interfaces.ILexicon):
         """
         return a list of similar words based on the levenshtein distance
         """
+
+class ISearchQueryParser(search_interfaces.ISearchQueryParser):
+
+    def parse(query, user=None):
+        pass

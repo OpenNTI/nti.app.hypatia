@@ -20,6 +20,8 @@ from hypatia.keyword import KeywordIndex
 from hypatia.text.cosineindex import CosineIndex
 
 from nti.contentsearch import discriminators
+from nti.contentsearch.constants import (content_, ngrams_, title_, tags_,
+                                         redactionExplanation_, replacementContent_)
 
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
@@ -35,35 +37,35 @@ def create_catalog(lexicon=None):
 								  family=BTrees.family64)
 
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['content'] = TextIndex(lexicon=lexicon,
-								  index=index,
-								  discriminator=discriminators.get_object_content,
-								  family=BTrees.family64)
-
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['ngrams'] = TextIndex(lexicon=lexicon,
+	result[content_] = TextIndex(lexicon=lexicon,
 								 index=index,
-								 discriminator=discriminators.get_object_ngrams,
+								 discriminator=discriminators.get_object_content,
 								 family=BTrees.family64)
 
-	result['tags'] = KeywordIndex(discriminator=discriminators.get_tags,
-								  family=BTrees.family64)
-
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['title'] = TextIndex(lexicon=lexicon,
+	result[ngrams_] = TextIndex(lexicon=lexicon,
 								index=index,
-								discriminator=discriminators.get_title_and_ngrams,
+								discriminator=discriminators.get_object_ngrams,
 								family=BTrees.family64)
 
+	result[tags_] = KeywordIndex(discriminator=discriminators.get_tags,
+								 family=BTrees.family64)
+
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['redactionExplanation'] = \
+	result[title_] = TextIndex(lexicon=lexicon,
+							   index=index,
+							   discriminator=discriminators.get_title_and_ngrams,
+							   family=BTrees.family64)
+
+	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
+	result[redactionExplanation_] = \
 			TextIndex(lexicon=lexicon,
 					  index=index,
 					  discriminator=discriminators.get_redaction_explanation_and_ngrams,
 					  family=BTrees.family64)
 
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result['replacementContent'] = \
+	result[replacementContent_] = \
 						TextIndex(lexicon=lexicon,
 								  index=index,
 								  discriminator=discriminators.get_replacement_content,
