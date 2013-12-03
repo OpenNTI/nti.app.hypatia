@@ -28,7 +28,7 @@ from . import interfaces as hypatia_interfaces
 
 def get_user(user):
 	user = users.User.get_user(str(user)) \
-		   if nti_interfaces.IUser.providedBy(user) else user
+		   if not nti_interfaces.IUser.providedBy(user) and user else user
 	return user
 
 def can_use_ngram_field(query):
@@ -64,9 +64,10 @@ class _DefaultQueryParser(object):
 		if type_query is not None:
 			result = result & type_query
 
+		user = get_user(user)
 		if user:
-			user = get_user(user)
-			usernames = (user.username,) + tuple(user.usernames_of_dynamic_memberships)
+			dynamic_memberships = getattr(user, 'usernames_of_dynamic_memberships', ())
+			usernames = (user.username,) + tuple(dynamic_memberships)
 			result = result & Any(catalog["acl"], [x.lower() for x in usernames])
 
 		return result

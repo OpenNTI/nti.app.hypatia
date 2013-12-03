@@ -33,7 +33,7 @@ from nti.dataserver import interfaces as nti_interfaces
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
-@component.adapter(nti_interfaces.IEntity)
+@component.adapter(nti_interfaces.IUser)
 @interface.implementer(hypatia_interfaces.IHypatiaEntityIndexManager)
 class _HypatiaEntityIndexManager(contained.Contained):
 

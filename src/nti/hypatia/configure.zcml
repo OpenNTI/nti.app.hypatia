@@ -22,7 +22,7 @@
 	<subscriber handler=".subscribers._topic_modified" />
 	
 	<adapter factory=".adapters._HypatiaEntityIndexManagerFactory"
-			 for="nti.dataserver.interfaces.IEntity"
+			 for="nti.dataserver.interfaces.IUser"
 			 provides=".interfaces.IHypatiaEntityIndexManager" />
 
 	<utility factory=".query._DefaultQueryParser" />
