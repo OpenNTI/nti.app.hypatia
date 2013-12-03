@@ -18,7 +18,7 @@ from hypatia.text import interfaces as text_interfaces
 from nti.contentsearch import interfaces as search_interfaces
 
 DEFAULT_HEARTBEAT = 10
-DEFAULT_QUEUE_LIMIT = 10
+DEFAULT_QUEUE_LIMIT = 100
 
 class IIndexReactor(interface.Interface):
     """
