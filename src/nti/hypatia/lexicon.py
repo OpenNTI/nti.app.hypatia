@@ -37,9 +37,15 @@ class StopWordRemover(object):
 @interface.implementer(hypatia_interfaces.ISearchLexicon)
 class SearchLexicon(Lexicon):
 
-	def getSimiliarWords(self, term, threshold=0.75):
-		words = self.words()
+	def get_similiar_words(self, term, threshold=0.75, common_length=-1):
+		if common_length > -1:
+			prefix = term[:common_length]
+			words = self._wids.keys(prefix, prefix + u'\uffff')
+		else:
+			words = self.words()
 		return [(w, ratio(w, term)) for w in words if ratio(w, term) > threshold]
+
+	getSimiliarWords = get_similiar_words
 
 def defaultLexicon():
 	result = SearchLexicon(Splitter(), CaseNormalizer(), StopWordRemover())

@@ -17,6 +17,9 @@ from perfmetrics import metricmethod
 
 from hypatia.catalog import CatalogQuery
 
+from nti.contentprocessing import rank_words
+
+from nti.contentsearch import constants
 from nti.contentsearch import discriminators
 from nti.contentsearch import search_results
 from nti.contentsearch import interfaces as search_interfaces
@@ -63,7 +66,8 @@ class _HypatiaEntityIndexManager(object):
 			return results
 
 		# parse catalog
-		parser = component.getUtility(hypatia_interfaces.ISearchQueryParser, name=query.language)
+		parser = component.getUtility(hypatia_interfaces.ISearchQueryParser,
+									  name=query.language)
 		parsed_query = parser.parse(query, self.entity)
 		cq = CatalogQuery(search_catalog())
 		_, sequence = cq.query(parsed_query)
@@ -80,7 +84,37 @@ class _HypatiaEntityIndexManager(object):
 		return self.do_search(query)
 		
 	def suggest(self, query):
-		pass
+		query = search_interfaces.ISearchQuery(query)
+		results = search_results.empty_suggest_results(query)
+		if query.is_empty:
+			return results
+
+		threshold = query.threshold
+		prefix = query.prefix or len(query.term)
+		textfield = search_catalog()[constants.content_]  # lexicon is shared
+		
+		words = textfield.lexicon.get_similiar_words(term=query.term,
+												  	 threshold=threshold,
+												 	 prefix=prefix)
+		results.add(map(lambda t: t[0], words))
+
+		return results
 
 	def suggest_and_search(self, query):
-		pass
+		query = search_interfaces.ISearchQuery(query)
+		if ' ' in query.term or query.is_prefix_search or query.is_phrase_search:
+			results = \
+				self.do_search(query,
+							   search_results.empty_suggest_and_search_results)
+		else:
+			result = self.suggest(query)
+			suggestions = result.suggestions
+			if suggestions:
+				suggestions = rank_words(query.term, suggestions)
+				query.term = suggestions[0]
+
+			results = \
+				self.do_search(query,
+							   search_results.empty_suggest_and_search_results)
+
+		return results
