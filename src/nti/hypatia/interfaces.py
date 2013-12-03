@@ -33,7 +33,7 @@ class ISearchCatalog(hypatia_interfaces.ICatalog):
 
 class ISearchLexicon(text_interfaces.ILexicon):
 
-    def getSimiliarWords(term, threshold=0.75):
+    def get_similiar_words(term, threshold=0.75, common_length=-1):
         """
         return a list of similar words based on the levenshtein distance
         """
