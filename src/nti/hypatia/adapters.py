@@ -30,7 +30,6 @@ from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import interfaces as nti_interfaces
 
-from . import subscribers
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
@@ -52,14 +51,14 @@ class _HypatiaEntityIndexManager(contained.Contained):
 			logger.debug('Could not find object with id %r' % uid)
 		return result
 
-	def index_content(self, data, *args, **kwargs):
-		subscribers.queue_added(data)
+	def index_content(self, *args, **kwargs):
+		pass
 	
-	def update_content(self, data, *args, **kwargs):
-		subscribers.queue_modified(data)
+	def update_content(self, *args, **kwargs):
+		pass
 
-	def delete_content(self, data, *args, **kwargs):
-		subscribers.queue_remove(data)
+	def delete_content(self, *args, **kwargs):
+		pass
 
 	@metricmethod
 	def do_search(self, query, creator_method=None):
