@@ -24,7 +24,9 @@ from . import interfaces as hypatia_interfaces
 def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
-	search_queue().process(ids, (catalog,), limit)
+	queue = search_queue()
+	logger.debug("processing %s index messages(s)", len(queue))
+	queue.process(ids, (catalog,), limit)
 
 @interface.implementer(hypatia_interfaces.IIndexReactor)
 class IndexReactor(object):
