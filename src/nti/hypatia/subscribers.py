@@ -13,7 +13,7 @@ logger = __import__('logging').getLogger(__name__)
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
-from zope.intid.interfaces import IIntIdRemovedEvent
+from zope.intid.interfaces import IIntIdRemovedEvent, IIntIdAddedEvent
 
 from nti.contentsearch import discriminators
 from nti.contentsearch import interfaces as search_interfaces
@@ -28,24 +28,30 @@ def is_indexable(obj):
 
 def queue_added(obj):
 	if is_indexable(obj):
-		iid = discriminators.get_uid(obj)
-		search_queue().add(iid)
+		iid = discriminators.query_uid(obj)
+		if iid is not None:
+			search_queue().add(iid)
 
 def queue_modified(obj):
 	if is_indexable(obj):
-		iid = discriminators.get_uid(obj)
-		search_queue().update(iid)
+		iid = discriminators.query_uid(obj)
+		if iid is not None:
+			search_queue().update(iid)
+		else:
+			logger.debug("Could not find iid for %r", obj)
 
 def queue_remove(obj):
 	if is_indexable(obj):
 		iid = discriminators.get_uid(obj)
-		search_queue().remove(iid)
+		iid = discriminators.query_uid(obj)
+		if iid is not None:
+			search_queue().remove(iid)
 
 @component.adapter(nti_interfaces.INote, IIntIdRemovedEvent)
 def _modeled_removed(modeled, event):
 	queue_remove(modeled)
 
-@component.adapter(nti_interfaces.IModeledContent, lce_interfaces.IObjectAddedEvent)
+@component.adapter(nti_interfaces.IModeledContent, IIntIdAddedEvent)
 def _modeled_added(modeled, event):
 	queue_added(modeled)
 
@@ -53,7 +59,7 @@ def _modeled_added(modeled, event):
 def _modeled_modified(modeled, event):
 	queue_modified(modeled)
 
-@component.adapter(frm_interfaces.ITopic, lce_interfaces.IObjectAddedEvent)
+@component.adapter(frm_interfaces.ITopic, IIntIdAddedEvent)
 def _topic_added(topic, event):
 	queue_added(topic)
 
