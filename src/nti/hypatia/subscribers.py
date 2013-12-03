@@ -42,7 +42,6 @@ def queue_modified(obj):
 
 def queue_remove(obj):
 	if is_indexable(obj):
-		iid = discriminators.get_uid(obj)
 		iid = discriminators.query_uid(obj)
 		if iid is not None:
 			search_queue().remove(iid)
