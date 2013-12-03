@@ -42,3 +42,6 @@ class ISearchQueryParser(search_interfaces.ISearchQueryParser):
 
     def parse(query, user=None):
         pass
+
+class IHypatiaEntityIndexManager(search_interfaces.IEntityIndexManager):
+    pass

@@ -12,6 +12,10 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 from zope import interface
+from zope.container import contained
+from zope.annotation import factory as an_factory
+
+from BTrees.LFBTree import LFBucket
 
 from perfmetrics import metricmethod
 
@@ -31,8 +35,8 @@ from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
 @component.adapter(nti_interfaces.IEntity)
-@interface.implementer(search_interfaces.IEntityIndexManager)
-class _HypatiaEntityIndexManager(object):
+@interface.implementer(hypatia_interfaces.IHypatiaEntityIndexManager)
+class _HypatiaEntityIndexManager(contained.Contained):
 
 	@property
 	def entity(self):
@@ -71,6 +75,8 @@ class _HypatiaEntityIndexManager(object):
 		parsed_query = parser.parse(query, self.entity)
 		cq = CatalogQuery(search_catalog())
 		_, sequence = cq.query(parsed_query)
+		if not hasattr(sequence, "items"):
+			sequence = LFBucket({x:1.0 for x in sequence})
 
 		# get docs from db
 		for docid, score in sequence.items():
@@ -118,3 +124,6 @@ class _HypatiaEntityIndexManager(object):
 							   search_results.empty_suggest_and_search_results)
 
 		return results
+
+_HypatiaEntityIndexManagerFactory = an_factory(_HypatiaEntityIndexManager)
+

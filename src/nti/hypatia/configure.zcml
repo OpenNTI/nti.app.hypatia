@@ -21,9 +21,9 @@
 	<subscriber handler=".subscribers._topic_removed" />
 	<subscriber handler=".subscribers._topic_modified" />
 	
-	<adapter factory=".adapters._HypatiaEntityIndexManager"
+	<adapter factory=".adapters._HypatiaEntityIndexManagerFactory"
 			 for="nti.dataserver.interfaces.IEntity"
-			 provides="nti.contentsearch.interfaces.IEntityIndexManager" />
+			 provides=".interfaces.IHypatiaEntityIndexManager" />
 
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
