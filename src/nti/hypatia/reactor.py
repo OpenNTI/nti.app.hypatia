@@ -32,8 +32,8 @@ def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 class IndexReactor(object):
 
 	stop = False
-	sleep_min_wait_time = 35
-	sleep_max_wait_time = 60
+	sleep_min_wait_time = 25
+	sleep_max_wait_time = 50
 	lockname = u"hypatia-lock"
 
 	def __init__(self):
@@ -57,10 +57,18 @@ class IndexReactor(object):
 
 	def process_index_msgs(self):
 		redis = component.getUtility(nti_interfaces.IRedisClient)
-		with redis.lock(self.lockname):
-			transaction_runner = \
-					component.getUtility(nti_interfaces.IDataserverTransactionRunner)
-			try:
-				transaction_runner(process_queue, retries=3)
-			except Exception:
-				logger.exception('Cannot process index messages')
+		lock = redis.lock(self.lockname)
+		aquired = lock.acquire(blocking=False)
+		try:
+			if aquired:
+				transaction_runner = \
+						component.getUtility(nti_interfaces.IDataserverTransactionRunner)
+				try:
+					transaction_runner(process_queue, retries=3)
+				except Exception:
+					logger.exception('Cannot process index messages')
+			else:
+				logger.debug("'%s' has already been aquired", self.lockname)
+		finally:
+			if aquired:
+				lock.release()
