@@ -120,8 +120,3 @@ class _HypatiaEntityIndexManager(object):
 
 		return results
 
-@interface.implementer(search_interfaces.IEntityIndexManagerFactory)
-class _HypatiaEntityIndexManagerFactoryImpl(object):
-
-	def __call__(self, user):
-		return hypatia_interfaces.IHypatiaEntityIndexManager(user, None)
