@@ -71,7 +71,3 @@ class TestAdapters(ConfiguringTestBase):
 		searcher = hypatia_interfaces.IHypatiaEntityIndexManager(user3)
 		hits = searcher.search("Madarame")
 		assert_that(hits, has_length(0))
-
-if __name__ == '__main__':
-	import unittest
-	unittest.main()
