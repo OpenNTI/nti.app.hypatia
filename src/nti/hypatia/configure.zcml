@@ -27,10 +27,10 @@
 	
 	<!-- Adapters -->
 	
-	<adapter factory=".adapters._HypatiaEntityIndexManager"
+	<adapter factory=".adapters._HypatiaEntityIndexController"
 			 for="nti.dataserver.interfaces.IUser"
-			 provides=".interfaces.IHypatiaEntityIndexManager" />
-	
+			 provides="nti.contentsearch.interfaces.IEntityIndexController" />
+
 	<!-- Search Query -->
 	
 	<utility factory=".query._DefaultQueryParser" />

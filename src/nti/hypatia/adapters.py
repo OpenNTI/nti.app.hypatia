@@ -30,8 +30,8 @@ from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
 @component.adapter(nti_interfaces.IUser)
-@interface.implementer(hypatia_interfaces.IHypatiaEntityIndexManager)
-class _HypatiaEntityIndexManager(object):
+@interface.implementer(search_interfaces.IEntityIndexController)
+class _HypatiaEntityIndexController(object):
 
 	def __init__(self, entity):
 		self.entity = entity
