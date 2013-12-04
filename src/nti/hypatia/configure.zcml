@@ -8,12 +8,16 @@
 	<include package="zope.security" file="meta.zcml" />
 	<include package="zope.component" />
 
+	<!-- Generations -->
+	
 	<utility factory=".generations.install._HypatiaSearchSchemaManager"
 			 name="nti.dataserver-hypatia"
 			 provides="zope.generations.interfaces.IInstallableSchemaManager"/>
 
 	<utility factory=".reactor.IndexReactor" />
-			 		
+	
+	<!-- Subscribers -->
+		 		
 	<subscriber handler=".subscribers._modeled_added" />
 	<subscriber handler=".subscribers._modeled_removed" />
 	<subscriber handler=".subscribers._modeled_modified" />
@@ -21,10 +25,18 @@
 	<subscriber handler=".subscribers._topic_removed" />
 	<subscriber handler=".subscribers._topic_modified" />
 	
+	<!-- Adapters -->
+	
 	<adapter factory=".adapters._HypatiaEntityIndexManager"
 			 for="nti.dataserver.interfaces.IUser"
 			 provides=".interfaces.IHypatiaEntityIndexManager" />
 
+	<!--
+	<utility factory=".adapters._HypatiaEntityIndexManagerFactoryImpl" />
+	-->
+	
+	<!-- Search Query -->
+	
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
 	
