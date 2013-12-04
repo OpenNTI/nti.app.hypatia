@@ -125,3 +125,8 @@ class _HypatiaEntityIndexManager(contained.Contained):
 
 _HypatiaEntityIndexManagerFactory = an_factory(_HypatiaEntityIndexManager)
 
+@interface.implementer(search_interfaces.IEntityIndexManagerFactory)
+class _HypatiaEntityIndexManagerFactoryImpl(object):
+
+	def __call__(self, user):
+		return search_interfaces.IRepozeEntityIndexManager(user, None)
