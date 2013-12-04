@@ -12,8 +12,6 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 from zope import interface
-from zope.container import contained
-from zope.annotation import factory as an_factory
 
 from perfmetrics import metricmethod
 
@@ -33,11 +31,10 @@ from . import interfaces as hypatia_interfaces
 
 @component.adapter(nti_interfaces.IUser)
 @interface.implementer(hypatia_interfaces.IHypatiaEntityIndexManager)
-class _HypatiaEntityIndexManager(contained.Contained):
+class _HypatiaEntityIndexManager(object):
 
-	@property
-	def entity(self):
-		return self.__parent__
+	def __init__(self, entity):
+		self.entity = entity
 
 	@property
 	def username(self):
@@ -123,10 +120,8 @@ class _HypatiaEntityIndexManager(contained.Contained):
 
 		return results
 
-_HypatiaEntityIndexManagerFactory = an_factory(_HypatiaEntityIndexManager)
-
 @interface.implementer(search_interfaces.IEntityIndexManagerFactory)
 class _HypatiaEntityIndexManagerFactoryImpl(object):
 
 	def __call__(self, user):
-		return search_interfaces.IRepozeEntityIndexManager(user, None)
+		return hypatia_interfaces.IHypatiaEntityIndexManager(user, None)
