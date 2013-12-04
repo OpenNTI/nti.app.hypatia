@@ -16,7 +16,6 @@ from zope import interface
 
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
-from hypatia.field import FieldIndex
 from hypatia.keyword import KeywordIndex
 from hypatia.text.cosineindex import CosineIndex
 
@@ -27,6 +26,11 @@ from nti.contentsearch.constants import (content_, ngrams_, title_, tags_,
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
 
+def get_type(obj, default=None):
+	type_ = discriminators.get_type(obj, default)
+	result = (type_,) if type_ else default
+	return result
+
 def create_catalog(lexicon=None):
 	
 	lexicon = defaultLexicon() if lexicon is None else lexicon
@@ -34,8 +38,8 @@ def create_catalog(lexicon=None):
 	result = Catalog(family=BTrees.family64)
 	interface.alsoProvides(result, ISearchCatalog)
 
-	result['type'] = FieldIndex(discriminator=discriminators.get_type,
-								family=BTrees.family64)
+	result['type'] = KeywordIndex(discriminator=get_type,
+								  family=BTrees.family64)
 
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
 	result[content_] = TextIndex(lexicon=lexicon,
