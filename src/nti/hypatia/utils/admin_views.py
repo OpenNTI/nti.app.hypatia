@@ -14,8 +14,10 @@ import six
 import time
 import simplejson
 
+from zope import component
+
 from pyramid.view import view_config
-from pyramid.security import authenticated_userid
+from pyramid import httpexceptions as hexc
 
 from nti.dataserver import users
 from nti.dataserver import authorization as nauth
@@ -25,6 +27,7 @@ from nti.externalization.datastructures import LocatedExternalDict
 
 from nti.utils.maps import CaseInsensitiveDict
 
+from .. import reactor
 from .. import subscribers
 from . import get_user_indexable_objects
 
@@ -48,12 +51,20 @@ def reindex_hypatia_content(request):
 			 if request.body else {}
 	values = CaseInsensitiveDict(**values)
 	usernames = values.get('usernames')
+	queue_limit = values.get('limit', None)
 	if usernames:
 		if isinstance(usernames, six.string_types):
 			usernames = usernames.split()
 	else:
-		username = values.get('username', authenticated_userid(request))
-		usernames = (username,) if username else ()
+		dataserver = component.getUtility(nti_interfaces.IDataserver)
+		_users = nti_interfaces.IShardLayout(dataserver).users_folder
+		usernames = _users.keys()
+
+	if queue_limit is not None:
+		try:
+			queue_limit = int(queue_limit)
+		except ValueError:
+			raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
 	counter = 0
 	now = time.time()
@@ -62,7 +73,11 @@ def reindex_hypatia_content(request):
 		if user is not None and nti_interfaces.IUser.providedBy(user):
 			counter += _add_to_objects_2_queue(user)
 
+	if queue_limit is not None:
+		reactor.process_queue(queue_limit)
+		
 	result = LocatedExternalDict()
 	result['Items'] = counter
 	result['Elapsed'] = time.time() - now
 	return result
+
