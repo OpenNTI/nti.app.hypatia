@@ -15,8 +15,6 @@ from zope import interface
 from zope.container import contained
 from zope.annotation import factory as an_factory
 
-from BTrees.LFBTree import LFBucket
-
 from perfmetrics import metricmethod
 
 from hypatia.catalog import CatalogQuery
@@ -72,10 +70,11 @@ class _HypatiaEntityIndexManager(contained.Contained):
 		parser = component.getUtility(hypatia_interfaces.ISearchQueryParser,
 									  name=query.language)
 		parsed_query = parser.parse(query, self.entity)
+
 		cq = CatalogQuery(search_catalog())
 		_, sequence = cq.query(parsed_query)
 		if not hasattr(sequence, "items"):
-			sequence = LFBucket({x:1.0 for x in sequence})
+			sequence = {x:1.0 for x in sequence}
 
 		# get docs from db
 		for docid, score in sequence.items():
