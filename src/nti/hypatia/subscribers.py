@@ -55,5 +55,8 @@ def _modeled_added(modeled, event):
 
 @component.adapter(nti_interfaces.IModeledContent, lce_interfaces.IObjectModifiedEvent)
 def _modeled_modified(modeled, event):
-	queue_modified(modeled)
+	if nti_interfaces.IDeletedObjectPlaceholder.providedBy(modeled):
+		queue_remove(modeled)
+	else:
+		queue_modified(modeled)
 

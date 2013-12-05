@@ -26,6 +26,7 @@ from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import interfaces as nti_interfaces
 
+from . import search_queue
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
@@ -44,6 +45,7 @@ class _HypatiaUserIndexController(object):
 		result = discriminators.query_object(uid)
 		if result is None:
 			logger.debug('Could not find object with id %r' % uid)
+			search_queue().remove(uid)
 		return result
 
 	def index_content(self, *args, **kwargs):
@@ -78,6 +80,7 @@ class _HypatiaUserIndexController(object):
 			obj = self.get_object(docid)
 			if obj is not None:
 				results.add(search_results.IndexHit(docid, score))
+
 		return results
 
 	def search(self, query):
