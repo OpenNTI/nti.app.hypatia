@@ -27,9 +27,9 @@
 	
 	<!-- Adapters -->
 	
-	<adapter factory=".adapters._HypatiaEntityIndexController"
+	<adapter factory=".adapters._HypatiaUserIndexController"
 			 for="nti.dataserver.interfaces.IUser"
-			 provides="nti.contentsearch.interfaces.IEntityIndexController" />
+			 provides=".interfaces.IHypatiaUserIndexController" />
 
 	<!-- Search Query -->
 	

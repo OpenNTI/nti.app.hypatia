@@ -56,18 +56,18 @@ class TestAdapters(ConfiguringTestBase):
 
 		reactor.process_queue()
 
-		searcher = hypatia_interfaces.IHypatiaEntityIndexManager(user1)
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
 		hits = searcher.search("Jinzen")
 		assert_that(hits, has_length(1))
 
-		searcher = hypatia_interfaces.IHypatiaEntityIndexManager(user2)
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user2)
 		hits = searcher.search("communication")
 		assert_that(hits, has_length(1))
 
-		searcher = hypatia_interfaces.IHypatiaEntityIndexManager(user1)
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
 		hits = searcher.search("Madarame")
 		assert_that(hits, has_length(1))
 
-		searcher = hypatia_interfaces.IHypatiaEntityIndexManager(user3)
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user3)
 		hits = searcher.search("Madarame")
 		assert_that(hits, has_length(0))

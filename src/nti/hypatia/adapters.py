@@ -31,7 +31,7 @@ from . import interfaces as hypatia_interfaces
 
 @component.adapter(nti_interfaces.IUser)
 @interface.implementer(search_interfaces.IEntityIndexController)
-class _HypatiaEntityIndexController(object):
+class _HypatiaUserIndexController(object):
 
 	def __init__(self, entity):
 		self.entity = entity
