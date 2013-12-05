@@ -21,9 +21,6 @@
 	<subscriber handler=".subscribers._modeled_added" />
 	<subscriber handler=".subscribers._modeled_removed" />
 	<subscriber handler=".subscribers._modeled_modified" />
-	<subscriber handler=".subscribers._topic_added" />
-	<subscriber handler=".subscribers._topic_removed" />
-	<subscriber handler=".subscribers._topic_modified" />
 	
 	<!-- Adapters -->
 	

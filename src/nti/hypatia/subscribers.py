@@ -19,7 +19,6 @@ from nti.contentsearch import discriminators
 from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import interfaces as nti_interfaces
-from nti.dataserver.contenttypes.forums import interfaces as frm_interfaces
 
 from . import search_queue
 
@@ -58,14 +57,3 @@ def _modeled_added(modeled, event):
 def _modeled_modified(modeled, event):
 	queue_modified(modeled)
 
-@component.adapter(frm_interfaces.ITopic, IIntIdAddedEvent)
-def _topic_added(topic, event):
-	queue_added(topic)
-
-@component.adapter(frm_interfaces.ITopic, lce_interfaces.IObjectModifiedEvent)
-def _topic_modified(topic, event):
-	queue_modified(topic)
-
-@component.adapter(frm_interfaces.ITopic, IIntIdRemovedEvent)
-def _topic_removed(topic, event):
-	queue_remove(topic)

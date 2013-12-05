@@ -96,7 +96,7 @@ class _HypatiaUserIndexController(object):
 		
 		words = textfield.lexicon.get_similiar_words(term=query.term,
 												  	 threshold=threshold,
-												 	 prefix=prefix)
+												 	 common_length=prefix)
 		results.add(map(lambda t: t[0], words))
 
 		return results
