@@ -45,7 +45,10 @@ class _HypatiaUserIndexController(object):
 		result = discriminators.query_object(uid)
 		if result is None:
 			logger.debug('Could not find object with id %r' % uid)
-			search_queue().remove(uid)
+			try:
+				search_queue().remove(uid)
+			except TypeError:
+				pass
 		return result
 
 	def index_content(self, *args, **kwargs):
