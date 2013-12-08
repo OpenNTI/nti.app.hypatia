@@ -18,7 +18,7 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 import repoze.lru
-
+	
 """
 Distance Metrics.
 
@@ -92,10 +92,16 @@ def edit_distance(s1, s2, transpositions=False):
 	return lev[len1][len2]
 
 @repoze.lru.lru_cache(1000)
-def ratio(s1, s2):
+def nltk_ratio(s1, s2):
 	d = edit_distance(s1, s2, True)
 	lensum = len(s1) + len(s2)
 	result = (lensum - d)/float(lensum)
 	return result
 
 levenshtein = edit_distance
+
+try:
+	from zopyx.txng3.ext.levenshtein import ratio
+except ImportError:
+	ratio = nltk_ratio
+	

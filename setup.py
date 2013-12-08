@@ -30,7 +30,8 @@ setup(
 	install_requires=[
 		'setuptools',
         'hypatia',
-        'zc.catalogqueue'
+        'zc.catalogqueue',
+        'zopyx.txng3.ext'
 	],
 	entry_points=entry_points
 )

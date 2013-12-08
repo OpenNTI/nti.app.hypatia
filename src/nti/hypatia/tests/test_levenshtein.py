@@ -19,10 +19,10 @@ class TestLevenshtein(unittest.TestCase):
 
 	def test_ratio(self):
 		r = ratio('ichigo', 'rukia')
-		assert_that(r, is_(close_to(0.5454, 0.01)))
+		assert_that(r, is_(close_to(0.1818, 0.01)))
 		
 		r = ratio('ichigo', 'ichigo')
 		assert_that(r, is_(1.0))
 
-		r = ratio('ichigo', 'ichinin')
-		assert_that(r, is_(close_to(0.76923, 0.01)))
+		r = ratio('ichigo', 'ichi')
+		assert_that(r, is_(close_to(0.8, 0.01)))
