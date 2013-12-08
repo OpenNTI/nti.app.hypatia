@@ -98,10 +98,10 @@ def nltk_ratio(s1, s2):
 	result = (lensum - d)/float(lensum)
 	return result
 
-levenshtein = edit_distance
-
 try:
 	from zopyx.txng3.ext.levenshtein import ratio
+	from zopyx.txng3.ext.levenshtein import distance
 except ImportError:
 	ratio = nltk_ratio
+	distance = edit_distance
 	
