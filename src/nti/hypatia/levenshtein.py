@@ -60,7 +60,6 @@ def _edit_dist_step(lev, i, j, s1, s2, transpositions=False):
 	# pick the cheapest
 	lev[i][j] = min(a, b, c, d)
 
-@repoze.lru.lru_cache(1000)
 def edit_distance(s1, s2, transpositions=False):
 	"""
 	Calculate the Levenshtein edit-distance between two strings.
@@ -92,4 +91,11 @@ def edit_distance(s1, s2, transpositions=False):
 			_edit_dist_step(lev, i + 1, j + 1, s1, s2, transpositions=transpositions)
 	return lev[len1][len2]
 
-levenshtein = ratio = edit_distance
+@repoze.lru.lru_cache(1000)
+def ratio(s1, s2):
+	d = edit_distance(s1, s2, True)
+	lensum = len(s1) + len(s2)
+	result = (lensum - d)/float(lensum)
+	return result
+
+levenshtein = edit_distance
