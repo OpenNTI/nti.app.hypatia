@@ -17,6 +17,8 @@ from perfmetrics import metricmethod
 
 from hypatia.catalog import CatalogQuery
 
+from nti.chatserver import interfaces as chat_interfaces
+
 from nti.contentprocessing import rank_words
 
 from nti.contentsearch import constants
@@ -41,6 +43,17 @@ class _HypatiaUserIndexController(object):
 	def username(self):
 		return self.entity.username
 
+	def verify_access(self, obj):
+		result = chat_interfaces.IMessageInfo.providedBy(obj) or \
+				 (nti_interfaces.IShareableModeledContent.providedBy(obj) and \
+				  obj.isSharedDirectlyWith(self.entity))
+
+		if not result:
+			acl = discriminators.get_acl(obj, ())
+			result = self.username in acl
+
+		return result
+
 	def get_object(self, uid):
 		result = discriminators.query_object(uid)
 		if result is None:
@@ -49,6 +62,8 @@ class _HypatiaUserIndexController(object):
 				search_queue().remove(uid)
 			except TypeError:
 				pass
+		elif not self.verify_access(result):
+			result = None
 		return result
 
 	def index_content(self, *args, **kwargs):
