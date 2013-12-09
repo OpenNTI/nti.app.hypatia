@@ -99,8 +99,12 @@ def nltk_ratio(s1, s2):
 	return result
 
 try:
-	from zopyx.txng3.ext.levenshtein import ratio
 	from zopyx.txng3.ext.levenshtein import distance
+	from zopyx.txng3.ext.levenshtein import ratio as zopy_ratio
+
+	@repoze.lru.lru_cache(1000)
+	def ratio(a, b):
+		return zopy_ratio(a, b)
 except ImportError:
 	ratio = nltk_ratio
 	distance = edit_distance
