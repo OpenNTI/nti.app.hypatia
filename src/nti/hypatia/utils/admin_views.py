@@ -30,6 +30,7 @@ from nti.utils.maps import CaseInsensitiveDict
 from .. import reactor
 from .. import subscribers
 from . import get_user_indexable_objects
+from .. import interfaces as hypatia_interfaces
 
 def _add_to_objects_2_queue(user):
 	count = 0
@@ -62,7 +63,7 @@ def reindex_hypatia_content(request):
 
 	if queue_limit is not None:
 		try:
-			queue_limit = int(queue_limit)
+			queue_limit = abs(int(queue_limit))
 		except ValueError:
 			raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
@@ -81,3 +82,21 @@ def reindex_hypatia_content(request):
 	result['Elapsed'] = time.time() - now
 	return result
 
+@view_config(route_name='objects.generic.traversal',
+			 name='process_hypatia_content',
+			 renderer='rest',
+			 request_method='POST',
+			 permission=nauth.ACT_MODERATE)
+def process_hypatia_content(request):
+	values = simplejson.loads(unicode(request.body, request.charset)) \
+			 if request.body else {}
+	values = CaseInsensitiveDict(**values)
+	queue_limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
+	try:
+		queue_limit = abs(int(queue_limit))
+	except ValueError:
+		raise hexc.HTTPUnprocessableEntity('invalid queue size')
+
+	reactor.process_queue(queue_limit)
+
+	return hexc.HTTPNoContent()
