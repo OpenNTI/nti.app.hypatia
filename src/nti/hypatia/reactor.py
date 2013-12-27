@@ -58,7 +58,11 @@ class IndexReactor(object):
 	def process_index_msgs(self):
 		redis = component.getUtility(nti_interfaces.IRedisClient)
 		lock = redis.lock(self.lockname)
-		aquired = lock.acquire(blocking=False)
+		try:
+			aquired = lock.acquire(blocking=False)
+		except TypeError:
+			aquired = lock.acquire()
+
 		try:
 			if aquired:
 				transaction_runner = \

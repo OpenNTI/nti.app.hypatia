@@ -29,13 +29,21 @@ def queue_added(obj):
 	if is_indexable(obj):
 		iid = discriminators.query_uid(obj)
 		if iid is not None:
-			search_queue().add(iid)
+			__traceback_info__ = iid
+			try:
+				search_queue().add(iid)
+			except TypeError, e:
+				logger.exception("Error while adding to search queue", e)
 
 def queue_modified(obj):
 	if is_indexable(obj):
 		iid = discriminators.query_uid(obj)
 		if iid is not None:
-			search_queue().update(iid)
+			__traceback_info__ = iid
+			try:
+				search_queue().update(iid)
+			except TypeError, e:
+				logger.exception("Error while updating search queue", e)
 		else:
 			logger.debug("Could not find iid for %r", obj)
 
