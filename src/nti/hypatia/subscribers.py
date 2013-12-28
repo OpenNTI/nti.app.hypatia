@@ -53,7 +53,7 @@ def queue_remove(obj):
 		if iid is not None:
 			search_queue().remove(iid)
 
-@component.adapter(nti_interfaces.INote, IIntIdRemovedEvent)
+@component.adapter(nti_interfaces.IModeledContent, IIntIdRemovedEvent)
 def _modeled_removed(modeled, event):
 	queue_remove(modeled)
 
