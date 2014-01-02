@@ -35,15 +35,17 @@ def do_evolve(context):
 		assert	component.getSiteManager() == ds_folder.getSiteManager(), \
 				"Hooks not installed?"
 
+		count = 0
 		users = ds_folder['users']
 		for user in users.values():
 			for obj in utils.get_user_indexable_objects(user):
 				try:
 					subscribers.queue_added(obj)
+					count += 1
 				except TypeError:  # ignore objects in queue
 					pass
 
-	logger.debug('Evolution done!!!')
+	logger.debug('Evolution done!!! %s objects added to search queue')
 
 def evolve(context):
 	"""
