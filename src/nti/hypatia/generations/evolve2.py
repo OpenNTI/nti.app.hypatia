@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-generation 1.
+generation 2.
 
 $Id$
 """
@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-generation = 1
+generation = 2
 
 import zope.intid
 from zope import component
@@ -45,10 +45,10 @@ def do_evolve(context):
 				except TypeError:  # ignore objects in queue
 					pass
 
-	logger.debug('Evolution done!!! %s objects added to search queue')
+	logger.debug('Evolution done!!! %s objects added to search queue' % count)
 
 def evolve(context):
 	"""
-	Evolve to generation 1 by adding all objects to index queue
+	Evolve to generation 2 by adding all objects to index queue
 	"""
 	do_evolve(context)
