@@ -33,7 +33,7 @@ def queue_added(obj):
 			try:
 				search_queue().add(iid)
 			except TypeError, e:
-				logger.exception("Error while adding to search queue", e)
+				logger.exception(e)
 
 def queue_modified(obj):
 	if is_indexable(obj):
@@ -43,7 +43,7 @@ def queue_modified(obj):
 			try:
 				search_queue().update(iid)
 			except TypeError, e:
-				logger.exception("Error while updating search queue", e)
+				logger.exception(e)
 		else:
 			logger.debug("Could not find iid for %r", obj)
 
