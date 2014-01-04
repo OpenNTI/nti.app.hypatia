@@ -20,7 +20,7 @@ from hypatia.keyword import KeywordIndex
 from hypatia.text.cosineindex import CosineIndex
 
 from nti.contentsearch import discriminators
-from nti.contentsearch.constants import (content_, ngrams_, title_, tags_,
+from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
 										 redactionExplanation_, replacementContent_)
 
 from .lexicon import defaultLexicon
@@ -55,6 +55,9 @@ def create_catalog(lexicon=None):
 
 	result[tags_] = KeywordIndex(discriminator=discriminators.get_tags,
 								 family=BTrees.family64)
+
+	result[keywords_] = KeywordIndex(discriminator=discriminators.get_keywords,
+									 family=BTrees.family64)
 
 	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
 	result[title_] = TextIndex(lexicon=lexicon,
