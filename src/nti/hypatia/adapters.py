@@ -36,6 +36,8 @@ from . import interfaces as hypatia_interfaces
 @interface.implementer(search_interfaces.IEntityIndexController)
 class _HypatiaUserIndexController(object):
 
+	__slots__ = ('entity',)
+
 	def __init__(self, entity):
 		self.entity = entity
 

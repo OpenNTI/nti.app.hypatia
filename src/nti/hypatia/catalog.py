@@ -31,9 +31,10 @@ def get_type(obj, default=None):
 	result = (type_,) if type_ else default
 	return result
 
-def create_catalog(lexicon=None):
+def create_catalog(lexicon=None, ngram_lexicon=None):
 	
 	lexicon = defaultLexicon() if lexicon is None else lexicon
+	ngram_lexicon = lexicon if ngram_lexicon is None else ngram_lexicon
 
 	result = Catalog(family=BTrees.family64)
 	interface.alsoProvides(result, ISearchCatalog)
@@ -47,8 +48,8 @@ def create_catalog(lexicon=None):
 								 discriminator=discriminators.get_object_content,
 								 family=BTrees.family64)
 
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
-	result[ngrams_] = TextIndex(lexicon=lexicon,
+	index = CosineIndex(lexicon=ngram_lexicon, family=BTrees.family64)
+	result[ngrams_] = TextIndex(lexicon=ngram_lexicon,
 								index=index,
 								discriminator=discriminators.get_object_ngrams,
 								family=BTrees.family64)

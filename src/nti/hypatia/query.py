@@ -17,7 +17,7 @@ from hypatia.query import Contains
 
 from nti.contentsearch import content_utils
 from nti.contentsearch import interfaces as search_interfaces
-from nti.contentsearch.constants import (content_, ngrams_, title_, tags_,
+from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
 										 redactionExplanation_, replacementContent_)
 
 from nti.dataserver import users
@@ -48,8 +48,8 @@ class _DefaultQueryParser(object):
 		else:
 			type_query = None
 
-		# tags
-		result = Any(catalog[tags_], [term])
+		# tags & keywords
+		result = Any(catalog[tags_], [term]) | Any(catalog[keywords_], [term])
 
 		fields = (title_, redactionExplanation_, replacementContent_)
 		if 	query.is_prefix_search or query.is_phrase_search or \
