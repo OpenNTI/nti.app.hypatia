@@ -30,6 +30,9 @@ class SourceBaseIndexMixin(object):
 		if docid in self._textsource: 
 			del self._textsource[docid]
 
+	def text_source(self, docid):
+		return self._textsource[docid]
+
 class SourceCosineIndex(SourceBaseIndexMixin, CosineIndex):
 
 	def __init__(self, *args, **kwargs):
