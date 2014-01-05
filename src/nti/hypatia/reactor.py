@@ -14,6 +14,8 @@ import random
 from zope import component
 from zope import interface
 
+from ZODB import loglevels
+
 import zope.intid
 
 from nti.dataserver import interfaces as nti_interfaces
@@ -25,7 +27,8 @@ def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
-	logger.debug("processing %s index messages(s)", len(queue))
+	msgs = min(limit, len(queue))
+	logger.log(loglevels.TRACE, "processing %s index messages(s)", msgs)
 	queue.process(ids, (catalog,), limit)
 
 @interface.implementer(hypatia_interfaces.IIndexReactor)
