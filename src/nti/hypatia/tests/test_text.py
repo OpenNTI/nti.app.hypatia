@@ -16,9 +16,9 @@ from hamcrest import less_than
 from hamcrest import assert_that
 from hamcrest import greater_than
 
+from nti.hypatia.text import SourceOkapiIndex
+from nti.hypatia.text import SourceCosineIndex
 from nti.hypatia.lexicon import defaultLexicon
-from nti.hypatia.text.index import SourceOkapiIndex
-from nti.hypatia.text.index import SourceCosineIndex
 
 class TestIndex(unittest.TestCase):
 
