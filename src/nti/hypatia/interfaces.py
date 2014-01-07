@@ -31,6 +31,10 @@ class ISearchCatalogQueue(ICatalogQueue):
 class ISearchCatalog(hypatia_interfaces.ICatalog):
     pass
 
+class ISearchKeywordIndex(interface.Interface):
+    pass
+
+
 class ISearchLexicon(text_interfaces.ILexicon):
 
     def get_similiar_words(term, threshold=0.75, common_length=-1):
