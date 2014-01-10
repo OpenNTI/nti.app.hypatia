@@ -37,7 +37,7 @@ class IndexReactor(object):
 	stop = False
 	sleep_min_wait_time = 25
 	sleep_max_wait_time = 50
-	lockname = u"nti/hypatia/indexlock"
+	lockname = u"nti/hypatia/lock"
 
 	def __init__(self):
 		self.processor = self._spawn_index_processor()
