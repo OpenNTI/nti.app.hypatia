@@ -12,7 +12,10 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
-from .  import interfaces
+from nti.dataserver import users
+from nti.dataserver import interfaces as nti_interfaces
+
+from . import interfaces
 
 def search_queue():
     result = component.getUtility(interfaces.ISearchCatalogQueue)
@@ -20,4 +23,16 @@ def search_queue():
 
 def search_catalog():
     result = component.getUtility(interfaces.ISearchCatalog)
+    return result
+
+def get_user(user):
+    user = users.User.get_user(str(user)) \
+           if not nti_interfaces.IUser.providedBy(user) and user else user
+    return user
+
+def get_usernames_of_dynamic_memberships(user):
+    user  = get_user(user)
+    dynamic_memberships = getattr(user, 'usernames_of_dynamic_memberships', ())
+    usernames = (user.username,) + tuple(dynamic_memberships)
+    result = [x.lower() for x in usernames]
     return result

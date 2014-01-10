@@ -16,8 +16,10 @@ from hypatia.text import ParseError
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
+from nti.dataserver.users import Community
 from nti.dataserver.contenttypes import Note
 from nti.dataserver.contenttypes import Redaction
+from nti.dataserver.users import DynamicFriendsList
 
 from nti.externalization.internalization import update_from_external_object
 
@@ -220,6 +222,92 @@ class TestLegacySearch(ConfiguringTestBase):
 		hits = rim.search('Zangetsu')
 		assert_that(hits, has_length(1))
 
+	@WithMockDSTrans
+	def test_note_share_comm(self):
+		ds = mock_dataserver.current_mock_ds
+		user_1 = User.create_user(ds, username='nti-1.com', password='temp001')
+		user_2 = User.create_user(ds, username='nti-2.com', password='temp001')
+
+		c = Community.create_community(ds, username='Bankai')
+		for u in (user_1, user_2):
+			u.record_dynamic_membership(c)
+			u.follow(c)
+
+		note = Note()
+		note.body = [unicode('Hitsugaya and Madarame performing Jinzen')]
+		note.creator = 'nti.com'
+		note.containerId = make_ntiid(nttype='bleach', specific='manga')
+		note.addSharingTarget(c)
+		note = user_2.addContainedObject(note)
+
+		# index
+		reactor.process_queue()
+
+		# search
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user_1)
+		hits = rim.search('Jinzen')
+		assert_that(hits, has_length(1))
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user_2)
+		hits = rim.search('Madarame')
+		assert_that(hits, has_length(1))
+
+	@WithMockDSTrans
+	def test_same_content_two_comm(self):
+		ds = mock_dataserver.current_mock_ds
+		user = User.create_user(ds, username='nti.com', password='temp001')
+
+		note = Note()
+		note.body = [unicode('Only a few atain both')]
+		note.creator = 'nti.com'
+		note.containerId = make_ntiid(nttype='bleach', specific='manga')
+
+		comms = []
+		for name in ('Bankai', 'Shikai'):
+			c = Community.create_community(ds, username=name)
+			user.record_dynamic_membership(c)
+			user.follow(c)
+			comms.append(c)
+			note.addSharingTarget(c)
+		note = user.addContainedObject(note)
+
+		# index
+		reactor.process_queue()
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user)
+		hits = rim.search('atain')
+		assert_that(hits, has_length(1))
+
+	@WithMockDSTrans
+	def test_note_share_dfl(self):
+		ds = mock_dataserver.current_mock_ds
+		ichigo = User.create_user(ds, username='ichigo@nti.com', password='temp001')
+		aizen = User.create_user(ds, username='aizen@nti.com', password='temp001')
+		gin = User.create_user(ds, username='gin@nti.com', password='temp001')
+
+		bleach = DynamicFriendsList(username='bleach')
+		bleach.creator = ichigo  # Creator must be set
+		ichigo.addContainedObject(bleach)
+		bleach.addFriend(aizen)
+		bleach.addFriend(gin)
+
+		note = Note()
+		note.body = [u'Getsuga Tensho']
+		note.creator = 'nti.com'
+		note.containerId = make_ntiid(nttype='bleach', specific='manga')
+		note.addSharingTarget(bleach)
+		note = ichigo.addContainedObject(note)
+
+		# index
+		reactor.process_queue()
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(gin)
+		hits = rim.search('getsuga')
+		assert_that(hits, has_length(1))
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(aizen)
+		hits = rim.search('tensho')
+		assert_that(hits, has_length(1))
 
 class TestAppLegacySearch(ApplicationTestBase):
 

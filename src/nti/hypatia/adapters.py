@@ -31,6 +31,7 @@ from nti.dataserver import interfaces as nti_interfaces
 from . import search_queue
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
+from . import get_usernames_of_dynamic_memberships
 
 @component.adapter(nti_interfaces.IUser)
 @interface.implementer(search_interfaces.IEntityIndexController)
@@ -51,8 +52,9 @@ class _HypatiaUserIndexController(object):
 				  obj.isSharedDirectlyWith(self.entity))
 
 		if not result:
-			acl = discriminators.get_acl(obj, ())
-			result = self.username in acl
+			acl = set(discriminators.get_acl(obj, ()))
+			memberships = set(get_usernames_of_dynamic_memberships(self.entity))
+			result = memberships.intersection(acl)
 
 		return result
 

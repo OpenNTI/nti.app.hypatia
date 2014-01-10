@@ -20,16 +20,10 @@ from nti.contentsearch import interfaces as search_interfaces
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
 										 redactionExplanation_, replacementContent_)
 
-from nti.dataserver import users
-from nti.dataserver import interfaces as nti_interfaces
-
+from . import get_user
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
-
-def get_user(user):
-	user = users.User.get_user(str(user)) \
-		   if not nti_interfaces.IUser.providedBy(user) and user else user
-	return user
+from . import get_usernames_of_dynamic_memberships
 
 def can_use_ngram_field(query):
 	return content_utils.is_covered_by_ngram_computer(query.term, query.language)
@@ -66,8 +60,7 @@ class _DefaultQueryParser(object):
 
 		user = get_user(user)
 		if user:
-			dynamic_memberships = getattr(user, 'usernames_of_dynamic_memberships', ())
-			usernames = (user.username,) + tuple(dynamic_memberships)
-			result = result & Any(catalog["acl"], [x.lower() for x in usernames])
+			usernames = get_usernames_of_dynamic_memberships(user)
+			result = result & Any(catalog["acl"], usernames)
 
 		return result
