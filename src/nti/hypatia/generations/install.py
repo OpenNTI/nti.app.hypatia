@@ -63,7 +63,7 @@ def install_queue(context):
 	lsm = dataserver_folder.getSiteManager()
 	intids = lsm.getUtility(zope.intid.IIntIds)
 
-	queue = CatalogQueue(137)
+	queue = CatalogQueue(107)
 	queue.__parent__ = dataserver_folder
 	queue.__name__ = '++etc++hypatia++catalogqueue'
 	intids.register(queue)
