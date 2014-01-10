@@ -36,7 +36,7 @@ class IndexReactor(object):
 	stop = False
 	sleep_min_wait_time = 25
 	sleep_max_wait_time = 50
-	lockname = u"hypatia-lock"
+	lockname = u"nti/hypatia-lock"
 
 	def __init__(self):
 		self.processor = self._spawn_index_processor()
@@ -45,7 +45,7 @@ class IndexReactor(object):
 		self.stop = True
 
 	def _spawn_index_processor(self):
-
+		random.seed()
 		def process():
 			while not self.stop:
 				# wait for idx ops
@@ -78,3 +78,4 @@ class IndexReactor(object):
 		finally:
 			if aquired:
 				lock.release()
+				logger.debug("'%s' relased", self.lockname)
