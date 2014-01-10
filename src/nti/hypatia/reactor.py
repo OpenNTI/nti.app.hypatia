@@ -8,6 +8,7 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import os
 import gevent
 import random
 
@@ -36,7 +37,7 @@ class IndexReactor(object):
 	stop = False
 	sleep_min_wait_time = 25
 	sleep_max_wait_time = 50
-	lockname = u"nti/hypatia-lock"
+	lockname = u"nti/hypatia/indexlock"
 
 	def __init__(self):
 		self.processor = self._spawn_index_processor()
@@ -47,12 +48,17 @@ class IndexReactor(object):
 	def _spawn_index_processor(self):
 		random.seed()
 		def process():
+			pid = os.getpid()
 			while not self.stop:
 				# wait for idx ops
 				secs = random.randint(self.sleep_min_wait_time, self.sleep_max_wait_time)
 				gevent.sleep(seconds=secs)
 				if not self.stop:
-					self.process_index_msgs()
+					try:
+						self.process_index_msgs()
+					except component.ComponentLookupError:
+						logger.error("process %s could not get component", pid)
+						break
 
 		result = gevent.spawn(process)
 		return result
@@ -73,9 +79,6 @@ class IndexReactor(object):
 					transaction_runner(process_queue, retries=3)
 				except Exception:
 					logger.exception('Cannot process index messages')
-			else:
-				logger.debug("'%s' has already been aquired", self.lockname)
 		finally:
 			if aquired:
 				lock.release()
-				logger.debug("'%s' relased", self.lockname)
