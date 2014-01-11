@@ -35,61 +35,62 @@ def get_type(obj, default=None):
 
 def create_catalog(lexicon=None, ngram_lexicon=None):
 	
+	family64 = BTrees.family64
 	lexicon = defaultLexicon() if lexicon is None else lexicon
 	ngram_lexicon = lexicon if ngram_lexicon is None else ngram_lexicon
 
-	result = Catalog(family=BTrees.family64)
+	result = Catalog(family=family64)
 	interface.alsoProvides(result, ISearchCatalog)
 
 	result['type'] = SearchKeywordIndex(discriminator=get_type,
-								  		family=BTrees.family64)
+								  		family=family64)
 
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
+	index = CosineIndex(lexicon=lexicon, family=family64)
 	result[content_] = TextIndex(lexicon=lexicon,
 								 index=index,
 								 discriminator=discriminators.get_object_content,
-								 family=BTrees.family64)
+								 family=family64)
 
-	index = CosineIndex(lexicon=ngram_lexicon, family=BTrees.family64)
+	index = CosineIndex(lexicon=ngram_lexicon, family=family64)
 	result[ngrams_] = TextIndex(lexicon=ngram_lexicon,
 								index=index,
 								discriminator=discriminators.get_object_ngrams,
-								family=BTrees.family64)
+								family=family64)
 
 	result[tags_] = SearchKeywordIndex(discriminator=discriminators.get_tags,
-								 	   family=BTrees.family64)
+								 	   family=family64)
 
 	result[keywords_] = SearchKeywordIndex(discriminator=discriminators.get_keywords,
-									 	   family=BTrees.family64)
+									 	   family=family64)
 
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
+	index = CosineIndex(lexicon=lexicon, family=family64)
 	result[title_] = TextIndex(lexicon=lexicon,
 							   index=index,
 							   discriminator=discriminators.get_title_and_ngrams,
-							   family=BTrees.family64)
+							   family=family64)
 
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
+	index = CosineIndex(lexicon=lexicon, family=family64)
 	result[redactionExplanation_] = \
 			TextIndex(lexicon=lexicon,
 					  index=index,
 					  discriminator=discriminators.get_redaction_explanation_and_ngrams,
-					  family=BTrees.family64)
+					  family=family64)
 
-	index = CosineIndex(lexicon=lexicon, family=BTrees.family64)
+	index = CosineIndex(lexicon=lexicon, family=family64)
 	result[replacementContent_] = \
 						TextIndex(lexicon=lexicon,
 								  index=index,
 								  discriminator=discriminators.get_replacement_content,
-								  family=BTrees.family64)
+								  family=family64)
 
 	result[createdTime_] = FieldIndex(discriminator=discriminators.get_created_time,
-								 	  family=BTrees.family64)
+								 	  family=family64)
 
 	result[lastModified_] = FieldIndex(discriminator=discriminators.get_last_modified,
-								 	   family=BTrees.family64)
+								 	   family=family64)
 
 	result['acl'] = SearchKeywordIndex(discriminator=discriminators.get_acl,
-								 	   family=BTrees.family64)
+								 	   family=family64)
 
 
 	return result
