@@ -16,11 +16,13 @@ from zope import interface
 
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
+from hypatia.field import FieldIndex
 from hypatia.text.cosineindex import CosineIndex
 
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
-										 redactionExplanation_, replacementContent_)
+										 redactionExplanation_, replacementContent_,
+										 createdTime_, lastModified_)
 
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
@@ -79,6 +81,12 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 								  index=index,
 								  discriminator=discriminators.get_replacement_content,
 								  family=BTrees.family64)
+
+	result[createdTime_] = FieldIndex(discriminator=discriminators.get_created_time,
+								 	  family=BTrees.family64)
+
+	result[lastModified_] = FieldIndex(discriminator=discriminators.get_last_modified,
+								 	   family=BTrees.family64)
 
 	result['acl'] = SearchKeywordIndex(discriminator=discriminators.get_acl,
 								 	   family=BTrees.family64)
