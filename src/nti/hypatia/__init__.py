@@ -17,6 +17,8 @@ from nti.dataserver import interfaces as nti_interfaces
 
 from . import interfaces
 
+LOCK_NAME = u"nti/hypatia/lock"
+
 def search_queue():
     result = component.getUtility(interfaces.ISearchCatalogQueue)
     return result

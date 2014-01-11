@@ -21,6 +21,7 @@ import zope.intid
 
 from nti.dataserver import interfaces as nti_interfaces
 
+from . import LOCK_NAME
 from . import search_queue
 from . import interfaces as hypatia_interfaces
 
@@ -35,9 +36,9 @@ def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 class IndexReactor(object):
 
 	stop = False
+	lockname = LOCK_NAME
 	sleep_min_wait_time = 25
 	sleep_max_wait_time = 50
-	lockname = u"nti/hypatia/lock"
 
 	def __init__(self):
 		self.processor = self._spawn_index_processor()
