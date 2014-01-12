@@ -16,7 +16,6 @@ from zope import interface
 
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
-from hypatia.field import FieldIndex
 from hypatia.text.cosineindex import CosineIndex
 
 from nti.contentsearch import discriminators
@@ -29,6 +28,7 @@ from nti.zodb.containers import time_to_64bit_int
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
 from .keyword import SearchKeywordIndex
+from .field import SearchTimeFieldIndex
 
 def get_type(obj, default=None):
 	type_ = discriminators.get_type(obj, default)
@@ -95,11 +95,11 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 								  discriminator=discriminators.get_replacement_content,
 								  family=family64)
 
-	result[createdTime_] = FieldIndex(discriminator=get_created_time,
-								 	  family=family64)
+	result[createdTime_] = SearchTimeFieldIndex(discriminator=get_created_time,
+								 	  			family=family64)
 
-	result[lastModified_] = FieldIndex(discriminator=get_last_modified,
-								 	   family=family64)
+	result[lastModified_] = SearchTimeFieldIndex(discriminator=get_last_modified,
+								 	   			 family=family64)
 
 	result['acl'] = SearchKeywordIndex(discriminator=discriminators.get_acl,
 								 	   family=family64)
