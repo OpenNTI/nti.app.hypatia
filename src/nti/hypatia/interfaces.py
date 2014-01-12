@@ -34,6 +34,8 @@ class ISearchCatalog(hypatia_interfaces.ICatalog):
 class ISearchKeywordIndex(interface.Interface):
     pass
 
+class ITimeFieldIndex(interface.Interface):
+    pass
 
 class ISearchLexicon(text_interfaces.ILexicon):
 
