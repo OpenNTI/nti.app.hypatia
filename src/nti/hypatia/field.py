@@ -35,6 +35,9 @@ class TimeFieldIndex(FieldIndex):
 	def discriminate(self, obj, default):
 		value = super(TimeFieldIndex, self).discriminate(obj, default)
 		assert type(value) in (float, int)
+		return self.to_int(value)
+
+	def to_int(self, value):
 		if type(value) == float:  # auto-convert
 			value = time_to_64bit_int(value)
 		return value
