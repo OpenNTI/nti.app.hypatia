@@ -24,6 +24,8 @@ from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywo
 										 redactionExplanation_, replacementContent_,
 										 createdTime_, lastModified_)
 
+from nti.zodb.containers import time_to_64bit_int
+
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
 from .keyword import SearchKeywordIndex
@@ -31,6 +33,16 @@ from .keyword import SearchKeywordIndex
 def get_type(obj, default=None):
 	type_ = discriminators.get_type(obj, default)
 	result = (type_,) if type_ else default
+	return result
+
+def get_created_time(obj, default=None):
+	value = discriminators.get_created_time(obj, default)
+	result = time_to_64bit_int(value) if value is not None else None
+	return result
+
+def get_last_modified(obj, default=None):
+	value = discriminators.get_last_modified(obj, default)
+	result = time_to_64bit_int(value) if value is not None else None
 	return result
 
 def create_catalog(lexicon=None, ngram_lexicon=None):
@@ -83,10 +95,10 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 								  discriminator=discriminators.get_replacement_content,
 								  family=family64)
 
-	result[createdTime_] = FieldIndex(discriminator=discriminators.get_created_time,
+	result[createdTime_] = FieldIndex(discriminator=get_created_time,
 								 	  family=family64)
 
-	result[lastModified_] = FieldIndex(discriminator=discriminators.get_last_modified,
+	result[lastModified_] = FieldIndex(discriminator=get_last_modified,
 								 	   family=family64)
 
 	result['acl'] = SearchKeywordIndex(discriminator=discriminators.get_acl,
