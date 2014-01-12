@@ -88,4 +88,10 @@ class TestModeled(ConfiguringTestBase):
 
 		hits, _ = q.search(content='dangai*')
 		assert_that(hits, is_(1))
+		
+		hits, _ = q.search(content='light AND mark')
+		assert_that(hits, is_(1))
+		
+		hits, _ = q.search(content='light AND dark')
+		assert_that(hits, is_(0))
 
