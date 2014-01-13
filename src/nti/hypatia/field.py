@@ -36,6 +36,7 @@ class SearchTimeFieldIndex(FieldIndex):
 
 	def index_doc(self, docid, value):
 		value = self.discriminate(value, _marker)
+		__traceback_info__ = (docid, value)
 		if value is _marker:
 			if not (docid in self._not_indexed):
 				# unindex the previous value
@@ -171,15 +172,15 @@ class SearchTimeFieldIndex(FieldIndex):
 
 	def inrange(self, start, end, excludemin=False, excludemax=False):
 		return super(SearchTimeFieldIndex, self).inrange(self.to_int(start),
-												   self.to_int(end),
-												   excludemin,
-												   excludemax)
+												  		 self.to_int(end),
+												  		 excludemin,
+												   		 excludemax)
 
 	def notinrange(self, start, end, excludemin=False, excludemax=False):
 		return super(SearchTimeFieldIndex, self).notinrange(self.to_int(start),
-												 	  self.to_int(end),
-													  excludemin,
-												 	  excludemax)
+												 	  		self.to_int(end),
+													  		excludemin,
+												 	  		excludemax)
 	@classmethod
 	def to_int(cls, value):
 		if type(value) == float:  # auto-convert
