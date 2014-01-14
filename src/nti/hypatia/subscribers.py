@@ -51,6 +51,7 @@ def queue_remove(obj):
 	if is_indexable(obj):
 		iid = discriminators.query_uid(obj)
 		if iid is not None:
+			__traceback_info__ = iid
 			search_queue().remove(iid)
 
 @component.adapter(nti_interfaces.IModeledContent, IIntIdRemovedEvent)
