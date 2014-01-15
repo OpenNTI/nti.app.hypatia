@@ -30,6 +30,7 @@ setup(
 	install_requires=[
 		'setuptools',
         'hypatia',
+        'zc.async',
         'zc.catalogqueue',
         'zopyx.txng3.ext'
 	],
