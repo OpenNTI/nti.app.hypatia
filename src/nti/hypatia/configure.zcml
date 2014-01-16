@@ -13,8 +13,6 @@
 	<utility factory=".generations.install._HypatiaSearchSchemaManager"
 			 name="nti.dataserver-hypatia"
 			 provides="zope.generations.interfaces.IInstallableSchemaManager"/>
-
-	<utility factory=".reactor.IndexReactor" />
 	
 	<!-- Subscribers -->
 		 		
@@ -33,4 +31,6 @@
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
 	
+	
+	<subscriber handler=".reactor._start_reactor" />
 </configure>

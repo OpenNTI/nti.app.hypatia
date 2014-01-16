@@ -83,3 +83,11 @@ class IndexReactor(object):
 		finally:
 			if aquired:
 				lock.release()
+
+from zope.processlifetime import IDatabaseOpenedWithRoot
+
+@component.adapter(IDatabaseOpenedWithRoot)
+def _start_reactor(database_event):
+	reactor = IndexReactor()
+	component.provideUtility(reactor, hypatia_interfaces.IIndexReactor)
+
