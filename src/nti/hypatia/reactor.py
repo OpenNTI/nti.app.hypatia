@@ -21,9 +21,11 @@ import zope.intid
 
 from nti.dataserver import interfaces as nti_interfaces
 
-from . import LOCK_NAME
-from . import search_queue
-from . import interfaces as hypatia_interfaces
+from nti.hypatia import LOCK_NAME
+from nti.hypatia import search_queue
+from nti.hypatia import interfaces as hypatia_interfaces
+
+DEFAULT_INTERVAL = 30
 
 def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
@@ -32,62 +34,77 @@ def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
 	logger.log(loglevels.TRACE, "indexing %s object(s)", min(limit, len(queue)))
 	queue.process(ids, (catalog,), limit)
 
+def process_index_msgs(lockname):
+	redis = component.getUtility(nti_interfaces.IRedisClient)
+	lock = redis.lock(lockname)
+	try:
+		aquired = lock.acquire(blocking=False)
+	except TypeError:
+		aquired = lock.acquire()
+
+	try:
+		if aquired:
+			transaction_runner = \
+					component.getUtility(nti_interfaces.IDataserverTransactionRunner)
+			try:
+				transaction_runner(process_queue, retries=3)
+			except Exception:
+				logger.exception('Cannot process index messages')
+	finally:
+		if aquired:
+			lock.release()
+							
 @interface.implementer(hypatia_interfaces.IIndexReactor)
 class IndexReactor(object):
 
 	stop = False
-	lockname = LOCK_NAME
-	sleep_min_wait_time = 25
-	sleep_max_wait_time = 50
+	min_wait_time = 25
+	max_wait_time = 50
+	processor = pid = None
 
-	def __init__(self):
-		self.processor = self._spawn_index_processor()
+	def __init__(self, poll_interval=None):
+		if poll_interval:
+			self.min_wait_time = self.max_wait_time = poll_interval
+
+	def __repr__(self):
+		return "(%s)" % self.pid
 
 	def halt(self):
 		self.stop = True
 
-	def _spawn_index_processor(self):
+	def start(self):
+		if self.processor is None:
+			self.processor = self._spawn_index_processor()
+		return self
+	
+	def run(self, sleep=gevent.sleep):
 		random.seed()
-		def process():
-			pid = os.getpid()
+		self.stop = False
+		self.pid = os.getpid()
+		try:
 			while not self.stop:
-				# wait for idx ops
-				secs = random.randint(self.sleep_min_wait_time, self.sleep_max_wait_time)
-				gevent.sleep(seconds=secs)
-				if not self.stop:
-					try:
-						self.process_index_msgs()
-					except component.ComponentLookupError:
-						logger.error("process %s could not get component", pid)
-						break
+				secs = random.randint(self.min_wait_time, self.max_wait_time)
+				try:
+					sleep(secs)
+					if not self.stop:
+						process_index_msgs(LOCK_NAME)
+				except component.ComponentLookupError:
+					logger.error("process %s could not get component", self.pid)
+					break
+				except KeyboardInterrupt:
+					break
+		finally:
+			self.processor = None
 
-		result = gevent.spawn(process)
+	__call__ = run
+
+	def _spawn_index_processor(self):
+		result = gevent.spawn(self.run)
 		return result
 
-	def process_index_msgs(self):
-		redis = component.getUtility(nti_interfaces.IRedisClient)
-		lock = redis.lock(self.lockname)
-		try:
-			aquired = lock.acquire(blocking=False)
-		except TypeError:
-			aquired = lock.acquire()
-
-		try:
-			if aquired:
-				transaction_runner = \
-						component.getUtility(nti_interfaces.IDataserverTransactionRunner)
-				try:
-					transaction_runner(process_queue, retries=3)
-				except Exception:
-					logger.exception('Cannot process index messages')
-		finally:
-			if aquired:
-				lock.release()
-
 from zope.processlifetime import IDatabaseOpenedWithRoot
-
+	
 @component.adapter(IDatabaseOpenedWithRoot)
 def _start_reactor(database_event):
-	reactor = IndexReactor()
+	reactor = IndexReactor().start()
 	component.provideUtility(reactor, hypatia_interfaces.IIndexReactor)
-
