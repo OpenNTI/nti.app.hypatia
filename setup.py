@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 VERSION = '0.0.0'
 
 entry_points = {
+    'console_scripts': [
+        "nti_hypatia_indexer = nti.hypatia.utils.indexer:main",
+    ],
 }
 
 setup(
