@@ -21,7 +21,7 @@ from hypatia.text.cosineindex import CosineIndex
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
 										 redactionExplanation_, replacementContent_,
-										 createdTime_, lastModified_)
+										 createdTime_, lastModified_, type_)
 
 from .lexicon import defaultLexicon
 from .interfaces import ISearchCatalog
@@ -29,8 +29,8 @@ from .keyword import SearchKeywordIndex
 from .field import SearchTimeFieldIndex
 
 def get_type(obj, default=None):
-	type_ = discriminators.get_type(obj, default)
-	result = (type_,) if type_ else default
+	result = discriminators.get_type(obj, default)
+	result = (result,) if result else default
 	return result
 
 def create_catalog(lexicon=None, ngram_lexicon=None):
@@ -42,7 +42,7 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 	result = Catalog(family=family64)
 	interface.alsoProvides(result, ISearchCatalog)
 
-	result['type'] = SearchKeywordIndex(discriminator=get_type,
+	result[type_] = SearchKeywordIndex(discriminator=get_type,
 								  		family=family64)
 
 	index = CosineIndex(lexicon=lexicon, family=family64)
