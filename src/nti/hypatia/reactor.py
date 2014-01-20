@@ -95,6 +95,7 @@ class IndexReactor(object):
 		self.stop = False
 		self.pid = os.getpid()
 		try:
+			logger.info("Index reactor started (%s)", self.pid)
 			while not self.stop:
 				secs = random.randint(self.min_wait_time, self.max_wait_time)
 				try:
