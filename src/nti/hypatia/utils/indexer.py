@@ -8,55 +8,65 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import os
+import sys
 import time
 import signal
 import argparse
 
-from nti.hypatia.reactor import IndexReactor
-
-DEFAULT_INTERVAL = 30
+from nti.hypatia import reactor
 
 from nti.dataserver.utils import run_with_dataserver
 
+MIN_INTERVAL = reactor.MIN_INTERVAL
+MAX_INTERVAL = reactor.MAX_INTERVAL
+DEFAULT_INTERVAL = reactor.DEFAULT_INTERVAL
+
+def sigint_handler(*args):
+	logger.info("Shutting down %s", os.getpid())
+	sys.exit(0)
+
+def handler(*args):
+	raise SystemExit()
+
+signal.signal(signal.SIGINT, sigint_handler)
+signal.signal(signal.SIGTERM, handler)
+
 def main():
-    arg_parser = argparse.ArgumentParser(description="Initialize a class with sample data")
-    arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
-                             dest='verbose')
-    arg_parser.add_argument('env_dir', help="Dataserver environment root directory")
-    arg_parser.add_argument('-i', '--interval',
-                             dest='interval',
-                             help="Poll time interval (secs)",
-                             type=int,
-                             default=DEFAULT_INTERVAL)
+	arg_parser = argparse.ArgumentParser(description="Initialize a class with sample data")
+	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
+							 dest='verbose')
+	arg_parser.add_argument('env_dir', help="Dataserver environment root directory")
+	arg_parser.add_argument('-n', '--mintime',
+							 dest='mintime',
+							 help="Min poll time interval (secs)",
+							 type=int,
+							 default=DEFAULT_INTERVAL)
+	arg_parser.add_argument('-m', '--maxtime',
+							 dest='maxtime',
+							 help="Max poll time interval (secs)",
+							 type=int,
+							 default=DEFAULT_INTERVAL)
 
-    args = arg_parser.parse_args()
-    env_dir = args.env_dir
+	args = arg_parser.parse_args()
+	env_dir = args.env_dir
 
-    conf_packages = ('nti.appserver',)
-    run_with_dataserver(environment_dir=env_dir,
-                        xmlconfig_packages=conf_packages,
-                        verbose=args.verbose,
-                        function=lambda: _process_args(args))
+	conf_packages = ('nti.appserver', 'nti.hypatia')
+	run_with_dataserver(environment_dir=env_dir,
+						xmlconfig_packages=conf_packages,
+						verbose=args.verbose,
+						function=lambda: _process_args(args))
 
 def _process_args(args):
-    interval = args.interval
-    reactor = IndexReactor(interval)
+	mintime = args.mintime
+	maxtime = args.maxtime
+	assert mintime <= maxtime and mintime > 0
 
-    curr_sigint_handler = signal.getsignal(signal.SIGINT)
-    def sigint_handler(*args):
-        reactor.halt()
-        logger.info("Shutting down...")
-        while reactor.processor is not None:
-            time.sleep(1)
-        curr_sigint_handler(*args)
+	mintime = max(min(mintime, MAX_INTERVAL), MIN_INTERVAL)
+	maxtime = max(min(maxtime, MAX_INTERVAL), MIN_INTERVAL)
 
-    def handler(*args):
-        raise SystemExit()
-
-    signal.signal(signal.SIGINT, sigint_handler)
-    signal.signal(signal.SIGTERM, handler)
-
-    reactor(time.sleep)
+	target = reactor.IndexReactor(mintime, maxtime)
+	target(time.sleep)
 
 if __name__ == '__main__':
-    main()
+	main()
