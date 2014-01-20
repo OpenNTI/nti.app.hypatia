@@ -11,6 +11,7 @@ logger = __import__('logging').getLogger(__name__)
 import os
 import gevent
 import random
+import functools
 
 from zope import component
 from zope import interface
@@ -25,21 +26,25 @@ from nti.hypatia import LOCK_NAME
 from nti.hypatia import search_queue
 from nti.hypatia import interfaces as hypatia_interfaces
 
+MIN_INTERVAL = 5
+MAX_INTERVAL = 120
 DEFAULT_INTERVAL = 30
+DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
-def process_queue(limit=hypatia_interfaces.DEFAULT_QUEUE_LIMIT):
+def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
 	logger.log(loglevels.TRACE, "indexing %s object(s)", min(limit, len(queue)))
 	queue.process(ids, (catalog,), limit)
 
-def process_index_msgs(lockname):
+def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 	redis = component.getUtility(nti_interfaces.IRedisClient)
-	lock = redis.lock(lockname)
 	try:
+		lock = redis.lock(lockname, MAX_INTERVAL + 30)
 		aquired = lock.acquire(blocking=False)
 	except TypeError:
+		lock = redis.lock(lockname)
 		aquired = lock.acquire()
 
 	try:
@@ -47,7 +52,9 @@ def process_index_msgs(lockname):
 			transaction_runner = \
 					component.getUtility(nti_interfaces.IDataserverTransactionRunner)
 			try:
-				transaction_runner(process_queue, retries=3)
+				runner = functools.partial(process_queue, limit=limit) \
+						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
+				transaction_runner(runner, retries=3)
 			except Exception:
 				logger.exception('Cannot process index messages')
 	finally:
@@ -60,11 +67,17 @@ class IndexReactor(object):
 	stop = False
 	min_wait_time = 25
 	max_wait_time = 50
+	limit = DEFAULT_QUEUE_LIMIT
+
 	processor = pid = None
 
-	def __init__(self, poll_interval=None):
-		if poll_interval:
-			self.min_wait_time = self.max_wait_time = poll_interval
+	def __init__(self, min_time=None, max_time=None, limit=None):
+		if min_time:
+			self.min_wait_time = min_time
+		if max_time:
+			self.max_wait_time = max_time
+		if limit:
+			self.limit = limit
 
 	def __repr__(self):
 		return "(%s)" % self.pid
@@ -87,7 +100,7 @@ class IndexReactor(object):
 				try:
 					sleep(secs)
 					if not self.stop:
-						process_index_msgs(LOCK_NAME)
+						process_index_msgs(LOCK_NAME, self.limit)
 				except component.ComponentLookupError:
 					logger.error("process %s could not get component", self.pid)
 					break
