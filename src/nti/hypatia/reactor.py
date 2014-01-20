@@ -35,7 +35,12 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
-	logger.log(loglevels.TRACE, "indexing %s object(s)", min(limit, len(queue)))
+	queue_size = len(queue)
+	if queue_size >= limit:
+		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
+	else:
+		logger.log(loglevels.TRACE, "Processing %s index event(s)",
+				   min(limit, queue_size))
 	queue.process(ids, (catalog,), limit)
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
