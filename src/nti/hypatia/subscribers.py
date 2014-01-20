@@ -23,7 +23,7 @@ from nti.dataserver import interfaces as nti_interfaces
 from . import search_queue
 
 def is_indexable(obj):
-	return component.queryAdapter(obj, search_interfaces.IContentResolver) is not None
+	return component.queryAdapter(obj, search_interfaces.ITypeResolver) is not None
 
 def queue_added(obj):
 	if is_indexable(obj):
