@@ -30,7 +30,7 @@ from .field import SearchTimeFieldIndex
 
 def get_type(obj, default=None):
 	result = discriminators.get_type(obj, default)
-	result = (result,) if result else default
+	result = (result,) if result and result is not default else default
 	return result
 
 def create_catalog(lexicon=None, ngram_lexicon=None):
