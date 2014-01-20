@@ -70,6 +70,8 @@ class SearchTimeFieldIndex(FieldIndex):
 		# Insert into reverse index.
 		rev_index[docid] = value
 
+		return value
+
 	def docids(self):
 		not_indexed = self.not_indexed()
 		indexed = self.indexed()
