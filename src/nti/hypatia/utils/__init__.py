@@ -21,7 +21,7 @@ def get_user_indexable_objects(user):
 
 	def condition(x):
 		return  nti_interfaces.IModeledContent.providedBy(x) and \
-				search_interfaces.IContentResolver(x, None) is not None
+				search_interfaces.ITypeResolver(x, None) is not None
 
 	for obj in findObjectsMatching(user, condition):
 		yield obj
@@ -29,12 +29,10 @@ def get_user_indexable_objects(user):
 	# personal blog
 	forum = forum_interfaces.IPersonalBlog(user, {})
 	for topic in forum.values():
-		if getattr(topic, 'creator') == user:
-			yield topic
+		yield topic  # get all topics
 
 		for comment in topic.values():
-			if getattr(comment, 'creator') == user:
-				yield comment
+			yield comment  # get all comments
 
 	for membership in getattr(user, 'dynamic_memberships', ()):
 		if not nti_interfaces.ICommunity.providedBy(membership):
@@ -43,9 +41,9 @@ def get_user_indexable_objects(user):
 		board = forum_interfaces.IBoard(membership, {})
 		for forum in board.values():
 			for topic in forum.values():
-				if getattr(topic, 'creator') == user:
+				if getattr(topic, 'creator', None) == user:
 					yield topic
 
 				for comment in topic.values():
-					if getattr(comment, 'creator') == user:
-						yield comment, comment
+					if getattr(comment, 'creator', None) == user:
+						yield comment
