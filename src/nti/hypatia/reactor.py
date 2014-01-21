@@ -67,7 +67,7 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 			try:
 				runner = functools.partial(process_queue, limit=limit) \
 						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
-				transaction_runner(runner, retries=3)
+				transaction_runner(runner, retries=1)
 			except ConflictError, e:
 				logger.error(e)
 			except Exception:
@@ -80,8 +80,8 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 class IndexReactor(object):
 
 	stop = False
-	min_wait_time = 25
-	max_wait_time = 50
+	min_wait_time = 10
+	max_wait_time = 30
 	limit = DEFAULT_QUEUE_LIMIT
 
 	processor = pid = None
