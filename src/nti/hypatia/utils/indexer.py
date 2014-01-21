@@ -41,12 +41,12 @@ def main():
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
 	arg_parser.add_argument('env_dir', help="Dataserver environment root directory")
-	arg_parser.add_argument('-n', '--mintime',
+	arg_parser.add_argument('-m', '--mintime',
 							 dest='mintime',
 							 help="Min poll time interval (secs)",
 							 type=int,
 							 default=DEFAULT_INTERVAL)
-	arg_parser.add_argument('-m', '--maxtime',
+	arg_parser.add_argument('-x', '--maxtime',
 							 dest='maxtime',
 							 help="Max poll time interval (secs)",
 							 type=int,
