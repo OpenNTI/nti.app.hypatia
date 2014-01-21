@@ -31,16 +31,23 @@ MAX_INTERVAL = 120
 DEFAULT_INTERVAL = 30
 DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
+def queue_length(queue):
+	try:
+		result = len(queue)
+	except ValueError:
+		result = queue.__len__()
+		logger.error("Could not compute queue length. Using __len__ method (%s)", result)
+	return result
+
 def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	ids = component.getUtility(zope.intid.IIntIds)
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
-	queue_size = len(queue)
+	queue_size = queue_length(queue)
 	if queue_size >= limit:
 		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
 	else:
-		logger.log(loglevels.TRACE, "Processing %s index event(s)",
-				   min(limit, queue_size))
+		logger.log(loglevels.TRACE, "Processing %s index event(s)", queue_size)
 	queue.process(ids, (catalog,), limit)
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
