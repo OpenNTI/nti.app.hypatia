@@ -21,7 +21,11 @@ from nti.hypatia import is_indexable
 
 def get_user_indexable_objects(user):
 
-	for obj in findObjectsMatching(user, is_indexable):
+	def condition(x):
+		result = is_indexable(x) and not forum_interfaces.ICommentPost.providedBy(x)
+		return result
+
+	for obj in findObjectsMatching(user, condition):
 		yield obj
 
 	# personal blog
@@ -39,9 +43,11 @@ def get_user_indexable_objects(user):
 		board = forum_interfaces.IBoard(membership, {})
 		for forum in board.values():
 			for topic in forum.values():
-				if getattr(topic, 'creator', None) == user:
+				creator = getattr(topic, 'creator', None)
+				if getattr(creator, 'username', creator) == user.username:
 					yield topic
 
 				for comment in topic.values():
-					if getattr(comment, 'creator', None) == user:
+					creator = getattr(comment, 'creator', None)
+					if getattr(creator, 'username', creator) == user.username:
 						yield comment
