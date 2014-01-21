@@ -12,8 +12,10 @@ import os
 import sys
 import time
 import signal
+import logging
 import argparse
 
+import zope.exceptions
 from nti.hypatia import reactor
 
 from nti.dataserver.utils import run_with_dataserver
@@ -64,6 +66,9 @@ def _process_args(args):
 
 	mintime = max(min(mintime, MAX_INTERVAL), MIN_INTERVAL)
 	maxtime = max(min(maxtime, MAX_INTERVAL), MIN_INTERVAL)
+
+	ei = '%(asctime)s %(levelname)-5.5s [%(name)s][%(thread)d][%(threadName)s] %(message)s'
+	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter(ei))
 
 	target = reactor.IndexReactor(mintime, maxtime)
 	target(time.sleep)

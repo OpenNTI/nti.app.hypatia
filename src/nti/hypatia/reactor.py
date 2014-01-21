@@ -17,6 +17,7 @@ from zope import component
 from zope import interface
 
 from ZODB import loglevels
+from ZODB.POSException import ConflictError
 
 import zope.intid
 
@@ -67,6 +68,8 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 				runner = functools.partial(process_queue, limit=limit) \
 						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
 				transaction_runner(runner, retries=3)
+			except ConflictError, e:
+				logger.error(e)
 			except Exception:
 				logger.exception('Cannot process index messages')
 	finally:
