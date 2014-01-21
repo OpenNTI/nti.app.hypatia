@@ -67,7 +67,7 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 			try:
 				runner = functools.partial(process_queue, limit=limit) \
 						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
-				transaction_runner(runner, retries=1)
+				transaction_runner(runner, retries=1, sleep=1)
 			except ConflictError, e:
 				logger.error(e)
 			except Exception:
