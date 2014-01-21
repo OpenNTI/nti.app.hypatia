@@ -16,7 +16,6 @@ import functools
 from zope import component
 from zope import interface
 
-from ZODB import loglevels
 from ZODB.POSException import ConflictError
 
 import zope.intid
@@ -47,8 +46,8 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	queue_size = queue_length(queue)
 	if queue_size >= limit:
 		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
-	else:
-		logger.log(loglevels.TRACE, "Processing %s index event(s)", queue_size)
+	elif queue_size > 0:
+		logger.info("Processing %s index event(s)", queue_size)
 	queue.process(ids, (catalog,), min(limit, queue_size))
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
@@ -91,7 +90,7 @@ class IndexReactor(object):
 			self.min_wait_time = min_time
 		if max_time:
 			self.max_wait_time = max_time
-		if limit:
+		if limit and limit != DEFAULT_QUEUE_LIMIT:
 			self.limit = limit
 
 	def __repr__(self):

@@ -16,9 +16,11 @@ import logging
 import argparse
 
 import zope.exceptions
-from nti.hypatia import reactor
 
 from nti.dataserver.utils import run_with_dataserver
+
+from nti.hypatia import reactor
+from nti.hypatia import interfaces as hypatia_interfaces
 
 MIN_INTERVAL = reactor.MIN_INTERVAL
 MAX_INTERVAL = reactor.MAX_INTERVAL
@@ -49,6 +51,11 @@ def main():
 							 help="Max poll time interval (secs)",
 							 type=int,
 							 default=DEFAULT_INTERVAL)
+	arg_parser.add_argument('-l', '--limit',
+							 dest='limit',
+							 help="Queue limit",
+							 type=int,
+							 default=hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
 
 	args = arg_parser.parse_args()
 	env_dir = args.env_dir
@@ -64,13 +71,16 @@ def _process_args(args):
 	maxtime = args.maxtime
 	assert mintime <= maxtime and mintime > 0
 
+	limit = args.limit
+	assert limit > 0
+
 	mintime = max(min(mintime, MAX_INTERVAL), MIN_INTERVAL)
 	maxtime = max(min(maxtime, MAX_INTERVAL), MIN_INTERVAL)
 
 	ei = '%(asctime)s %(levelname)-5.5s [%(name)s][%(thread)d][%(threadName)s] %(message)s'
 	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter(ei))
 
-	target = reactor.IndexReactor(mintime, maxtime)
+	target = reactor.IndexReactor(mintime, maxtime, limit)
 	target(time.sleep)
 
 if __name__ == '__main__':
