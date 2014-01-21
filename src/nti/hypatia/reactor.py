@@ -48,7 +48,7 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
 	else:
 		logger.log(loglevels.TRACE, "Processing %s index event(s)", queue_size)
-	queue.process(ids, (catalog,), limit)
+	queue.process(ids, (catalog,), min(limit, queue_size))
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 	redis = component.getUtility(nti_interfaces.IRedisClient)
@@ -129,7 +129,7 @@ class IndexReactor(object):
 		return result
 
 from zope.processlifetime import IDatabaseOpenedWithRoot
-	
+
 @component.adapter(IDatabaseOpenedWithRoot)
 def _start_reactor(database_event):
 	reactor = IndexReactor().start()

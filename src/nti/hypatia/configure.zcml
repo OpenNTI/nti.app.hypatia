@@ -31,7 +31,4 @@
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
 	
-	<!-- 
-	<subscriber handler=".reactor._start_reactor" />
-	-->
 </configure>
