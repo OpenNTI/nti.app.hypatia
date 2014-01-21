@@ -16,14 +16,11 @@ from zope.lifecycleevent import interfaces as lce_interfaces
 from zope.intid.interfaces import IIntIdRemovedEvent, IIntIdAddedEvent
 
 from nti.contentsearch import discriminators
-from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import interfaces as nti_interfaces
 
+from . import is_indexable
 from . import search_queue
-
-def is_indexable(obj):
-	return component.queryAdapter(obj, search_interfaces.ITypeResolver) is not None
 
 def queue_added(obj):
 	if is_indexable(obj):

@@ -17,13 +17,11 @@ from nti.contentsearch import interfaces as search_interfaces
 from nti.dataserver import interfaces as nti_interfaces
 from nti.dataserver.contenttypes.forums import interfaces as forum_interfaces
 
+from nti.hypatia import is_indexable
+
 def get_user_indexable_objects(user):
 
-	def condition(x):
-		return  nti_interfaces.IModeledContent.providedBy(x) and \
-				search_interfaces.ITypeResolver(x, None) is not None
-
-	for obj in findObjectsMatching(user, condition):
+	for obj in findObjectsMatching(user, is_indexable):
 		yield obj
 
 	# personal blog

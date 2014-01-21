@@ -12,6 +12,8 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
+from nti.contentsearch import interfaces as search_interfaces
+
 from nti.dataserver import users
 from nti.dataserver import interfaces as nti_interfaces
 
@@ -38,3 +40,7 @@ def get_usernames_of_dynamic_memberships(user):
     usernames = (user.username,) + tuple(dynamic_memberships)
     result = [x.lower() for x in usernames]
     return result
+
+def is_indexable(x):
+    return  nti_interfaces.IModeledContent.providedBy(x) and \
+            search_interfaces.ITypeResolver(x, None) is not None
