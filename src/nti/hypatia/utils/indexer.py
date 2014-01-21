@@ -33,7 +33,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 signal.signal(signal.SIGTERM, handler)
 
 def main():
-	arg_parser = argparse.ArgumentParser(description="Initialize a class with sample data")
+	arg_parser = argparse.ArgumentParser(description="Index processor")
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
 	arg_parser.add_argument('env_dir', help="Dataserver environment root directory")
