@@ -13,6 +13,7 @@ logger = __import__('logging').getLogger(__name__)
 import six
 import time
 import simplejson
+import collections
 
 from zope import component
 
@@ -83,19 +84,20 @@ def reindex_hypatia_content(request):
 		except (ValueError, AssertionError):
 			raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
-	counter = 0
 	now = time.time()
+	counter = collections.defaultdict(int)
 	for username in usernames or ():
 		user = users.Entity.get_entity(username)
 		if user is not None and nti_interfaces.IUser.providedBy(user):
-			counter += _add_to_objects_2_queue(user)
+			counter[username] = _add_to_objects_2_queue(user)
 
 	if queue_limit is not None:
 		reactor.process_queue(queue_limit)
 		
 	result = LocatedExternalDict()
-	result['Items'] = counter
+	result['Items'] = dict(counter)
 	result['Elapsed'] = time.time() - now
+	result['Total'] = reduce(lambda x, y: x + y, counter.values(), 0)
 	return result
 
 @view_config(route_name='objects.generic.traversal',
