@@ -33,6 +33,18 @@ from .. import subscribers
 from . import get_user_indexable_objects
 from .. import interfaces as hypatia_interfaces
 
+def _make_min_max_btree_range(search_term):
+	min_inclusive = search_term  # start here
+	max_exclusive = search_term[0:-1] + unichr(ord(search_term[-1]) + 1)
+	return min_inclusive, max_exclusive
+
+def username_search(search_term):
+	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
+	dataserver = component.getUtility(nti_interfaces.IDataserver)
+	_users = nti_interfaces.IShardLayout(dataserver).users_folder
+	usernames = list(_users.iterkeys(min_inclusive, max_exclusive, excludemax=True))
+	return usernames
+
 def _add_to_objects_2_queue(user):
 	count = 0
 	for obj in get_user_indexable_objects(user):
@@ -54,9 +66,11 @@ def reindex_hypatia_content(request):
 	values = CaseInsensitiveDict(**values)
 	usernames = values.get('usernames')
 	queue_limit = values.get('limit', None)
-	if usernames:
-		if isinstance(usernames, six.string_types):
-			usernames = usernames.split()
+	term = values.get('term', values.get('search', None))
+	if term:
+		usernames = username_search(term)
+	elif usernames and isinstance(usernames, six.string_types):
+		usernames = usernames.split()
 	else:
 		dataserver = component.getUtility(nti_interfaces.IDataserver)
 		_users = nti_interfaces.IShardLayout(dataserver).users_folder
