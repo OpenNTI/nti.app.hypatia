@@ -22,15 +22,20 @@ from nti.dataserver import interfaces as nti_interfaces
 from . import is_indexable
 from . import search_queue
 
+def add_2_queue(obj):
+	iid = discriminators.query_uid(obj)
+	if iid is not None:
+		__traceback_info__ = iid
+		search_queue().add(iid)
+		return True
+	return False
+
 def queue_added(obj):
 	if is_indexable(obj):
-		iid = discriminators.query_uid(obj)
-		if iid is not None:
-			__traceback_info__ = iid
-			try:
-				search_queue().add(iid)
-			except TypeError, e:
-				logger.exception(e)
+		try:
+			add_2_queue(obj)
+		except TypeError, e:
+			logger.exception(e)
 
 def queue_modified(obj):
 	if is_indexable(obj):

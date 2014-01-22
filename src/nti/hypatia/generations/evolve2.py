@@ -40,7 +40,7 @@ def do_evolve(context):
 		for user in users.values():
 			for obj in utils.get_user_indexable_objects(user):
 				try:
-					subscribers.queue_added(obj)
+					subscribers.add_2_queue(obj)
 					count += 1
 				except TypeError:  # ignore objects in queue
 					pass
