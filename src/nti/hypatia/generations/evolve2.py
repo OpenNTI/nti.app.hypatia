@@ -31,6 +31,8 @@ def do_evolve(context):
 	component.provideUtility(ds_intid, zope.intid.IIntIds)
 	component.provideUtility(ds_intid, zc_intid.IIntIds)
 
+	logger.info('Hypatia evolution started')
+
 	with site(ds_folder):
 		assert	component.getSiteManager() == ds_folder.getSiteManager(), \
 				"Hooks not installed?"
@@ -45,7 +47,7 @@ def do_evolve(context):
 				except TypeError:  # ignore objects in queue
 					pass
 
-	logger.debug('Evolution done!!! %s objects added to search queue' % count)
+	logger.info('Evolution done!!! %s objects added to search queue' % count)
 
 def evolve(context):
 	"""
