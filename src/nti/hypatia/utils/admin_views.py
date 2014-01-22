@@ -37,7 +37,7 @@ def _add_to_objects_2_queue(user):
 	count = 0
 	for obj in get_user_indexable_objects(user):
 		try:
-			subscribers.queue_added(obj)
+			subscribers.add_2_queue(obj)
 			count += 1
 		except TypeError:  # ignore objects in queue
 			pass
