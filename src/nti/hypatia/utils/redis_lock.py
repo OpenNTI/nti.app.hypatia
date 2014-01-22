@@ -12,9 +12,6 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 from os import urandom
-from hashlib import sha1
-
-from redis.exceptions import NoScriptError
 
 from ZODB import loglevels
 
@@ -26,16 +23,18 @@ UNLOCK_SCRIPT = b"""
 		return 0
 	end
 """
-UNLOCK_SCRIPT_HASH = sha1(UNLOCK_SCRIPT).hexdigest()
 
 class Lock(object):
 
+	_tok = None
+	_expire = None
+	
 	def __init__(self, redis_client, name, expire=None):
 		self._client = redis_client
-		self._expire = expire if expire is None else int(expire)
-		self._tok = None
 		self._name = 'lock:' + name
 		self._signal = 'lock-signal:' + name
+		if expire is not None:
+			self._expire= int(expire)
 
 	def __enter__(self, blocking=True):
 		logger.log(loglevels.TRACE, "Getting %r ...", self._name)
@@ -64,9 +63,6 @@ class Lock(object):
 
 	def __exit__(self, exc_type=None, exc_value=None, traceback=None):
 		logger.log(loglevels.TRACE, "Releasing %r.", self._name)
-		try:
-			self._client.evalsha(UNLOCK_SCRIPT_HASH, 2, self._name, self._signal, self._tok)
-		except NoScriptError:
-			logger.log(loglevels.TRACE, "UNLOCK_SCRIPT not cached.")
-			self._client.eval(UNLOCK_SCRIPT, 2, self._name, self._signal, self._tok)
+		self._client.eval(UNLOCK_SCRIPT, 2, self._name, self._signal, self._tok)
+
 	release = __exit__
