@@ -101,7 +101,7 @@ class _HypatiaUserIndexController(object):
 		for docid, score in sequence.items():
 			obj = self.get_object(docid)
 			if obj is not None:
-				results.add(search_results.IndexHit(docid, score))
+				results.add(search_results.IndexHit(obj, score))
 
 		return results
 
