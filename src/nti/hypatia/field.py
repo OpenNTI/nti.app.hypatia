@@ -10,7 +10,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from datetime import datetime
+from time import mktime
+from datetime import datetime, timedelta
 
 from zope import interface
 
@@ -23,6 +24,17 @@ from hypatia.field import FieldIndex
 from nti.zodb.containers import time_to_64bit_int
 
 from .interfaces import ISearchTimeFieldIndex
+
+def to_int(value, minute_resolution=True):
+	if type(value) == float:  # auto-convert
+		if not minute_resolution:
+			value = time_to_64bit_int(value)
+		else:
+			d = datetime.fromtimestamp(value)
+			td = timedelta(microseconds=d.microsecond, seconds=d.second)
+			d = d - td  # remove microseconds and secs
+			value = int(mktime(d.timetuple()))
+	return value
 
 @interface.implementer(ISearchTimeFieldIndex)
 class SearchTimeFieldIndex(FieldIndex):
@@ -190,11 +202,5 @@ class SearchTimeFieldIndex(FieldIndex):
 													  		excludemin,
 												 	  		excludemax)
 	def to_int(self, value):
-		if type(value) == float:  # auto-convert
-			if not self.minute_resolution:
-				value = time_to_64bit_int(value)
-			else:
-				value = int(value)
-				d = datetime.fromtimestamp(value)
-				value = value - d.second
+		value = to_int(value, self.minute_resolution)
 		return value
