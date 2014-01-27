@@ -39,6 +39,8 @@ def to_int(value, minute_resolution=True):
 @interface.implementer(ISearchTimeFieldIndex)
 class SearchTimeFieldIndex(FieldIndex):
 
+	minute_resolution = True
+
 	def __init__(self, discriminator, family=None, minute_resolution=True):
 		super(SearchTimeFieldIndex, self).__init__(discriminator, family)
 		self.minute_resolution = minute_resolution
