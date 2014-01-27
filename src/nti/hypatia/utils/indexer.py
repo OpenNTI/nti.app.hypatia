@@ -16,6 +16,8 @@ import logging
 import argparse
 
 import zope.exceptions
+from zope.configuration import xmlconfig, config
+from zope.dottedname import resolve as dottedname
 
 from nti.dataserver.utils import run_with_dataserver
 
@@ -60,12 +62,32 @@ def main():
 	args = arg_parser.parse_args()
 	env_dir = args.env_dir
 
+	context = _create_context()
 	conf_packages = ('nti.appserver', 'nti.hypatia')
 	run_with_dataserver(environment_dir=env_dir,
 						xmlconfig_packages=conf_packages,
 						verbose=args.verbose,
+						context=context,
 						minimal_ds=True,
 						function=lambda: _process_args(args))
+
+def _create_context():
+	context = None
+	if 	os.getenv('DATASERVER_DIR') or os.getenv('DATASERVER_ETC_DIR'):
+
+		etc = os.getenv('DATASERVER_ETC_DIR') or \
+			  os.path.join(os.getenv('DATASERVER_DIR'), 'etc')
+
+		slugs = os.path.join(etc, 'package-includes')
+		if os.path.exists(slugs) and os.path.isdir(slugs):
+			context = config.ConfigurationMachine()
+			xmlconfig.registerCommonDirectives(context)
+			package = dottedname.resolve('nti.dataserver')
+			context = xmlconfig.file('configure.zcml', package=package, context=context)
+			xmlconfig.include(context, files=os.path.join(slugs, '*.zcml'),
+							  package='nti.appserver')
+
+	return context
 
 def _process_args(args):
 	mintime = args.mintime

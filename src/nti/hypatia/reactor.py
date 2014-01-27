@@ -20,6 +20,8 @@ from ZODB.POSException import ConflictError
 
 import zope.intid
 
+from redis.connection import ConnectionError
+
 from nti.dataserver import interfaces as nti_interfaces
 
 from nti.hypatia import LOCK_NAME
@@ -120,6 +122,9 @@ class IndexReactor(object):
 					logger.error("process %s could not get component", self.pid)
 					break
 				except KeyboardInterrupt:
+					break
+				except ConnectionError:
+					logger.exception("%s could not connect to redis", self.pid)
 					break
 		finally:
 			self.processor = None
