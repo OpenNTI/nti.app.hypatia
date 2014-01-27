@@ -16,6 +16,7 @@ from hamcrest import assert_that
 does_not = is_not
 
 import unittest
+from datetime import datetime
 
 import BTrees
 from BTrees.IFBTree import IFSet
@@ -32,8 +33,14 @@ from nti.hypatia.field import SearchTimeFieldIndex
 
 _marker = object()
 
-def to_int(value):
-	return time_to_64bit_int(value)
+def to_int(value, minute_resolution=False):
+	if not minute_resolution:
+		value = time_to_64bit_int(value)
+	else:
+		value = int(value)
+		d = datetime.fromtimestamp(value)
+		value = value - d.second
+	return value
 
 one_ival = to_int(1.0)
 two_ival = to_int(2.0)
@@ -49,7 +56,8 @@ class TestSearchTimeFieldIndex(unittest.TestCase):
 			return obj
 
 		family = BTrees.family64
-		return SearchTimeFieldIndex(discriminator=discriminator, family=family)
+		return SearchTimeFieldIndex(discriminator=discriminator, family=family,
+									minute_resolution=False)
 	
 	def _populateIndex(self, index):
 		index.index_doc(5, 1.0)  # docid, obj

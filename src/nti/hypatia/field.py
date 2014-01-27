@@ -10,6 +10,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+from datetime import datetime
+
 from zope import interface
 
 from BTrees.Length import Length
@@ -25,6 +27,10 @@ from .interfaces import ISearchTimeFieldIndex
 @interface.implementer(ISearchTimeFieldIndex)
 class SearchTimeFieldIndex(FieldIndex):
 
+	def __init__(self, discriminator, family=None, minute_resolution=True):
+		super(SearchTimeFieldIndex, self).__init__(discriminator, family)
+		self.minute_resolution = minute_resolution
+		
 	def reset(self):
 		self._num_docs = Length(0)
 		# The forward index maps indexed values to a sequence of docids
@@ -183,9 +189,12 @@ class SearchTimeFieldIndex(FieldIndex):
 												 	  		self.to_int(end),
 													  		excludemin,
 												 	  		excludemax)
-	@classmethod
-	def to_int(cls, value):
+	def to_int(self, value):
 		if type(value) == float:  # auto-convert
-			value = time_to_64bit_int(value)
+			if not self.minute_resolution:
+				value = time_to_64bit_int(value)
+			else:
+				value = int(value)
+				d = datetime.fromtimestamp(value)
+				value = value - d.second
 		return value
-
