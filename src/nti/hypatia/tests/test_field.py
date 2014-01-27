@@ -9,12 +9,15 @@ __docformat__ = "restructuredtext en"
 
 from hamcrest import is_
 from hamcrest import is_not
+from hamcrest import has_key
 from hamcrest import contains
 from hamcrest import has_item
 from hamcrest import has_length
 from hamcrest import assert_that
+from hamcrest import has_property
 does_not = is_not
 
+import time
 import unittest
 from datetime import datetime
 
@@ -47,17 +50,17 @@ two_ival = to_int(2.0)
 
 class TestSearchTimeFieldIndex(unittest.TestCase):
 
-	def _makeOne(self):
+	def _makeOne(self, minute_resolution=False):
 		def discriminator(obj, default):
 			if obj is _marker:
 				return default
 			if type(obj) == float:
-				obj = to_int(obj)
+				obj = to_int(obj, minute_resolution)
 			return obj
 
 		family = BTrees.family64
 		return SearchTimeFieldIndex(discriminator=discriminator, family=family,
-									minute_resolution=False)
+									minute_resolution=minute_resolution)
 	
 	def _populateIndex(self, index):
 		index.index_doc(5, 1.0)  # docid, obj
@@ -558,3 +561,13 @@ class TestSearchTimeFieldIndex(unittest.TestCase):
 		index.index_doc(1, 1.0)
 		index.index_doc(2, _marker)
 		assert_that(set([1, 2]), is_(set(index.docids())))
+
+	def test_minute_resolution(self):
+		index = self._makeOne(True)
+		now = time.time()
+		index.index_doc(1, now)
+		index.index_doc(2, now)
+		key = to_int(now, True)
+		assert_that(set([1, 2]), is_(set(index.docids())))
+		assert_that(index, has_property('_fwd_index', has_length(1)))
+		assert_that(index, has_property('_fwd_index', has_key(key)))
