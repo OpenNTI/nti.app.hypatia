@@ -33,8 +33,8 @@ def to_int(value, minute_resolution=True):
 			d = datetime.fromtimestamp(value)
 			td = timedelta(microseconds=d.microsecond, seconds=d.second)
 			d = d - td  # remove microseconds and secs
-			value = int(mktime(d.timetuple()))
-	return value
+			value = mktime(d.timetuple())
+	return int(value)
 
 @interface.implementer(ISearchTimeFieldIndex)
 class SearchTimeFieldIndex(FieldIndex):
