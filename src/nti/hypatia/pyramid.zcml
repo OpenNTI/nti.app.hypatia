@@ -6,5 +6,5 @@
 			
 	<include package="pyramid_zcml" />
 	
-	<pyramid:scan package='.utils.admin_views' />
+	<pyramid:scan package='.admin_views' />
 </configure>

@@ -28,11 +28,11 @@ from nti.externalization.datastructures import LocatedExternalDict
 
 from nti.utils.maps import CaseInsensitiveDict
 
-from .. import reactor
-from .. import LOCK_NAME
-from .. import subscribers
-from . import get_user_indexable_objects
-from .. import interfaces as hypatia_interfaces
+from . import utils
+from . import reactor
+from . import LOCK_NAME
+from . import subscribers
+from . import interfaces as hypatia_interfaces
 
 def _make_min_max_btree_range(search_term):
 	min_inclusive = search_term  # start here
@@ -48,7 +48,7 @@ def username_search(search_term):
 
 def _add_to_objects_2_queue(user):
 	count = 0
-	for obj in get_user_indexable_objects(user):
+	for obj in utils.get_user_indexable_objects(user):
 		try:
 			subscribers.add_2_queue(obj)
 			count += 1
