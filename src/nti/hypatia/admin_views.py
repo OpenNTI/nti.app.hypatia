@@ -29,8 +29,8 @@ from nti.externalization.datastructures import LocatedExternalDict
 from nti.utils.maps import CaseInsensitiveDict
 
 from . import utils
+from . import views
 from . import reactor
-from . import LOCK_NAME
 from . import subscribers
 from . import interfaces as hypatia_interfaces
 
@@ -60,6 +60,7 @@ def _add_to_objects_2_queue(user):
 			 name='reindex_hypatia_content',
 			 renderer='rest',
 			 request_method='POST',
+			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def reindex_hypatia_content(request):
 	values = simplejson.loads(unicode(request.body, request.charset)) \
@@ -104,6 +105,7 @@ def reindex_hypatia_content(request):
 			 name='process_hypatia_content',
 			 renderer='rest',
 			 request_method='POST',
+			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def process_hypatia_content(request):
 	values = simplejson.loads(unicode(request.body, request.charset)) \
@@ -120,12 +122,3 @@ def process_hypatia_content(request):
 
 	return hexc.HTTPNoContent()
 
-@view_config(route_name='objects.generic.traversal',
-			 name='force_delete_hypatia_lock',
-			 renderer='rest',
-			 request_method='POST',
-			 permission=nauth.ACT_MODERATE)
-def force_delete_hypatia_lock(request):
-	redis = component.getUtility(nti_interfaces.IRedisClient)
-	redis.delete(LOCK_NAME)
-	return hexc.HTTPNoContent()
