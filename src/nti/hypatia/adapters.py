@@ -80,9 +80,10 @@ class _HypatiaUserIndexController(object):
 		pass
 
 	@metricmethod
-	def do_search(self, query):
+	def do_search(self, query, factory=None):
 		query = search_interfaces.ISearchQuery(query)
-		results = search_results.empty_search_results(query)
+		factory = factory or search_results.empty_search_results
+		results = factory(query)
 		if query.is_empty:
 			return results
 
