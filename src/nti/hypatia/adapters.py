@@ -80,10 +80,9 @@ class _HypatiaUserIndexController(object):
 		pass
 
 	@metricmethod
-	def do_search(self, query, creator_method=None):
+	def do_search(self, query):
 		query = search_interfaces.ISearchQuery(query)
-		creator_method = creator_method or search_results.empty_search_results
-		results = creator_method(query)
+		results = search_results.empty_search_results(query)
 		if query.is_empty:
 			return results
 
@@ -101,7 +100,7 @@ class _HypatiaUserIndexController(object):
 		for docid, score in sequence.items():
 			obj = self.get_object(docid)
 			if obj is not None:
-				results.add(search_results.IndexHit(obj, score))
+				results.add((obj, score))
 
 		return results
 
