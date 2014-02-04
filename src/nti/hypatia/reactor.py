@@ -46,6 +46,7 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
 	queue_size = queue_length(queue)
+	limit = queue_size if limit == -1 else limit
 	if queue_size >= limit:
 		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
 	elif queue_size > 0:

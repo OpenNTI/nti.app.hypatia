@@ -80,8 +80,8 @@ def reindex_hypatia_content(request):
 
 	if queue_limit is not None:
 		try:
-			queue_limit = abs(int(queue_limit))
-			assert queue_limit > 0
+			queue_limit = int(queue_limit)
+			assert queue_limit > 0 or queue_limit == -1
 		except (ValueError, AssertionError):
 			raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
@@ -113,8 +113,8 @@ def process_hypatia_content(request):
 	values = CaseInsensitiveDict(**values)
 	queue_limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
 	try:
-		queue_limit = abs(int(queue_limit))
-		assert queue_limit > 0
+		queue_limit = int(queue_limit)
+		assert queue_limit > 0 or queue_limit == -1
 	except (ValueError, AssertionError):
 		raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
