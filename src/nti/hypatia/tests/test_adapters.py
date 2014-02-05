@@ -7,10 +7,14 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+from hamcrest import is_
+from hamcrest import none
 from hamcrest import has_length
 from hamcrest import assert_that
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
+
+from nti.contentsearch import discriminators
 
 from nti.dataserver.users import User
 
@@ -59,6 +63,7 @@ class TestAdapters(ConfiguringTestBase):
 		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
 		hits = searcher.search("Jinzen")
 		assert_that(hits, has_length(1))
+		assert_that(searcher.username, is_('user1@nti.com'))
 
 		searcher = hypatia_interfaces.IHypatiaUserIndexController(user2)
 		hits = searcher.search("communication")
@@ -71,3 +76,32 @@ class TestAdapters(ConfiguringTestBase):
 		searcher = hypatia_interfaces.IHypatiaUserIndexController(user3)
 		hits = searcher.search("Madarame")
 		assert_that(hits, has_length(0))
+
+		uid = discriminators.get_uid(note)
+		obj = searcher.get_object(uid)
+		assert_that(obj, is_(none()))
+
+		hits = searcher.search("")
+		assert_that(hits, has_length(0))
+
+		hits = searcher.suggest("")
+		assert_that(hits, has_length(0))
+
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
+		hits = searcher.suggest_and_search("jinz")
+		assert_that(hits, has_length(1))
+
+		hits = searcher.suggest_and_search("performing Jinzen")
+		assert_that(hits, has_length(1))
+
+	@mock_dataserver.WithMockDSTrans
+	def test_noops(self):
+		user1 = self._create_user(username='user1@nti.com')
+		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
+		searcher.index_content()
+		searcher.update_content()
+		searcher.delete_content()
+
+		obj = searcher.get_object(10)
+		assert_that(obj, is_(none()))
+
