@@ -37,17 +37,15 @@ def get_user_indexable_objects(user):
 			yield comment  # get all comments
 
 	for membership in getattr(user, 'dynamic_memberships', ()):
-		if not nti_interfaces.ICommunity.providedBy(membership):
-			continue
-		
-		board = forum_interfaces.IBoard(membership, {})
-		for forum in board.values():
-			for topic in forum.values():
-				creator = getattr(topic, 'creator', None)
-				if getattr(creator, 'username', creator) == user.username:
-					yield topic
-
-				for comment in topic.values():
-					creator = getattr(comment, 'creator', None)
+		if nti_interfaces.ICommunity.providedBy(membership):
+			board = forum_interfaces.IBoard(membership, {})
+			for forum in board.values():
+				for topic in forum.values():
+					creator = getattr(topic, 'creator', None)
 					if getattr(creator, 'username', creator) == user.username:
-						yield comment
+						yield topic
+
+					for comment in topic.values():
+						creator = getattr(comment, 'creator', None)
+						if getattr(creator, 'username', creator) == user.username:
+							yield comment
