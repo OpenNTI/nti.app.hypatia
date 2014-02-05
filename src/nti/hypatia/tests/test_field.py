@@ -538,12 +538,39 @@ class TestSearchTimeFieldIndex(unittest.TestCase):
 		assert_that(result.__class__, query.Gt)
 		assert_that(result._value, is_(one_ival))
 		
+	def test_any(self):
+		index = self._makeOne()
+		result = index.any(1)
+		assert_that(result.__class__, query.Any)
+		assert_that(result._value, is_(1))
+
+	def test_notany(self):
+		index = self._makeOne()
+		result = index.notany(1)
+		assert_that(result.__class__, query.NotAny)
+		assert_that(result._value, is_(1))
+
+	def test_notinrange(self):
+		index = self._makeOne()
+		result = index.notinrange(1, 2)
+		assert_that(result.__class__, query.NotInRange)
+		assert_that(result._start, is_(1))
+		assert_that(result._end, is_(2))
+
 	def test_docids(self):
 		index = self._makeOne()
 		self._populateIndex(index)
 		assert_that(
 			set(index.docids()),
 			is_(set((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))))
+
+	def test_unindex_doc_w_other_docids_for_value(self):
+		index = self._makeOne()
+		index.index_doc(5, 1)
+		index.index_doc(6, 1)
+		index.unindex_doc(5)
+		assert_that(index.indexed_count(), is_(1))
+		assert_that(index._rev_index, does_not(contains(5)))
 
 	def test_docids_with_indexed_and_not_indexed(self):
 		index = self._makeOne()

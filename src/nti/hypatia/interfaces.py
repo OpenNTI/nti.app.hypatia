@@ -47,7 +47,9 @@ class ISearchLexicon(text_interfaces.ILexicon):
 class ISearchQueryParser(search_interfaces.ISearchQueryParser):
 
     def parse(query, user=None):
-        pass
+        """
+        parse the specified query
+        """
 
 class IHypatiaUserIndexController(search_interfaces.IEntityIndexController):
     pass
