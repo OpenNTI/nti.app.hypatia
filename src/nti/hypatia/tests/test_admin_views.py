@@ -59,6 +59,11 @@ class TestAdminViews(ApplicationTestBase):
 			rim = hypatia_interfaces.IHypatiaUserIndexController(user)
 			hits = rim.search('fear')
 			assert_that(hits, has_length(1))
+			
+		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
+					 json.dumps({'limit': 'xyt'}),
+					 extra_environ=self._make_extra_environ(),
+					 status=422)
 
 	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
 	def test_reindex_hypatia_content(self):
@@ -81,3 +86,22 @@ class TestAdminViews(ApplicationTestBase):
 		assert_that(result, has_entry('Total', is_(10)))
 		for x in range(10):
 			assert_that(result, has_entry('Items', has_entry('bankai%s' % x, is_(1))))
+
+		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+							  json.dumps({'term':'bank'}),
+							  extra_environ=self._make_extra_environ(),
+							  status=200)
+		result = result.json
+		assert_that(result, has_entry('Total', is_(10)))
+
+		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+							  json.dumps({'limit': 100, 'usernames':'bankai1 bankai2'}),
+							  extra_environ=self._make_extra_environ(),
+							  status=200)
+		result = result.json
+		assert_that(result, has_entry('Total', is_(0)))
+
+		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+							  json.dumps({'limit': 'xyz', 'usernames':'bankai1 bankai2'}),
+							  extra_environ=self._make_extra_environ(),
+							  status=422)
