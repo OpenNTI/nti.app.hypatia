@@ -31,9 +31,8 @@ from hypatia.interfaces import STABLE
 from hypatia.interfaces import OPTIMAL
 
 from nti.hypatia.field import to_int
+from nti.hypatia.field import _marker
 from nti.hypatia.field import SearchTimeFieldIndex
-
-_marker = object()
 
 one_ival = to_int(1.0, False)
 two_ival = to_int(2.0, False)
