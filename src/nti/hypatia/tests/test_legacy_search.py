@@ -13,6 +13,8 @@ from hamcrest import greater_than_or_equal_to
 
 from hypatia.text import ParseError
 
+from nti.contentsearch import interfaces as search_interfaces
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
@@ -94,6 +96,11 @@ class TestLegacySearch(ConfiguringTestBase):
 
 		hits = rim.search('"%s"' % zanpakuto_commands[0])
 		assert_that(hits, has_length(1))
+
+		query = search_interfaces.ISearchQuery("shield")
+		query.searchOn = ("redaction",)
+		results = rim.search(query)
+		assert_that(results, has_length(0))
 
 	@WithMockDSTrans
 	def test_suggest(self):
