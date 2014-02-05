@@ -13,7 +13,7 @@ from hamcrest import assert_that
 
 import unittest
 
-from nti.hypatia.levenshtein import ratio
+from nti.hypatia.levenshtein import ratio, edit_distance, nltk_ratio
 
 class TestLevenshtein(unittest.TestCase):
 
@@ -26,3 +26,15 @@ class TestLevenshtein(unittest.TestCase):
 
 		r = ratio('ichigo', 'ichi')
 		assert_that(r, is_(close_to(0.8, 0.01)))
+
+	def test_edit_distance(self):
+		r = edit_distance('ichigo', 'ichi')
+		assert_that(r, is_(close_to(2, 0.01)))
+
+		r = edit_distance('transposition', 'cheapest', True)
+		assert_that(r, is_(close_to(10, 0.01)))
+
+	def test_nltk_ratio(self):
+		r = nltk_ratio('ichigo', 'ichi')
+		assert_that(r, is_(close_to(0.8, 0.01)))
+
