@@ -68,7 +68,7 @@ class TestLegacySearch(ConfiguringTestBase):
 
 	def _index_notes(self, user=None):
 		notes, user = self._add_notes(user=user)
-		reactor.process_queue()
+		reactor.process_queue(-1)
 		return user, notes
 
 	@WithMockDSTrans
@@ -101,6 +101,11 @@ class TestLegacySearch(ConfiguringTestBase):
 		query.searchOn = ("redaction",)
 		results = rim.search(query)
 		assert_that(results, has_length(0))
+
+		query = search_interfaces.ISearchQuery("shield")
+		query.searchOn = ("note",)
+		results = rim.search(query)
+		assert_that(results, has_length(1))
 
 	@WithMockDSTrans
 	def test_suggest(self):

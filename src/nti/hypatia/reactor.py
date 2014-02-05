@@ -46,14 +46,18 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
 	queue = search_queue()
 	queue_size = queue_length(queue)
+
 	limit = queue_size if limit == -1 else limit
 	if queue_size >= limit:
 		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
 	elif queue_size > 0:
 		logger.info("Processing %s index event(s)", queue_size)
-	queue.process(ids, (catalog,), min(limit, queue_size))
 
-def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
+	to_process = min(limit, queue_size)
+	queue.process(ids, (catalog,), to_process)
+	return to_process
+
+def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True):
 	redis = component.getUtility(nti_interfaces.IRedisClient)
 	try:
 		lock = redis.lock(lockname, MAX_INTERVAL + 30)
@@ -64,12 +68,16 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT):
 
 	try:
 		if aquired:
-			transaction_runner = \
-					component.getUtility(nti_interfaces.IDataserverTransactionRunner)
 			try:
 				runner = functools.partial(process_queue, limit=limit) \
 						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
-				transaction_runner(runner, retries=1, sleep=1)
+				if use_trx_runner:
+					transaction_runner = \
+						component.getUtility(nti_interfaces.IDataserverTransactionRunner)
+					result = transaction_runner(runner, retries=1, sleep=1)
+				else:
+					result = runner()
+				return result
 			except ConflictError, e:
 				logger.error(e)
 			except Exception:

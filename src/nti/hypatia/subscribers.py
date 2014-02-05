@@ -33,9 +33,10 @@ def add_2_queue(obj):
 def queue_added(obj):
 	if is_indexable(obj):
 		try:
-			add_2_queue(obj)
-		except TypeError, e:
-			logger.exception(e)
+			return add_2_queue(obj)
+		except TypeError:
+			logger.exception("Error adding object to queue")
+	return False
 
 def queue_modified(obj):
 	if is_indexable(obj):
@@ -44,10 +45,12 @@ def queue_modified(obj):
 			__traceback_info__ = iid
 			try:
 				search_queue().update(iid)
-			except TypeError, e:
-				logger.exception(e)
+				return True
+			except TypeError:
+				logger.exception("Error adding object to queue for update")
 		else:
 			logger.debug("Could not find iid for %r", obj)
+	return False
 
 def queue_remove(obj):
 	if is_indexable(obj):
