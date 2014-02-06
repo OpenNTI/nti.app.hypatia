@@ -9,6 +9,7 @@ __docformat__ = "restructuredtext en"
 logger = __import__('logging').getLogger(__name__)
 
 import os
+import time
 import gevent
 import random
 import functools
@@ -16,6 +17,7 @@ import functools
 from zope import component
 from zope import interface
 
+from ZODB import loglevels
 from ZODB.POSException import ConflictError
 
 import zope.intid
@@ -30,6 +32,7 @@ from nti.hypatia import interfaces as hypatia_interfaces
 
 MIN_INTERVAL = 5
 MAX_INTERVAL = 120
+MIN_BATCH_SIZE = 10
 DEFAULT_INTERVAL = 30
 DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
@@ -60,12 +63,13 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True):
 	redis = component.getUtility(nti_interfaces.IRedisClient)
 	try:
-		lock = redis.lock(lockname, MAX_INTERVAL + 30)
+		lock = redis.lock(lockname, MAX_INTERVAL)
 		aquired = lock.acquire(blocking=False)
 	except TypeError:
 		lock = redis.lock(lockname)
 		aquired = lock.acquire()
 
+	result = 0
 	try:
 		if aquired:
 			try:
@@ -77,15 +81,17 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True)
 					result = transaction_runner(runner, retries=1, sleep=1)
 				else:
 					result = runner()
-				return result
-			except ConflictError, e:
+			except ConflictError as e:
 				logger.error(e)
+				result = -1
 			except Exception:
 				logger.exception('Cannot process index messages')
+				result = -2
 	finally:
 		if aquired:
 			lock.release()
-							
+	return result
+
 @interface.implementer(hypatia_interfaces.IIndexReactor)
 class IndexReactor(object):
 
@@ -121,12 +127,29 @@ class IndexReactor(object):
 		self.pid = os.getpid()
 		try:
 			logger.info("Index reactor started (%s)", self.pid)
+			batch_size = self.limit
 			while not self.stop:
-				secs = random.randint(self.min_wait_time, self.max_wait_time)
+				start = time.time()
 				try:
-					sleep(secs)
 					if not self.stop:
-						process_index_msgs(LOCK_NAME, self.limit)
+						result = process_index_msgs(LOCK_NAME, batch_size)
+						duration = time.time() - start
+						if result == 0: # no work
+							batch_size = self.limit  # reset to default
+							secs = random.randint(self.min_wait_time, self.max_wait_time)
+							duration = secs / 2.0
+						elif result < 0:  # conflict error
+							factor = 0.33 if result == -1 else 0.2
+							batch_size = max(MIN_BATCH_SIZE, int(batch_size * factor))
+						elif duration < MAX_INTERVAL:
+							batch_size = int(batch_size * 1.5)
+						else:
+							half = batch_size * .5
+							batch_size = max(MIN_BATCH_SIZE, int(half / duration))
+							
+						duration = duration * 2.0
+						logger.log(loglevels.TRACE, "Sleeping %s(secs). Batch size %s", duration, batch_size)
+						sleep(duration)
 				except component.ComponentLookupError:
 					logger.error("process %s could not get component", self.pid)
 					break
