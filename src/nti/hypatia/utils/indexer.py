@@ -8,21 +8,9 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from nti.monkey import relstorage_timestamp_repr_patch_on_import
-from nti.monkey import relstorage_zlibstorage_patch_on_import
-from nti.monkey import relstorage_external_gc_patch_on_import
-from nti.monkey import relstorage_explicitly_close_memcache_patch_on_import
+from nti.monkey import relstorage_patch_all_except_gevent_import
 
-relstorage_timestamp_repr_patch_on_import.patch()
-relstorage_zlibstorage_patch_on_import.patch()
-relstorage_external_gc_patch_on_import.patch()
-relstorage_explicitly_close_memcache_patch_on_import.patch()
-
-try:
-	import MySQLdb
-except ImportError:
-	from nti.monkey import relstorage_umysqldb_patch_on_import
-	relstorage_umysqldb_patch_on_import.patch()
+relstorage_patch_all_except_gevent_import.patch()
 
 import os
 import sys
