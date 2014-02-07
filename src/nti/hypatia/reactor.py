@@ -137,17 +137,18 @@ class IndexReactor(object):
 						if result == 0: # no work
 							batch_size = self.limit  # reset to default
 							secs = random.randint(self.min_wait_time, self.max_wait_time)
-							duration = secs / 2.0
+							duration = secs
 						elif result < 0:  # conflict error
 							factor = 0.33 if result == -1 else 0.2
 							batch_size = max(MIN_BATCH_SIZE, int(batch_size * factor))
+							duration = duration * 2.0
 						elif duration < MAX_INTERVAL:
 							batch_size = int(batch_size * 1.5)
 						else:
 							half = batch_size * .5
 							batch_size = max(MIN_BATCH_SIZE, int(half / duration))
+							duration = MAX_INTERVAL
 							
-						duration = duration * 2.0
 						logger.log(loglevels.TRACE, "Sleeping %s(secs). Batch size %s", duration, batch_size)
 						sleep(duration)
 				except component.ComponentLookupError:
