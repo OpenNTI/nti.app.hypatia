@@ -105,7 +105,7 @@ class _HypatiaUserIndexController(object):
 	def search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
 		store = store or search_results.empty_search_results(query)
-		return self.do_search(query)
+		return self.do_search(query, store)
 		
 	def suggest(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
