@@ -80,10 +80,8 @@ class _HypatiaUserIndexController(object):
 		pass
 
 	@metricmethod
-	def do_search(self, query, factory=None):
+	def do_search(self, query, results):
 		query = search_interfaces.ISearchQuery(query)
-		factory = factory or search_results.empty_search_results
-		results = factory(query)
 		if query.is_empty:
 			return results
 
@@ -102,16 +100,16 @@ class _HypatiaUserIndexController(object):
 			obj = self.get_object(docid)
 			if obj is not None:
 				results.add(obj, score)
-
 		return results
 
-	def search(self, query):
+	def search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
+		store = store or search_results.empty_search_results(query)
 		return self.do_search(query)
 		
-	def suggest(self, query):
+	def suggest(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		results = search_results.empty_suggest_results(query)
+		results = store or search_results.empty_suggest_results(query)
 		if query.is_empty:
 			return results
 
@@ -126,22 +124,16 @@ class _HypatiaUserIndexController(object):
 
 		return results
 
-	def suggest_and_search(self, query):
+	def suggest_and_search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
+		store = store or search_results.empty_suggest_and_search_results(query)
 		if ' ' in query.term or query.is_prefix_search or query.is_phrase_search:
-			results = \
-				self.do_search(query,
-							   search_results.empty_suggest_and_search_results)
+			results = self.do_search(query, store)
 		else:
 			result = self.suggest(query)
 			suggestions = result.suggestions
 			if suggestions:
 				suggestions = rank_words(query.term, suggestions)
 				query.term = suggestions[0]
-
-			results = \
-				self.do_search(query,
-							   search_results.empty_suggest_and_search_results)
-
+			results = self.do_search(query, store)
 		return results
-
