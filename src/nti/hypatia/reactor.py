@@ -31,7 +31,7 @@ from nti.hypatia import search_queue
 from nti.hypatia import interfaces as hypatia_interfaces
 
 MIN_INTERVAL = 5
-MAX_INTERVAL = 120
+MAX_INTERVAL = 60
 MIN_BATCH_SIZE = 10
 DEFAULT_INTERVAL = 30
 DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
