@@ -36,6 +36,19 @@ MIN_BATCH_SIZE = 10
 DEFAULT_INTERVAL = 30
 DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
+class _LockingClient(object):
+
+	__slots__ = ()
+
+	def lock(self, *args, **kwargs):
+		return self
+
+	def acquire(self, *args, **kwargs):
+		return True
+
+	def release(self, *args, **kwargs):
+		pass
+
 def queue_length(queue):
 	try:
 		result = len(queue)
@@ -60,21 +73,21 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	queue.process(ids, (catalog,), to_process)
 	return to_process
 
-def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True):
-	redis = component.getUtility(nti_interfaces.IRedisClient)
+def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
+					   client=None):
+	client = client if client is not None else _LockingClient()
 	try:
-		lock = redis.lock(lockname, MAX_INTERVAL)
+		lock = client.lock(lockname, MAX_INTERVAL)
 		aquired = lock.acquire(blocking=False)
 	except TypeError:
-		lock = redis.lock(lockname)
+		lock = client.lock(lockname)
 		aquired = lock.acquire()
 
 	result = 0
 	try:
 		if aquired:
 			try:
-				runner = functools.partial(process_queue, limit=limit) \
-						 if limit != DEFAULT_QUEUE_LIMIT else process_queue
+				runner = functools.partial(process_queue, limit=limit)
 				if use_trx_runner:
 					transaction_runner = \
 						component.getUtility(nti_interfaces.IDataserverTransactionRunner)
@@ -102,16 +115,19 @@ class IndexReactor(object):
 
 	processor = pid = None
 
-	def __init__(self, min_time=None, max_time=None, limit=None):
+	def __init__(self, min_time=None, max_time=None, limit=None, use_redis=False):
 		if min_time:
 			self.min_wait_time = min_time
 		if max_time:
 			self.max_wait_time = max_time
 		if limit and limit != DEFAULT_QUEUE_LIMIT:
 			self.limit = limit
+		# get locking client
+		self.lock_client = component.getUtility(nti_interfaces.IRedisClient) \
+						   if use_redis else _LockingClient()
 
 	def __repr__(self):
-		return "(%s)" % self.pid
+		return "%s(%s)" % (self.__class__.__name__, self.pid)
 
 	def halt(self):
 		self.stop = True
@@ -132,7 +148,8 @@ class IndexReactor(object):
 				start = time.time()
 				try:
 					if not self.stop:
-						result = process_index_msgs(LOCK_NAME, batch_size)
+						result = process_index_msgs(LOCK_NAME, batch_size,
+													client=self.lock_client)
 						duration = time.time() - start
 						if result == 0: # no work
 							batch_size = self.limit  # reset to default
@@ -149,7 +166,8 @@ class IndexReactor(object):
 							batch_size = max(MIN_BATCH_SIZE, int(half / duration))
 							duration = MAX_INTERVAL
 							
-						logger.log(loglevels.TRACE, "Sleeping %s(secs). Batch size %s", duration, batch_size)
+						logger.log(loglevels.TRACE, "Sleeping %s(secs). Batch size %s",
+								   duration, batch_size)
 						sleep(duration)
 				except component.ComponentLookupError:
 					logger.error("process %s could not get component", self.pid)

@@ -62,6 +62,8 @@ def main():
 							 help="Queue limit",
 							 type=int,
 							 default=hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
+	arg_parser.add_argument('--redis', help="Use redis lock", action='store_true',
+							 dest='redis')
 
 	args = arg_parser.parse_args()
 	env_dir = args.env_dir
@@ -107,7 +109,7 @@ def _process_args(args):
 	ei = '%(asctime)s %(levelname)-5.5s [%(name)s][%(thread)d][%(threadName)s] %(message)s'
 	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter(ei))
 
-	target = reactor.IndexReactor(mintime, maxtime, limit)
+	target = reactor.IndexReactor(mintime, maxtime, limit, args.redis)
 	target(time.sleep)
 
 if __name__ == '__main__':
