@@ -8,6 +8,9 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+from nti.monkey.relstorage_umysqldb_patch_on_import import patch
+patch()
+
 import os
 import sys
 import time
