@@ -104,12 +104,14 @@ class _HypatiaUserIndexController(object):
 
 	def search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		store = store or search_results.empty_search_results(query)
+		store = store if store is not None else \
+				search_results.empty_search_results(query)
 		return self.do_search(query, store)
 		
 	def suggest(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		results = store or search_results.empty_suggest_results(query)
+		results = store if store is not None else \
+				  search_results.empty_suggest_results(query)
 		if query.is_empty:
 			return results
 
@@ -126,7 +128,8 @@ class _HypatiaUserIndexController(object):
 
 	def suggest_and_search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		store = store or search_results.empty_suggest_and_search_results(query)
+		store = store if store is not None else \
+				search_results.empty_suggest_and_search_results(query)
 		if ' ' in query.term or query.is_prefix_search or query.is_phrase_search:
 			results = self.do_search(query, store)
 		else:
