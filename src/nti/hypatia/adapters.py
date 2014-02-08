@@ -104,14 +104,12 @@ class _HypatiaUserIndexController(object):
 
 	def search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		store = store if store is not None else \
-				search_results.empty_search_results(query)
+		store = search_results.get_or_create_search_results(query, store)
 		return self.do_search(query, store)
 		
 	def suggest(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		results = store if store is not None else \
-				  search_results.empty_suggest_results(query)
+		results = search_results.get_or_create_suggest_results(query, store)
 		if query.is_empty:
 			return results
 
@@ -123,18 +121,16 @@ class _HypatiaUserIndexController(object):
 												  	 threshold=threshold,
 												 	 common_length=prefix)
 		results.add(map(lambda t: t[0], words))
-
 		return results
 
 	def suggest_and_search(self, query, store=None, **kwargs):
 		query = search_interfaces.ISearchQuery(query)
-		store = store if store is not None else \
-				search_results.empty_suggest_and_search_results(query)
-		if ' ' in query.term or query.is_prefix_search or query.is_phrase_search:
+		store = search_results.get_or_create_suggest_and_search_results(query, store)
+		if ' ' in query.term or query.IsPrefixSearch or query.IsPhraseSearch:
 			results = self.do_search(query, store)
 		else:
-			result = self.suggest(query)
-			suggestions = result.suggestions
+			suggest_results = self.suggest(query)
+			suggestions = suggest_results.Suggestions
 			if suggestions:
 				suggestions = rank_words(query.term, suggestions)
 				query.term = suggestions[0]
