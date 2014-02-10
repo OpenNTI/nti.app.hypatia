@@ -10,6 +10,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import zope.intid
+from zope import component
 from zope.generations.utility import findObjectsMatching
 
 from nti.contentsearch import interfaces as search_interfaces
@@ -49,3 +51,13 @@ def get_user_indexable_objects(user):
 						creator = getattr(comment, 'creator', None)
 						if getattr(creator, 'username', creator) == user.username:
 							yield comment
+
+
+def all_indexable_objects_iids(users=()):
+	intids = component.getUtility(zope.intid.IIntIds)
+	usernames = {getattr(user, 'username', user) for user in users or ()}
+	for uid, obj in intids.items():
+		creator = getattr(obj, 'creator', None)
+		if 	is_indexable(obj) and \
+			(not usernames or getattr(creator, 'username', creator) in usernames):
+			yield uid

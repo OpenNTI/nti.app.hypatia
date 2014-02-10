@@ -24,6 +24,7 @@ from nti.dataserver.contenttypes.forums import interfaces as frm_interfaces
 from nti.ntiids.ntiids import make_ntiid
 
 from . import zanpakuto_commands
+from .. import all_indexable_objects_iids
 from .. import get_user_indexable_objects
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
@@ -81,12 +82,20 @@ class TestUtils(ConfiguringTestBase):
         notes, user = self._create_notes()
         objects = list(get_user_indexable_objects(user))
         assert_that(objects, has_length(len(notes)))
+        iids = list(all_indexable_objects_iids((user,)))
+        assert_that(iids, has_length(len(notes)))
 
     @WithMockDSTrans
     def test_find_indexable_objects_highglights(self):
-        notes, user = self._create_highlights()
+        highlights, user = self._create_highlights()
         objects = list(get_user_indexable_objects(user))
-        assert_that(objects, has_length(len(notes)))
+        assert_that(objects, has_length(len(highlights)))
+        
+        iids = list(all_indexable_objects_iids((user,)))
+        assert_that(iids, has_length(len(highlights)))
+        
+        iids = list(all_indexable_objects_iids(('xxxx',)))
+        assert_that(iids, has_length(0))
 
     @WithMockDSTrans
     def test_find_indexable_objects_personal(self):
@@ -125,4 +134,3 @@ class TestUtils(ConfiguringTestBase):
 
         objects = list(get_user_indexable_objects(user))
         assert_that(objects, has_length(len(zanpakuto_commands) + 1))
-
