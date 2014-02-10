@@ -4,7 +4,7 @@ generation 2.
 
 $Id$
 """
-from __future__ import print_function, unicode_literals, absolute_import
+from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
@@ -18,7 +18,7 @@ from zope.component.hooks import site, setHooks
 from zc import intid as zc_intid
 
 from .. import utils
-from .. import subscribers
+from .. import search_queue
 
 def do_evolve(context):
 	setHooks()
@@ -37,17 +37,16 @@ def do_evolve(context):
 		assert	component.getSiteManager() == ds_folder.getSiteManager(), \
 				"Hooks not installed?"
 
-		count = 0
-		users = ds_folder['users']
-		for user in users.values():
-			for obj in utils.get_user_indexable_objects(user):
-				try:
-					subscribers.add_2_queue(obj)
-					count += 1
-				except TypeError:  # ignore objects in queue
-					pass
+		total = 0
+		for iid in utils.all_indexable_objects_iids():
+			try:
+				search_queue().add(iid)
+				total += 0
+			except TypeError:
+				pass
 
-	logger.info('Evolution done!!! %s objects added to search queue' % count)
+
+	logger.info('Evolution done!!! %s objects added to search queue' % total)
 
 def evolve(context):
 	"""
