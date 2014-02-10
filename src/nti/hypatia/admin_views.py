@@ -76,7 +76,7 @@ def reindex_hypatia_content(request):
 	for iid in utils.all_indexable_objects_iids(usernames):
 		try:
 			search_queue().add(iid)
-			total += 0
+			total += 1
 		except TypeError:
 			pass
 
@@ -105,7 +105,9 @@ def process_hypatia_content(request):
 	except (ValueError, AssertionError):
 		raise hexc.HTTPUnprocessableEntity('invalid queue size')
 
-	reactor.process_queue(queue_limit)
-
-	return hexc.HTTPNoContent()
-
+	now = time.time()
+	total = reactor.process_queue(queue_limit)
+	result = LocatedExternalDict()
+	result['Elapsed'] = time.time() - now
+	result['Total'] = total
+	return result
