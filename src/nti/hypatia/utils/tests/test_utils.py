@@ -11,21 +11,13 @@ from hamcrest import has_length
 from hamcrest import assert_that
 
 from nti.dataserver.users import User
-from nti.dataserver.users import Community
 from nti.dataserver.contenttypes import Note
 from nti.dataserver.contenttypes import Highlight
-from nti.dataserver.contenttypes.forums.forum import CommunityForum
-from nti.dataserver.contenttypes.forums.topic import PersonalBlogEntry
-from nti.dataserver.contenttypes.forums.post import GeneralForumComment
-from nti.dataserver.contenttypes.forums.post import PersonalBlogComment
-from nti.dataserver.contenttypes.forums.topic import CommunityHeadlineTopic
-from nti.dataserver.contenttypes.forums import interfaces as frm_interfaces
 
 from nti.ntiids.ntiids import make_ntiid
 
 from . import zanpakuto_commands
 from .. import all_indexable_objects_iids
-from .. import get_user_indexable_objects
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 from nti.dataserver.tests.mock_dataserver import WithMockDSTrans
@@ -80,57 +72,15 @@ class TestUtils(ConfiguringTestBase):
     @WithMockDSTrans
     def test_find_indexable_objects_notes(self):
         notes, user = self._create_notes()
-        objects = list(get_user_indexable_objects(user))
-        assert_that(objects, has_length(len(notes)))
         iids = list(all_indexable_objects_iids((user,)))
         assert_that(iids, has_length(len(notes)))
 
     @WithMockDSTrans
     def test_find_indexable_objects_highglights(self):
         highlights, user = self._create_highlights()
-        objects = list(get_user_indexable_objects(user))
-        assert_that(objects, has_length(len(highlights)))
         
         iids = list(all_indexable_objects_iids((user,)))
         assert_that(iids, has_length(len(highlights)))
         
         iids = list(all_indexable_objects_iids(('xxxx',)))
         assert_that(iids, has_length(0))
-
-    @WithMockDSTrans
-    def test_find_indexable_objects_personal(self):
-        user = self._create_user()
-
-        blog = frm_interfaces.IPersonalBlog(user)
-        entry = PersonalBlogEntry()
-        blog['bleach'] = entry
-        for x, _ in enumerate(zanpakuto_commands):
-            comment = PersonalBlogComment()
-            entry[str(x)] = comment
-
-        objects = list(get_user_indexable_objects(user))
-        assert_that(objects, has_length(len(zanpakuto_commands) + 1))
-
-    @WithMockDSTrans
-    def test_find_indexable_objects_community(self):
-        ds = mock_dataserver.current_mock_ds
-        user = self._create_user()
-        comm = Community.create_community(ds, username='Bankai')
-        user.record_dynamic_membership(comm)
-        user.follow(comm)
-
-        board = frm_interfaces.IBoard(comm)
-        forum = CommunityForum()
-        forum.creator = user
-        board['bleach'] = forum
-        topic = CommunityHeadlineTopic()
-        topic.creator = user
-        forum['bankai'] = topic
-
-        for x, _ in enumerate(zanpakuto_commands):
-            comment = GeneralForumComment()
-            comment.creator = user
-            topic[str(x)] = comment
-
-        objects = list(get_user_indexable_objects(user))
-        assert_that(objects, has_length(len(zanpakuto_commands) + 1))
