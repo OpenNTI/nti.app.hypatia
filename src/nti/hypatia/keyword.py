@@ -36,12 +36,13 @@ class SearchKeywordIndex(KeywordIndex):
 		if isinstance(query, six.string_types):
 			query = [query]
 
+		Set = self.family.IF.Set
 		query = self.normalize(query)
 		norm = len(query)
 
 		sets = []
 		for word in query:
-			docids = self._fwd_index.get(word, self.family.IF.Set())
+			docids = Set(self._fwd_index.get(word, Set()))
 			sets.append(docids)
 
 		for s in sets:
@@ -50,11 +51,17 @@ class SearchKeywordIndex(KeywordIndex):
 				if len(ooset) != norm:
 					s.remove(docid)
 
-		result = self.family.IF.multiunion(sets)
+		sets.sort(key=len)
+		result = None
+		for s in sets:
+			result = self.family.IF.intersection(result, s)
+			if not result:
+				break
+
 		if result:
 			return result
 		else:
-			return self.family.IF.Set()
+			return Set()
 
 	def remove_word(self, word):
 		result = []
