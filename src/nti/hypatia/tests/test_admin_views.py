@@ -52,7 +52,7 @@ class TestAdminViews(ApplicationTestBase):
 		testapp = TestApp(self.app)
 		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
 					 extra_environ=self._make_extra_environ(),
-					 status=204)
+					 status=200)
 
 		with mock_dataserver.mock_db_trans(self.ds):
 			user = User.get_user(username)
@@ -76,7 +76,7 @@ class TestAdminViews(ApplicationTestBase):
 		testapp = TestApp(self.app)
 		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
 					 extra_environ=self._make_extra_environ(),
-					 status=204)
+					 status=200)
 
 		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
 							  json.dumps({'limit': 100}),
@@ -84,8 +84,6 @@ class TestAdminViews(ApplicationTestBase):
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
-		for x in range(10):
-			assert_that(result, has_entry('Items', has_entry('bankai%s' % x, is_(1))))
 
 		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
 							  json.dumps({'term':'bank'}),
