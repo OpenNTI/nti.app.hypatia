@@ -19,6 +19,8 @@ from nti.contentsearch import interfaces as search_interfaces
 from nti.dataserver import interfaces as nti_interfaces
 from nti.dataserver.contenttypes.forums import interfaces as forum_interfaces
 
+from nti.externalization.oids import to_external_oid
+
 from nti.hypatia import is_indexable
 
 def get_user_indexable_objects(user):
@@ -57,7 +59,12 @@ def all_indexable_objects_iids(users=()):
 	intids = component.getUtility(zope.intid.IIntIds)
 	usernames = {getattr(user, 'username', user) for user in users or ()}
 	for uid, obj in intids.items():
-		creator = getattr(obj, 'creator', None)
-		if 	is_indexable(obj) and \
-			(not usernames or getattr(creator, 'username', creator) in usernames):
-			yield uid
+		try:
+			creator = getattr(obj, 'creator', None)
+			if 	is_indexable(obj) and \
+				(not usernames or getattr(creator, 'username', creator) in usernames):
+				yield uid
+		except TypeError as e:
+			oid = to_external_oid(obj)
+			logger.error("Error getting creator for %s(%s,%s). %s",
+						 type(obj), uid, oid, e)
