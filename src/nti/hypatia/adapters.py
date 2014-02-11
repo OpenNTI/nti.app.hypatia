@@ -93,7 +93,13 @@ class _HypatiaUserIndexController(object):
 		cq = CatalogQuery(search_catalog())
 		_, sequence = cq.query(parsed_query)
 		if not hasattr(sequence, "items"):
-			sequence = {x:1.0 for x in sequence}
+			class _proxy(object):
+				def __init__(self, seq):
+					self._seq = seq
+				def items(self):
+					for x in self._seq:
+						yield x, 1.0
+			sequence = _proxy(sequence)
 
 		# get docs from db
 		for docid, score in sequence.items():
