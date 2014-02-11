@@ -17,6 +17,7 @@ from nti.dataserver.contenttypes import Note
 
 from nti.ntiids.ntiids import make_ntiid
 
+from nti.hypatia import reactor
 from nti.hypatia import subscribers
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
@@ -32,13 +33,15 @@ class TestSubcribers(ConfiguringTestBase):
 		usr = User.create_user(ds, username=username, password=password)
 		return usr
 
-	def _create_note(self, msg, username, containerId=None, title=None):
+	def _create_note(self, msg, username, containerId=None, title=None, sharedWith=()):
 		note = Note()
 		if title:
 			note.title = IPlainTextContentFragment(title)
 		note.body = [unicode(msg)]
 		note.creator = username
 		note.containerId = containerId or make_ntiid(nttype='bleach', specific='manga')
+		for u in sharedWith:
+			note.addSharingTarget(u)
 		return note
 
 	def _add_notes(self, user=None):
@@ -75,3 +78,22 @@ class TestSubcribers(ConfiguringTestBase):
 		note = self._create_note("plastic", 'nt@nti.com')
 		result = subscribers.queue_modified(note)
 		assert_that(result, is_(False))
+
+	@WithMockDSTrans
+	def test_user_deleted(self):
+		user1 = self._create_user("n1@nti.com")
+		user2 = self._create_user("n2@nti.com")
+		note = self._create_note("not-shared", 'n1@nti.com')
+		user1.addContainedObject(note)
+
+		note = self._create_note("shared", 'n2@nti.com', sharedWith=(user1,))
+		user2.addContainedObject(note)
+
+		reactor.process_queue()
+
+		count = subscribers.delete_userdata("n1@nti.com")
+		assert_that(count, is_(1))
+
+if __name__ == '__main__':
+	import unittest
+	unittest.main()

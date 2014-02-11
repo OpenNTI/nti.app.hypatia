@@ -10,17 +10,23 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import gevent
+import functools
+import transaction
+
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
 from zope.intid.interfaces import IIntIdRemovedEvent, IIntIdAddedEvent
 
 from nti.contentsearch import discriminators
+from nti.contentsearch.constants import acl_
 
 from nti.dataserver import interfaces as nti_interfaces
 
 from . import is_indexable
 from . import search_queue
+from . import search_catalog
 
 def add_2_queue(obj):
 	iid = discriminators.query_uid(obj)
@@ -74,3 +80,22 @@ def _modeled_modified(modeled, event):
 	else:
 		queue_modified(modeled)
 
+def delete_userdata(username):
+	catalog = search_catalog()
+	kwIndex = catalog[acl_]
+	docids = kwIndex.remove_word(username)
+	for docid in docids or ():
+		search_queue().remove(docid)
+	return len(docids)
+
+@component.adapter(nti_interfaces.IUser, lce_interfaces.IObjectRemovedEvent)
+def _user_deleted(user, event):
+	username = user.username
+	def _process_event():
+		transaction_runner = \
+			component.getUtility(nti_interfaces.IDataserverTransactionRunner)
+		func = functools.partial(delete_userdata, username=username)
+		transaction_runner(func)
+
+	transaction.get().addAfterCommitHook(
+					lambda success: success and gevent.spawn(_process_event))

@@ -8,6 +8,7 @@ __docformat__ = "restructuredtext en"
 # pylint: disable=W0212,R0904
 
 from hamcrest import is_
+from hamcrest import is_in
 from hamcrest import has_length
 from hamcrest import assert_that
 
@@ -43,3 +44,42 @@ class TestModeled(unittest.TestCase):
 		assert_that(index.get_words(3), is_(('Zope',)))
 		assert_that(index.get_words(2), has_length(4))
 		assert_that(index.get_words(1), has_length(3))
+
+	def test_strictEQ(self):
+		index = self._makeOne()
+		index.index_doc(1, ('zope', 'zope3'))
+		index.index_doc(2, ('zope',))
+		index.index_doc(3, ('zope', 'zope3', 'zope4'))
+		index.index_doc(4, ('zope', 'zope3'))
+
+		s = index.strictEq('zope')
+		assert_that(s, has_length(1))
+		assert_that(2, is_in(s))
+
+		s = index.strictEq(['zope', 'zope3'])
+		assert_that(s, has_length(2))
+		assert_that(1, is_in(s))
+		assert_that(4, is_in(s))
+
+		s = index.strictEq(('zope3', 'zope', 'zope4'))
+		assert_that(s, has_length(1))
+		assert_that(3, is_in(s))
+
+		s = index.strictEq(('zope3', 'zope5'))
+		assert_that(s, has_length(0))
+
+	def test_remove_word(self):
+		index = self._makeOne()
+		index.index_doc(1, ('zope', 'zope3'))
+		index.index_doc(2, ('zope',))
+		index.index_doc(3, ('zope', 'zope3', 'zope4'))
+		index.index_doc(4, ('zope', 'zope3'))
+
+		s = index.remove_word('zope')
+		assert_that(s, has_length(1))
+		assert_that(2, is_in(s))
+
+		assert_that(index.get_words(2), is_(()))
+		assert_that(index.get_words(1), is_(('zope3',)))
+		assert_that(index.get_words(4), is_(('zope3',)))
+		assert_that(sorted(index.get_words(3)), is_(['zope3', 'zope4']))

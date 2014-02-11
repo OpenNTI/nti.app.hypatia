@@ -15,6 +15,7 @@
 	
 	<!-- Subscribers -->
 		 		
+	<subscriber handler=".subscribers._user_deleted" />
 	<subscriber handler=".subscribers._modeled_added" />
 	<subscriber handler=".subscribers._modeled_removed" />
 	<subscriber handler=".subscribers._modeled_modified" />

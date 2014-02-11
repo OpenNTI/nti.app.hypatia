@@ -18,7 +18,8 @@ from hypatia.query import Contains
 from nti.contentsearch import content_utils
 from nti.contentsearch import interfaces as search_interfaces
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
-										 redactionExplanation_, replacementContent_)
+										 acl_, redactionExplanation_, type_,
+										 replacementContent_)
 
 from . import get_user
 from . import search_catalog
@@ -38,7 +39,7 @@ class _DefaultQueryParser(object):
 		catalog = search_catalog()
 		# type
 		if query.searchOn:
-			type_query = Any(catalog["type"], [x.lower() for x in query.searchOn])
+			type_query = Any(catalog[type_], [x.lower() for x in query.searchOn])
 		else:
 			type_query = None
 
@@ -61,6 +62,6 @@ class _DefaultQueryParser(object):
 		user = get_user(user)
 		if user:
 			usernames = get_usernames_of_dynamic_memberships(user)
-			result = result & Any(catalog["acl"], usernames)
+			result = result & Any(catalog[acl_], usernames)
 
 		return result
