@@ -23,6 +23,7 @@ from nti.contentsearch import discriminators
 from nti.contentsearch.constants import acl_
 
 from nti.dataserver import interfaces as nti_interfaces
+from nti.dataserver.contenttypes.forums import interfaces as forums_interfaces
 
 from . import is_indexable
 from . import search_queue
@@ -79,6 +80,18 @@ def _modeled_modified(modeled, event):
 		queue_remove(modeled)
 	else:
 		queue_modified(modeled)
+
+@component.adapter(forums_interfaces.IGeneralForum, IIntIdRemovedEvent)
+def _forum_removed(forum, event):
+	queue_remove(forum)
+
+@component.adapter(forums_interfaces.IGeneralForum, IIntIdAddedEvent)
+def _forum_added(forum, event):
+	queue_added(forum)
+
+@component.adapter(forums_interfaces.IGeneralForum, lce_interfaces.IObjectModifiedEvent)
+def _forum_modified(forum, event):
+	queue_modified(forum)
 
 def delete_userdata(username):
 	catalog = search_catalog()

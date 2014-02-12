@@ -42,5 +42,4 @@ def get_usernames_of_dynamic_memberships(user):
     return result
 
 def is_indexable(x):
-    return  nti_interfaces.IModeledContent.providedBy(x) and \
-            search_interfaces.ITypeResolver(x, None) is not None
+    return search_interfaces.ITypeResolver(x, None) is not None
