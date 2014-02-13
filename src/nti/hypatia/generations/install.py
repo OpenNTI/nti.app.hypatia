@@ -38,7 +38,7 @@ def evolve(context):
 	# ### from IPython.core.debugger import Tracer; Tracer()()
 	install_queue(context)
 	install_hypatia(context)
-	evolve2.do_evolve(context)  # go to version 2
+	evolve2.do_evolve(context, False)  # go to version 2
 
 def install_hypatia(context):
 	conn = context.connection

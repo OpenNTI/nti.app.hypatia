@@ -20,16 +20,17 @@ from zc import intid as zc_intid
 from .. import utils
 from .. import search_queue
 
-def do_evolve(context):
+def do_evolve(context, reg_intid=True):
 	setHooks()
 	conn = context.connection
 	root = conn.root()
 	ds_folder = root['nti.dataserver']
-	lsm = ds_folder.getSiteManager()
 
-	ds_intid = lsm.getUtility(provided=zope.intid.IIntIds)
-	component.provideUtility(ds_intid, zope.intid.IIntIds)
-	component.provideUtility(ds_intid, zc_intid.IIntIds)
+	if reg_intid:
+		lsm = ds_folder.getSiteManager()
+		ds_intid = lsm.getUtility(provided=zope.intid.IIntIds)
+		component.provideUtility(ds_intid, zope.intid.IIntIds)
+		component.provideUtility(ds_intid, zc_intid.IIntIds)
 
 	logger.info('Hypatia evolution started')
 
