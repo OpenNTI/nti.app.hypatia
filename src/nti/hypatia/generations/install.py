@@ -49,7 +49,7 @@ def install_hypatia(context):
 	intids = lsm.getUtility(zope.intid.IIntIds)
 
 	lexicon = hypatia_lexicon.defaultLexicon()
-	
+
 	catalog = hypatia_catalog.create_catalog(lexicon)
 	catalog.__parent__ = dataserver_folder
 	catalog.__name__ = '++etc++hypatia++catalog'
@@ -66,7 +66,7 @@ def install_queue(context):
 	lsm = dataserver_folder.getSiteManager()
 	intids = lsm.getUtility(zope.intid.IIntIds)
 
-	queue = CatalogQueue(107)
+	queue = CatalogQueue()
 	queue.__parent__ = dataserver_folder
 	queue.__name__ = '++etc++hypatia++catalogqueue'
 	intids.register(queue)
