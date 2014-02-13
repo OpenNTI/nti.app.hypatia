@@ -23,6 +23,8 @@ from .. import catalog as hypatia_catalog
 from .. import lexicon as hypatia_lexicon
 from .. import interfaces as hypatia_interfaces
 
+from . import evolve2
+
 class _HypatiaSearchSchemaManager(SchemaManager):
 	"""
 	A schema manager that we can register as a utility in ZCML.
@@ -36,6 +38,7 @@ def evolve(context):
 	# ### from IPython.core.debugger import Tracer; Tracer()()
 	install_queue(context)
 	install_hypatia(context)
+	evolve2.do_evolve(context)  # go to version 2
 
 def install_hypatia(context):
 	conn = context.connection
