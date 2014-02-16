@@ -45,12 +45,12 @@ def username_search(search_term):
 	return usernames
 
 @view_config(route_name='objects.generic.traversal',
-			 name='reindex_hypatia_content',
+			 name='reindex_content',
 			 renderer='rest',
 			 request_method='POST',
 			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def reindex_hypatia_content(request):
+def reindex_content(request):
 	values = simplejson.loads(unicode(request.body, request.charset)) \
 			 if request.body else {}
 	values = CaseInsensitiveDict(**values)
@@ -89,25 +89,58 @@ def reindex_hypatia_content(request):
 	return result
 
 @view_config(route_name='objects.generic.traversal',
-			 name='process_hypatia_content',
+			 name='process_queue',
 			 renderer='rest',
 			 request_method='POST',
 			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def process_hypatia_content(request):
+def process_queue(request):
 	values = simplejson.loads(unicode(request.body, request.charset)) \
 			 if request.body else {}
 	values = CaseInsensitiveDict(**values)
-	queue_limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
+	limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
 	try:
-		queue_limit = int(queue_limit)
-		assert queue_limit > 0 or queue_limit == -1
+		limit = int(limit)
+		assert limit > 0 or limit == -1
 	except (ValueError, AssertionError):
-		raise hexc.HTTPUnprocessableEntity('invalid queue size')
+		raise hexc.HTTPUnprocessableEntity('invalid limit size')
 
 	now = time.time()
-	total = reactor.process_queue(queue_limit)
+	total = reactor.process_queue(limit)
 	result = LocatedExternalDict()
 	result['Elapsed'] = time.time() - now
 	result['Total'] = total
+	return result
+
+@view_config(route_name='objects.generic.traversal',
+			 name='empty_queue',
+			 renderer='rest',
+			 request_method='POST',
+			 context=views.HypatiaPathAdapter,
+			 permission=nauth.ACT_MODERATE)
+def empty_queue(request):
+	values = simplejson.loads(unicode(request.body, request.charset)) \
+			 if request.body else {}
+	values = CaseInsensitiveDict(**values)
+	limit = values.get('limit', -1)
+	try:
+		limit = int(limit)
+		assert limit > 0 or limit == -1
+	except (ValueError, AssertionError):
+		raise hexc.HTTPUnprocessableEntity('invalid limit size')
+
+	catalog_queue = search_queue()
+	length = len(catalog_queue)
+	limit = length if limit == -1 else min(length, limit)
+
+	done = 0
+	now = time.time()
+	for queue in catalog_queue._queues:
+		for _, _ in queue.process(limit - done).iteritems():
+			done += 1
+	catalog_queue._change_length(-done)
+
+	result = LocatedExternalDict()
+	result['Elapsed'] = time.time() - now
+	result['Total'] = done
 	return result
