@@ -42,7 +42,7 @@ class TestAdminViews(ApplicationTestBase):
 		return note
 
 	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
-	def test_process_hypatia_content(self):
+	def test_process_content(self):
 		username = 'ichigo@bleach.com'
 		with mock_dataserver.mock_db_trans(self.ds):
 			ichigo = self._create_user(username=username)
@@ -50,7 +50,7 @@ class TestAdminViews(ApplicationTestBase):
 			ichigo.addContainedObject(note)
 
 		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
+		testapp.post('/dataserver2/hypatia/@@process_content',
 					 extra_environ=self._make_extra_environ(),
 					 status=200)
 
@@ -60,13 +60,13 @@ class TestAdminViews(ApplicationTestBase):
 			hits = rim.search('fear')
 			assert_that(hits, has_length(1))
 			
-		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
+		testapp.post('/dataserver2/hypatia/@@process_content',
 					 json.dumps({'limit': 'xyt'}),
 					 extra_environ=self._make_extra_environ(),
 					 status=422)
 
 	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
-	def test_reindex_hypatia_content(self):
+	def test_reindex_content(self):
 		with mock_dataserver.mock_db_trans(self.ds):
 			for x in range(10):
 				usr = self._create_user(username='bankai%s' % x)
@@ -74,32 +74,32 @@ class TestAdminViews(ApplicationTestBase):
 				usr.addContainedObject(note)
 				
 		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/@@process_hypatia_content',
+		testapp.post('/dataserver2/hypatia/@@process_content',
 					 extra_environ=self._make_extra_environ(),
 					 status=200)
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
 							  json.dumps({'limit': 100}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
 							  json.dumps({'term':'bank'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
 							  json.dumps({'limit': 100, 'usernames':'bankai1 bankai2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_hypatia_content',
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
 							  json.dumps({'limit': 'xyz', 'usernames':'bankai1 bankai2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=422)
