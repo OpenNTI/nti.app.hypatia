@@ -9,10 +9,17 @@ __docformat__ = "restructuredtext en"
 
 import uuid
 
+from zope import component
+
 from nti.appserver.tests.test_application import SharedApplicationTestBase
 from nti.appserver.tests.test_application import WithSharedApplicationMockDS
 from nti.appserver.tests.test_application import WithSharedApplicationMockDSWithChanges
 from nti.appserver.tests.test_application import WithSharedApplicationMockDSHandleChanges
+
+from nti.dataserver import interfaces as nti_interfaces
+
+from nti.hypatia import interfaces as hypatia_interfaces
+from nti.hypatia.adapters import _HypatiaUserIndexController
 
 from nti.dataserver.tests.mock_dataserver import SharedConfiguringTestBase as \
                                                  DSSharedConfiguringTestBase
@@ -34,5 +41,14 @@ zanpakuto_commands = (
 class ConfiguringTestBase(DSSharedConfiguringTestBase):
     set_up_packages = ('nti.dataserver', 'nti.hypatia', 'nti.contentsearch')
 
+    def setUp(self):
+        super(ConfiguringTestBase, self).setUp()
+        try:
+            # temp hack to register adapter while the zcml condition zopyx_index is
+            # deprecated
+            component.provideAdapter(_HypatiaUserIndexController, nti_interfaces.IUser)
+        except:
+            pass
+   
 class ApplicationTestBase(SharedApplicationTestBase):
     features = SharedApplicationTestBase.features + ('forums',)
