@@ -38,17 +38,25 @@ zanpakuto_commands = (
     "Call forth the Twilight",
     "Multiplication and subtraction of fire and ice, show your might")
 
+def register():
+    try:
+        # temp hack to register adapter while the zcml condition zopyx_index is
+        # deprecated
+        component.provideAdapter(_HypatiaUserIndexController, (nti_interfaces.IUser,),
+                                 hypatia_interfaces.IHypatiaUserIndexController)
+    except:
+        pass
+
 class ConfiguringTestBase(DSSharedConfiguringTestBase):
     set_up_packages = ('nti.dataserver', 'nti.hypatia', 'nti.contentsearch')
 
     def setUp(self):
         super(ConfiguringTestBase, self).setUp()
-        try:
-            # temp hack to register adapter while the zcml condition zopyx_index is
-            # deprecated
-            component.provideAdapter(_HypatiaUserIndexController, nti_interfaces.IUser)
-        except:
-            pass
+        register()
    
 class ApplicationTestBase(SharedApplicationTestBase):
     features = SharedApplicationTestBase.features + ('forums',)
+
+    def setUp(self):
+        super(ApplicationTestBase, self).setUp()
+        register()
