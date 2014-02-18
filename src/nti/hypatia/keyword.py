@@ -63,7 +63,7 @@ class SearchKeywordIndex(KeywordIndex):
 		else:
 			return Set()
 
-	def remove_word(self, word):
+	def removeWord(self, word):
 		result = []
 		docids = self._fwd_index.get(word, self.family.IF.Set())
 		for docid in list(docids):
@@ -74,3 +74,19 @@ class SearchKeywordIndex(KeywordIndex):
 			else:
 				ooset.remove(word)
 		return result
+	remove_word = removeWord
+
+	def replaceWord(self, word, replacement):
+		if word not in self._fwd_index or replacement in self._fwd_index:
+			return None
+
+		result = []
+		docids = self._fwd_index.get(word)
+		for docid in list(docids):
+			result.append(docid)
+			ooset = self._rev_index[docid]
+			if word in ooset:
+				ooset.remove(word)
+			ooset.add(replacement)
+		return result
+	replace_word = replaceWord

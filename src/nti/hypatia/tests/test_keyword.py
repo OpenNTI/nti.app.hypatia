@@ -8,9 +8,13 @@ __docformat__ = "restructuredtext en"
 # pylint: disable=W0212,R0904
 
 from hamcrest import is_
+from hamcrest import none
 from hamcrest import is_in
+from hamcrest import is_not
+from hamcrest import contains
 from hamcrest import has_length
 from hamcrest import assert_that
+does_not = is_not
 
 import unittest
 
@@ -83,3 +87,25 @@ class TestModeled(unittest.TestCase):
 		assert_that(index.get_words(1), is_(('zope3',)))
 		assert_that(index.get_words(4), is_(('zope3',)))
 		assert_that(sorted(index.get_words(3)), is_(['zope3', 'zope4']))
+
+	def test_replace_word(self):
+		index = self._makeOne()
+		index.index_doc(1, ('zope', 'zope3'))
+		index.index_doc(2, ('zope',))
+		index.index_doc(3, ('zope', 'zope3', 'zope4'))
+		index.index_doc(4, ('zope', 'zope3'))
+
+		s = index.replace_word('notfound', 'zope')
+		assert_that(s, is_(none()))
+
+		s = index.replace_word('zope', 'zope3')
+		assert_that(s, is_(none()))
+
+		s = index.replace_word('zope', 'zope5')
+		assert_that(s, has_length(4))
+
+		for x in range(1, 5):
+			assert_that(index.get_words(x), does_not(contains('zope')))
+
+		s = index.replace_word('zope4', 'zope6')
+		assert_that(s, has_length(1))
