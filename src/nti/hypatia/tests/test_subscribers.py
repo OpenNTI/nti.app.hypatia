@@ -94,6 +94,3 @@ class TestSubcribers(ConfiguringTestBase):
 		count = subscribers.delete_userdata("n1@nti.com")
 		assert_that(count, is_(1))
 
-if __name__ == '__main__':
-	import unittest
-	unittest.main()
