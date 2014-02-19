@@ -28,5 +28,5 @@ def all_indexable_objects_iids(users=()):
 				yield uid
 		except TypeError as e:
 			oid = to_external_oid(obj)
-			logger.error("Error getting creator for %s(%s,%s). %s",
+			logger.error("Error getting creator for %s(%s,%s); %s",
 						 type(obj), uid, oid, e)

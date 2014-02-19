@@ -46,8 +46,8 @@ def do_evolve(context, reg_intid=True):
 			except TypeError:
 				pass
 
-
 	logger.info('Evolution done!!! %s objects added to search queue' % total)
+	return total
 
 def evolve(context):
 	"""
