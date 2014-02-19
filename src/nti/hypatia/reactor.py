@@ -64,7 +64,7 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	queue_size = queue_length(queue)
 
 	limit = queue_size if limit == -1 else limit
-	if queue_size >= 0:
+	if queue_size > 0:
 		logger.info("Taking %s events to process; current queue size %s", limit, queue_size)
 
 	to_process = min(limit, queue_size)
