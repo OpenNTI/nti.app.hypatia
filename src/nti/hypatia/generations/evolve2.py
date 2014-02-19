@@ -42,7 +42,7 @@ def do_evolve(context, reg_intid=True):
 		for iid in utils.all_indexable_objects_iids():
 			try:
 				search_queue().add(iid)
-				total += 0
+				total += 1
 			except TypeError:
 				pass
 

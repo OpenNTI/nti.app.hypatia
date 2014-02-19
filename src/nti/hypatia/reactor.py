@@ -64,10 +64,8 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
 	queue_size = queue_length(queue)
 
 	limit = queue_size if limit == -1 else limit
-	if queue_size >= limit:
-		logger.info("Processing %s index event(s) out of %s", limit, queue_size)
-	elif queue_size > 0:
-		logger.info("Processing %s index event(s)", queue_size)
+	if queue_size >= 0:
+		logger.info("Taking %s events to process; current queue size %s", limit, queue_size)
 
 	to_process = min(limit, queue_size)
 	queue.process(ids, (catalog,), to_process)
@@ -127,7 +125,7 @@ class IndexReactor(object):
 						   if use_redis else _LockingClient()
 
 	def __repr__(self):
-		return "%s(%s)" % (self.__class__.__name__, self.pid)
+		return "%s" % (self.__class__.__name__.lower())
 
 	def halt(self):
 		self.stop = True
@@ -142,7 +140,7 @@ class IndexReactor(object):
 		self.stop = False
 		self.pid = os.getpid()
 		try:
-			logger.info("Index reactor started (%s)", self.pid)
+			logger.info("Index reactor started")
 			batch_size = self.limit
 			while not self.stop:
 				start = time.time()
@@ -170,7 +168,7 @@ class IndexReactor(object):
 								   duration, batch_size)
 						sleep(duration)
 				except component.ComponentLookupError:
-					logger.error("process %s could not get component", self.pid)
+					logger.error("process could not get component", self.pid)
 					break
 				except KeyboardInterrupt:
 					break
