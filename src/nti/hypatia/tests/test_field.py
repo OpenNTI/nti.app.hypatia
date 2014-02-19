@@ -22,6 +22,7 @@ import unittest
 
 import BTrees
 from BTrees.IFBTree import IFSet
+from BTrees.LLBTree import LLSet
 
 from hypatia import query
 from hypatia import RangeValue
@@ -457,6 +458,15 @@ class TestSearchTimeFieldIndex(unittest.TestCase):
 		result = index.applyNotInRange(3.0, 7.0)
 		result = sorted(list(result))
 		assert_that(result, is_([2, 5, 6, 7, 10, 11]))
+
+	def test_applyIntersect(self):
+		index = self._makeOne()
+		self._populateIndex(index)
+		c1 = LLSet([5, 7, 8])
+		result = index.applyIntersect(one_ival, c1)
+		assert_that(list(result), is_([5]))
+		result = index.applyIntersect(one_ival, None)
+		assert_that(list(result), is_([5]))
 
 	def test_not_indexed_count(self):
 		index = self._makeOne()

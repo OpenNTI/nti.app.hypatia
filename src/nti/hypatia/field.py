@@ -130,6 +130,7 @@ class SearchTimeFieldIndex(FieldIndex):
 		if docids is None:
 			return result
 		return self.family.II.weightedIntersection(result, docids)[1]
+	applyIntersect = apply_intersect
 
 	def _negate(self, apply_func, *args, **kw):
 		positive = apply_func(*args, **kw)

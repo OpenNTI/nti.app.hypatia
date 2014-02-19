@@ -53,7 +53,7 @@ def queue_length(queue):
 	try:
 		result = len(queue)
 	except ValueError:
-		result = queue.__len__()
+		result = 0
 		logger.error("Could not compute queue length. Using __len__ method (%s)", result)
 	return result
 
@@ -184,9 +184,3 @@ class IndexReactor(object):
 		result = gevent.spawn(self.run)
 		return result
 
-from zope.processlifetime import IDatabaseOpenedWithRoot
-
-@component.adapter(IDatabaseOpenedWithRoot)
-def _start_reactor(database_event):
-	reactor = IndexReactor().start()
-	component.provideUtility(reactor, hypatia_interfaces.IIndexReactor)
