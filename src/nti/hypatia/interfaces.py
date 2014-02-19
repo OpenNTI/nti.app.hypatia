@@ -32,7 +32,22 @@ class ISearchCatalog(hypatia_interfaces.ICatalog):
     pass
 
 class ISearchKeywordIndex(interface.Interface):
-    pass
+    
+    def strictEq(query):
+        """
+        return the docids that have the exact word(s) in the specfied query
+        """
+
+    def removeWord(word):
+        """
+        remove the specfied word from this index
+        """ 
+
+    def replaceWord(word, replacement):
+        """
+        replace the specfied word w/ its replacement provided that the latter is not
+        stored
+        """
 
 class ISearchTimeFieldIndex(interface.Interface):
     pass

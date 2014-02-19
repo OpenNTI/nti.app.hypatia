@@ -42,8 +42,7 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 	result = Catalog(family=family64)
 	interface.alsoProvides(result, ISearchCatalog)
 
-	result[type_] = SearchKeywordIndex(discriminator=get_type,
-								  		family=family64)
+	result[type_] = SearchKeywordIndex(discriminator=get_type, family=family64)
 
 	index = CosineIndex(lexicon=lexicon, family=family64)
 	result[content_] = TextIndex(lexicon=lexicon,
@@ -92,9 +91,6 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 								 	family=family64)
 
 	result[acl_] = SearchKeywordIndex(discriminator=discriminators.get_acl,
-								 	  family=family64)
-
+									  family=family64)
 
 	return result
-
-
