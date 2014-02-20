@@ -97,11 +97,16 @@ class TestAdapters(ConfiguringTestBase):
 	@mock_dataserver.WithMockDSTrans
 	def test_noops(self):
 		user1 = self._create_user(username='user1@nti.com')
+		note = self._create_note('Hakka No Togame', user1,
+								 title='White mist sentence')
+		conn = mock_dataserver.current_transaction
+		if conn: conn.add(note)
+		note = user1.addContainedObject(note)
+
 		searcher = hypatia_interfaces.IHypatiaUserIndexController(user1)
-		searcher.index_content()
-		searcher.update_content()
-		searcher.delete_content()
+		searcher.index_content(note)
+		searcher.update_content(note)
+		searcher.delete_content(note)
 
 		obj = searcher.get_object(10)
 		assert_that(obj, is_(none()))
-

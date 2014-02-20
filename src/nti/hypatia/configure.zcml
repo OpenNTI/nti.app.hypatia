@@ -16,13 +16,21 @@
 	<!-- Subscribers -->
 		 		
 	<subscriber handler=".subscribers._user_deleted" />
-	<subscriber handler=".subscribers._modeled_added" />
-	<subscriber handler=".subscribers._modeled_removed" />
-	<subscriber handler=".subscribers._modeled_modified" />
-	<subscriber handler=".subscribers._forum_added" />
-	<subscriber handler=".subscribers._forum_removed" />
-	<subscriber handler=".subscribers._forum_modified" />
 	
+	<subscriber handler=".subscribers._object_added"
+				for="nti.dataserver.interfaces.IModeledContent zope.intid.interfaces.IIntIdAddedEvent"/>
+	<subscriber handler=".subscribers._object_removed"
+				for="nti.dataserver.interfaces.IModeledContent zope.intid.interfaces.IIntIdRemovedEvent"/>
+	<subscriber handler=".subscribers._object_modified"
+				for="nti.dataserver.interfaces.IModeledContent zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
+				
+	<subscriber handler=".subscribers._object_added"
+				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.intid.interfaces.IIntIdAddedEvent"/>
+	<subscriber handler=".subscribers._object_removed"
+				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.intid.interfaces.IIntIdRemovedEvent"/>
+	<subscriber handler=".subscribers._object_modified"
+				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
+		
 	<!-- Adapters -->
 	
 	<configure zcml:condition="not-have zopyx_index">
