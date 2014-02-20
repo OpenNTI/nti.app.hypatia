@@ -70,14 +70,20 @@ class _HypatiaUserIndexController(object):
 			result = None
 		return result
 
-	def index_content(self, *args, **kwargs):
-		pass
-	
-	def update_content(self, *args, **kwargs):
-		pass
+	def index_content(self, data):
+		um = search_interfaces.IRepozeEntityIndexManager(self.entity, None)
+		if data is not None and um is not None:
+			um.index_content(data)
 
-	def delete_content(self, *args, **kwargs):
-		pass
+	def update_content(self, data):
+		um = search_interfaces.IRepozeEntityIndexManager(self.entity, None)
+		if data is not None and um is not None:
+			um.update_content(data)
+
+	def delete_content(self, data):
+		um = search_interfaces.IRepozeEntityIndexManager(self.entity, None)
+		if data is not None and um is not None:
+			um.delete_content(data)
 
 	@metricmethod
 	def do_search(self, query, results):
