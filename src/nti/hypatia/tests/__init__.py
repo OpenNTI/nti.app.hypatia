@@ -11,18 +11,18 @@ import uuid
 
 from zope import component
 
-from nti.appserver.tests.test_application import SharedApplicationTestBase
-from nti.appserver.tests.test_application import WithSharedApplicationMockDS
-from nti.appserver.tests.test_application import WithSharedApplicationMockDSWithChanges
-from nti.appserver.tests.test_application import WithSharedApplicationMockDSHandleChanges
-
 from nti.dataserver import interfaces as nti_interfaces
 
 from nti.hypatia import interfaces as hypatia_interfaces
 from nti.hypatia.adapters import _HypatiaUserIndexController
 
-from nti.dataserver.tests.mock_dataserver import SharedConfiguringTestBase as \
-                                                 DSSharedConfiguringTestBase
+from nti.app.testing.application_webtest import SharedApplicationTestBase
+
+from nti.app.testing.decorators import WithSharedApplicationMockDS
+from nti.app.testing.decorators import WithSharedApplicationMockDSWithChanges
+from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges
+
+from nti.dataserver.tests.mock_dataserver import SharedConfiguringTestBase
 
 zanpakuto_commands = (
     "Shoot To Kill",
@@ -47,7 +47,7 @@ def register():
     except:
         pass
 
-class ConfiguringTestBase(DSSharedConfiguringTestBase):
+class ConfiguringTestBase(SharedConfiguringTestBase):
     set_up_packages = ('nti.dataserver', 'nti.hypatia', 'nti.contentsearch')
 
     def setUp(self):
