@@ -12,6 +12,8 @@ from hamcrest import none
 from hamcrest import has_length
 from hamcrest import assert_that
 
+import unittest
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.contentsearch import discriminators
@@ -25,11 +27,14 @@ from nti.hypatia import interfaces as hypatia_interfaces
 
 from nti.ntiids.ntiids import make_ntiid
 
+from nti.dataserver.tests.mock_dataserver import WithMockDSTrans
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.hypatia.tests import ConfiguringTestBase
+from nti.hypatia.tests import SharedConfiguringTestLayer
 
-class TestAdapters(ConfiguringTestBase):
+class TestAdapters(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def _create_user(self, username='nt@nti.com', password='temp001'):
 		usr = User.create_user(self.ds, username=username, password=password)
@@ -46,7 +51,7 @@ class TestAdapters(ConfiguringTestBase):
 			note.addSharingTarget(shared)
 		return note
 
-	@mock_dataserver.WithMockDSTrans
+	@WithMockDSTrans
 	def test_add_search(self):
 		user1 = self._create_user(username='user1@nti.com')
 		user2 = self._create_user(username='user2@nti.com')
@@ -94,7 +99,7 @@ class TestAdapters(ConfiguringTestBase):
 		hits = searcher.suggest_and_search("performing Jinzen")
 		assert_that(hits, has_length(1))
 
-	@mock_dataserver.WithMockDSTrans
+	@WithMockDSTrans
 	def test_noops(self):
 		user1 = self._create_user(username='user1@nti.com')
 		note = self._create_note('Hakka No Togame', user1,
