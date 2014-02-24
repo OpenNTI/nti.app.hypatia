@@ -53,9 +53,6 @@ def register():
     except:
         pass
 
-import ZODB
-from nti.dataserver import users
-
 class SharedConfiguringTestLayer(ZopeComponentLayer,
                                  GCLayerMixin,
                                  ConfiguringLayerMixin,
@@ -65,14 +62,6 @@ class SharedConfiguringTestLayer(ZopeComponentLayer,
 
     @classmethod
     def setUp(cls):
-
-        database = ZODB.DB(ApplicationTestLayer._storage_base,
-                           database_name='Users')
-        @WithMockDS(database=database)
-        def _create():
-            with mock_db_trans():
-                users.User.create_user(username='harp4162', password='temp001')
-
         cls.setUpPackages()
         register()
 
