@@ -27,10 +27,14 @@ from nti.appserver.tests.test_application import TestApp
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.hypatia.tests import ApplicationTestBase
-from nti.hypatia.tests import WithSharedApplicationMockDSHandleChanges
+from nti.hypatia.tests import HypatiaApplicationTestLayer
 
-class TestAdminViews(ApplicationTestBase):
+from nti.app.testing.application_webtest import ApplicationLayerTest
+from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges
+
+class TestAdminViews(ApplicationLayerTest):
+
+	layer = HypatiaApplicationTestLayer
 
 	def _create_note(self, msg, username, containerId=None, title=None):
 		note = Note()
@@ -41,7 +45,7 @@ class TestAdminViews(ApplicationTestBase):
 		note.containerId = containerId or make_ntiid(nttype='bleach', specific='manga')
 		return note
 
-	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	@WithSharedApplicationMockDSHandleChanges(users=True, testapp=True)
 	def test_process_queue(self):
 		username = 'ichigo@bleach.com'
 		with mock_dataserver.mock_db_trans(self.ds):

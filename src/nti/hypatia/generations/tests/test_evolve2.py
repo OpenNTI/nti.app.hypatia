@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 from hamcrest import has_length
 from hamcrest import assert_that
 
-import fudge
+import unittest
 
 from nti.dataserver.users import User
 from nti.dataserver.contenttypes import Note
@@ -21,12 +21,14 @@ from nti.hypatia import search_queue
 from nti.hypatia.generations import evolve2
 
 from nti.hypatia.tests import zanpakuto_commands
-from nti.hypatia.tests import ConfiguringTestBase
+from nti.hypatia.tests import SharedConfiguringTestLayer
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
-from nti.dataserver.tests.mock_dataserver import  mock_db_trans, WithMockDS
+from nti.dataserver.tests.mock_dataserver import WithMockDSTrans
 
-class TestEvolve2(ConfiguringTestBase):
+class TestEvolve2(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def _create_user(self, username='nt@nti.com', password='temp001'):
 		ds = mock_dataserver.current_mock_ds
@@ -52,16 +54,17 @@ class TestEvolve2(ConfiguringTestBase):
 			notes.append(note)
 		return notes, user
 
-	@WithMockDS
-	def test_evolve39(self):
-		with mock_db_trans():
-			self._add_notes()
+	@WithMockDSTrans
+	def test_evolve2(self):
+		self._add_notes()
+		conn = mock_dataserver.current_transaction
 
-		with mock_db_trans() as conn:
-			context = fudge.Fake().has_attr(connection=conn)
-			evolve2.evolve(context)
+		class _context(object): pass
+		context = _context()
+		context.connection = conn
 
-		with mock_db_trans( ) as conn:
-			queue = search_queue()
-			assert_that(queue, has_length(len(zanpakuto_commands)))
+		evolve2.do_evolve(context, False)
+
+		queue = search_queue()
+		assert_that(queue, has_length(len(zanpakuto_commands)))
 

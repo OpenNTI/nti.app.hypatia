@@ -12,6 +12,8 @@ from hamcrest import has_length
 from hamcrest import assert_that
 from hamcrest import greater_than_or_equal_to
 
+import unittest
+
 from hypatia.text import ParseError
 
 from nti.contentsearch import interfaces as search_interfaces
@@ -35,16 +37,20 @@ import nti.dataserver.tests.mock_dataserver as mock_dataserver
 from nti.dataserver.tests.mock_dataserver import WithMockDSTrans
 
 from nti.hypatia.tests import zanpakuto_commands
-from nti.hypatia.tests import ApplicationTestBase
-from nti.hypatia.tests import ConfiguringTestBase
-from nti.hypatia.tests import WithSharedApplicationMockDSHandleChanges as WithSharedApplicationMockDS
+from nti.hypatia.tests import SharedConfiguringTestLayer
+from nti.hypatia.tests import HypatiaApplicationTestLayer
+from nti.app.testing.application_webtest import ApplicationLayerTest
+from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges as \
+									   WithSharedApplicationMockDS
 
 def _create_user(username='nt@nti.com', password='temp001'):
 	ds = mock_dataserver.current_mock_ds
 	usr = User.create_user(ds, username=username, password=password)
 	return usr
 
-class TestLegacySearch(ConfiguringTestBase):
+class TestLegacySearch(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def _create_note(self, msg, username, containerId=None, title=None):
 		note = Note()
@@ -322,7 +328,7 @@ class TestLegacySearch(ConfiguringTestBase):
 		hits = rim.search('tensho')
 		assert_that(hits, has_length(1))
 
-# opp search
+# app search
 
 import simplejson as json
 from urllib import quote as UQ
@@ -383,7 +389,10 @@ class UserCommunityFixture(object):
 	def __getattr__(self, name):
 		return getattr(self.test, name)
 
-class TestAppLegacySearch(ApplicationTestBase):
+
+class TestAppLegacySearch(ApplicationLayerTest):
+
+	layer = HypatiaApplicationTestLayer
 
 	default_entityname = 'TheCommunity'
 	forum_ntiid = 'tag:nextthought.com,2011-10:TheCommunity-Forum:GeneralCommunity-Forum'
@@ -482,7 +491,7 @@ class TestAppLegacySearch(ApplicationTestBase):
 
 		# (Same user) comments on blog by POSTing a new post
 		data = self._create_comment_data_for_POST()
-		contents_url = self.require_link_href_with_rel( res.json_body, 'contents' )
+		contents_url = self.require_link_href_with_rel(res.json_body, 'contents')
 		res = testapp.post_json(contents_url, data, status=201)
 
 		with mock_dataserver.mock_db_trans(self.ds):
@@ -491,7 +500,7 @@ class TestAppLegacySearch(ApplicationTestBase):
 			rim = hypatia_interfaces.IHypatiaUserIndexController(user)
 			hits = rim.search(self.forum_comment_unique)
 			assert_that(hits, has_length(1))
-			
+
 	@WithSharedApplicationMockDS(users=True, testapp=True)
 	def test_creator_can_DELETE_comment_yielding_placeholders(self):
 		testapp = self.testapp
@@ -554,7 +563,7 @@ class TestAppLegacySearch(ApplicationTestBase):
 			rim = hypatia_interfaces.IHypatiaUserIndexController(user)
 			hits = rim.search(self.forum_comment_unique)
 			assert_that(hits, has_length(1))
-			
+
 		self.testapp.post(self.require_link_href_with_rel(publish_res.json_body, 'unpublish'))
 
 		with mock_dataserver.mock_db_trans(self.ds):

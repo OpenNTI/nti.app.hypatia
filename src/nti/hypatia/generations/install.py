@@ -53,6 +53,7 @@ def install_hypatia(context):
 	catalog = hypatia_catalog.create_catalog(lexicon)
 	catalog.__parent__ = dataserver_folder
 	catalog.__name__ = '++etc++hypatia++catalog'
+
 	intids.register(catalog)
 	lsm.registerUtility(catalog, provided=hypatia_interfaces.ISearchCatalog)
 

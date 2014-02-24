@@ -11,6 +11,8 @@ from hamcrest import is_
 from hamcrest import has_length
 from hamcrest import assert_that
 
+import unittest
+
 import BTrees
 
 from hypatia import query
@@ -30,9 +32,11 @@ from nti.ntiids.ntiids import make_ntiid
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.hypatia.tests import ConfiguringTestBase
+from nti.hypatia.tests import SharedConfiguringTestLayer
 
-class TestModeled(ConfiguringTestBase):
+class TestModeled(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def _create_user(self, username='nt@nti.com', password='temp001'):
 		usr = User.create_user(self.ds, username=username, password=password)

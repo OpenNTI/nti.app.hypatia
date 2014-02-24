@@ -10,14 +10,18 @@ __docformat__ = "restructuredtext en"
 from hamcrest import is_
 from hamcrest import assert_that
 
+import unittest
+
 from nti.dataserver.contenttypes import Note
 from nti.dataserver.contenttypes import Canvas
 
 from nti.hypatia import is_indexable
 
-from nti.hypatia.tests import ConfiguringTestBase
+from nti.hypatia.tests import SharedConfiguringTestLayer
 
-class TestModeled(ConfiguringTestBase):
+class TestModeled(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def test_is_indexable(self):
 		assert_that(is_indexable(Note()), is_(True))

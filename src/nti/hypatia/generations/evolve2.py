@@ -39,6 +39,7 @@ def do_evolve(context, reg_intid=True):
 				"Hooks not installed?"
 
 		total = 0
+
 		for iid in utils.all_indexable_objects_iids():
 			try:
 				search_queue().add(iid)

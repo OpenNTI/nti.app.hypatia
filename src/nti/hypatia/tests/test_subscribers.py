@@ -10,6 +10,8 @@ __docformat__ = "restructuredtext en"
 from hamcrest import is_
 from hamcrest import assert_that
 
+import unittest
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
@@ -24,9 +26,11 @@ import nti.dataserver.tests.mock_dataserver as mock_dataserver
 from nti.dataserver.tests.mock_dataserver import WithMockDSTrans
 
 from nti.hypatia.tests import zanpakuto_commands
-from nti.hypatia.tests import ConfiguringTestBase
+from nti.hypatia.tests import SharedConfiguringTestLayer
 
-class TestSubcribers(ConfiguringTestBase):
+class TestSubcribers(unittest.TestCase):
+
+	layer = SharedConfiguringTestLayer
 
 	def _create_user(self, username='nt@nti.com', password='temp001'):
 		ds = mock_dataserver.current_mock_ds
