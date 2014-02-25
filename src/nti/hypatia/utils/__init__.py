@@ -13,6 +13,8 @@ logger = __import__('logging').getLogger(__name__)
 import zope.intid
 from zope import component
 
+from ZODB.POSException import POSKeyError
+
 from nti.externalization.oids import to_external_oid
 
 from nti.hypatia import is_indexable
@@ -26,6 +28,8 @@ def all_indexable_objects_iids(users=()):
 			if 	is_indexable(obj) and \
 				(not usernames or getattr(creator, 'username', creator) in usernames):
 				yield uid
+		except POSKeyError:
+			pass  # pragma no cover
 		except TypeError as e:
 			oid = to_external_oid(obj)
 			logger.error("Error getting creator for %s(%s,%s); %s",
