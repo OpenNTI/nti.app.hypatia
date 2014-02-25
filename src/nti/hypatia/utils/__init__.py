@@ -29,7 +29,7 @@ def all_indexable_objects_iids(users=()):
 				(not usernames or getattr(creator, 'username', creator) in usernames):
 				yield uid
 		except POSKeyError:
-			pass  # pragma no cover
+			logger.error("Ignoring %r,%s", obj, uid)
 		except TypeError as e:
 			oid = to_external_oid(obj)
 			logger.error("Error getting creator for %s(%s,%s); %s",
