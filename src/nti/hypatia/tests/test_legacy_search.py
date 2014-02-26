@@ -347,6 +347,11 @@ class TestLegacySearch(unittest.TestCase):
 		hits = rim.search(query)
 		assert_that(hits, has_length(0))
 
+		query = search_interfaces.ISearchQuery("bankai")
+		query.searchOn = ['note']
+		hits = rim.search(query)
+		assert_that(hits, has_length(1))
+
 # app search
 
 import simplejson as json
