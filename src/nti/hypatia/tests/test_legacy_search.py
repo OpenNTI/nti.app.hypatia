@@ -328,6 +328,25 @@ class TestLegacySearch(unittest.TestCase):
 		hits = rim.search('tensho')
 		assert_that(hits, has_length(1))
 
+	@WithMockDSTrans
+	def test_no_need_2_search(self):
+		username = 'ichigo@bleach.com'
+		user = _create_user(username=username)
+		note = self._create_note(u'Yours is an unforgiving bankai', username,
+								 title=u'Rukia')
+		note = user.addContainedObject(note)
+
+		# index
+		reactor.process_queue()
+
+		# search
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user)
+		query = search_interfaces.ISearchQuery("bankai")
+		query.searchOn = ['content']
+		hits = rim.search(query)
+		assert_that(hits, has_length(0))
+
 # app search
 
 import simplejson as json
