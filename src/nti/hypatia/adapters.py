@@ -21,6 +21,7 @@ from nti.chatserver import interfaces as chat_interfaces
 
 from nti.contentprocessing import rank_words
 
+from nti.contentsearch import common
 from nti.contentsearch import constants
 from nti.contentsearch import discriminators
 from nti.contentsearch import search_results
@@ -89,6 +90,10 @@ class _HypatiaUserIndexController(object):
 	def do_search(self, query, results):
 		query = search_interfaces.ISearchQuery(query)
 		if query.is_empty:
+			return results
+
+		searchOn = set(query.searchOn or ())
+		if searchOn and not searchOn.intersection(common.get_ugd_indexable_types()):
 			return results
 
 		# parse catalog

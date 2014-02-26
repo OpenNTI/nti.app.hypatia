@@ -14,6 +14,7 @@ from zope import interface
 
 from hypatia.query import Any
 from hypatia.query import Contains
+from hypatia.text.parsetree import ParseError
 
 from nti.contentsearch import content_utils
 from nti.contentsearch import interfaces as search_interfaces
@@ -32,9 +33,24 @@ def can_use_ngram_field(query):
 @interface.implementer(hypatia_interfaces.ISearchQueryParser)
 class _DefaultQueryParser(object):
 
+	def validate(self, query):
+		catalog = search_catalog()
+		term = query.term.lower()
+		try:
+			text_idx = catalog[content_]
+			text_idx.parse_query(term)
+		except ParseError:
+			term = '"%s"' % term
+		return term
+
 	def parse(self, query, user=None):
 		query = search_interfaces.ISearchQuery(query)
-		term = query.term.lower()
+		term = self.validate(query)
+		return self._parse(query, user, term)
+
+	def _parse(self, query, user, term=None):
+		query = search_interfaces.ISearchQuery(query)
+		term = query.term.lower() if not term else term
 
 		catalog = search_catalog()
 		# type
