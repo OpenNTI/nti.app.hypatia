@@ -73,7 +73,7 @@ def reindex_content(request):
 
 	total = 0
 	now = time.time()
-	for iid in utils.all_indexable_objects_iids(usernames):
+	for iid, _ in utils.all_indexable_objects_iids(usernames):
 		try:
 			search_queue().add(iid)
 			total += 1

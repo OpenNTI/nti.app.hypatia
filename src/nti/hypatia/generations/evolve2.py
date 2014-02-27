@@ -40,7 +40,7 @@ def do_evolve(context, reg_intid=True):
 
 		total = 0
 
-		for iid in utils.all_indexable_objects_iids():
+		for iid, _ in utils.all_indexable_objects_iids():
 			try:
 				search_queue().add(iid)
 				total += 1

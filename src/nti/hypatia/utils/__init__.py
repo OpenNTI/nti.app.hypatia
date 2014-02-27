@@ -27,7 +27,7 @@ def all_indexable_objects_iids(users=()):
 			creator = getattr(obj, 'creator', None)
 			if 	is_indexable(obj) and \
 				(not usernames or getattr(creator, 'username', creator) in usernames):
-				yield uid
+				yield uid, obj
 		except POSKeyError:
 			logger.warn("Ignoring %r,%s", obj, uid)
 		except TypeError as e:
