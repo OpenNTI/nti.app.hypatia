@@ -31,6 +31,5 @@ def all_indexable_objects_iids(users=()):
 		except POSKeyError:
 			logger.warn("Ignoring %r,%s", obj, uid)
 		except TypeError as e:
-			oid = to_external_oid(obj)
-			logger.error("Error getting creator for %s(%s,%s); %s",
-						 type(obj), uid, oid, e)
+			logger.error("Error getting creator for %s(%s); %s",
+						 type(obj), uid, e)
