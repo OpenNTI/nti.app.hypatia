@@ -10,17 +10,21 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import sys
+
 from zope import interface
 
+from hypatia.query import Eq
 from hypatia.query import Any
+from hypatia.query import InRange
 from hypatia.query import Contains
 from hypatia.text.parsetree import ParseError
 
 from nti.contentsearch import content_utils
 from nti.contentsearch import interfaces as search_interfaces
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
-										 acl_, redactionExplanation_, type_,
-										 replacementContent_)
+										 acl_, redactionExplanation_, type_, createdTime_,
+										 replacementContent_, creator_, lastModified_)
 
 from . import get_user
 from . import search_catalog
@@ -48,6 +52,11 @@ class _DefaultQueryParser(object):
 		term = self.validate(query)
 		return self._parse(query, user, term)
 
+	def _dateTime_query(self, catalog, name, dateRange):
+		startTime = dateRange.startTime or 0
+		endTime = dateRange.endTime or sys.maxint
+		return InRange(catalog[name], startTime, endTime)
+		
 	def _parse(self, query, user, term=None):
 		query = search_interfaces.ISearchQuery(query)
 		term = query.term.lower() if not term else term
@@ -71,6 +80,18 @@ class _DefaultQueryParser(object):
 
 		for field in fields:
 			result = result | Contains(catalog[field], term)
+
+		creator = query.creator
+		if creator:
+			result = result & Eq(catalog[creator_], creator)
+			
+		creationTime = query.creationTime
+		if creationTime is not None:
+			result = result & self._dateTime_query(catalog, createdTime_, creationTime)
+
+		modTime = query.modificationTime
+		if modTime is not None:
+			result = result & self._dateTime_query(catalog, lastModified_, modTime)
 
 		if type_query is not None:
 			result = result & type_query

@@ -7,6 +7,8 @@ __docformat__ = "restructuredtext en"
 # disable: accessing protected members, too many methods
 # pylint: disable=W0212,R0904
 
+import time
+
 from hamcrest import is_
 from hamcrest import has_length
 from hamcrest import assert_that
@@ -16,6 +18,7 @@ import unittest
 
 from hypatia.text import ParseError
 
+from nti.contentsearch.search_query import DateTimeRange
 from nti.contentsearch import interfaces as search_interfaces
 
 from nti.contentfragments.interfaces import IPlainTextContentFragment
@@ -351,6 +354,26 @@ class TestLegacySearch(unittest.TestCase):
 		query.searchOn = ['note']
 		hits = rim.search(query)
 		assert_that(hits, has_length(1))
+
+	@WithMockDSTrans
+	def test_date_search(self):
+		username = 'ichigo@bleach.com'
+		user = _create_user(username=username)
+		note = self._create_note(u'Yours is an unforgiving bankai', username,
+								 title=u'Rukia')
+		note = user.addContainedObject(note)
+
+		# index
+		reactor.process_queue()
+
+		# search
+		now = time.time()
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user)
+		query = search_interfaces.ISearchQuery("bankai")
+		query.creationTime = DateTimeRange(startTime=now + 100, endTime=now + 1000)
+		hits = rim.search(query)
+		assert_that(hits, has_length(0))
+
 
 # app search
 

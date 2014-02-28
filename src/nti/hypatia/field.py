@@ -96,11 +96,14 @@ class SearchTimeFieldIndex(FieldIndex):
 		not_indexed = self.not_indexed()
 		indexed = self.indexed()
 		if len(not_indexed) == 0:
-			return self.family.II.Set(indexed)
+			return self.family.IF.Set(indexed)
 		elif len(indexed) == 0:
-			return not_indexed
+			return self.family.IF.TreeSet(not_indexed)
+
 		indexed = self.family.II.Set(indexed)
-		return self.family.II.union(not_indexed, indexed)
+		result = self.family.II.union(not_indexed, indexed)
+		result = self.family.IF.LFSet(result)
+		return result
 
 	def search(self, queries, operator='or'):
 		sets = []
@@ -123,13 +126,17 @@ class SearchTimeFieldIndex(FieldIndex):
 		else:
 			result = self.family.II.multiunion(sets)
 
+		if result is not None:
+			result = self.family.IF.LFSet(result)
+
 		return result
 
 	def apply_intersect(self, query, docids):
 		result = self.apply(query)
 		if docids is None:
 			return result
-		return self.family.II.weightedIntersection(result, docids)[1]
+		result = self.family.IF.weightedIntersection(result, docids)[1]
+		return result
 	applyIntersect = apply_intersect
 
 	def _negate(self, apply_func, *args, **kw):
@@ -137,7 +144,7 @@ class SearchTimeFieldIndex(FieldIndex):
 		all_docids = self.docids()
 		if len(positive) == 0:
 			return all_docids
-		return self.family.II.difference(all_docids, positive)
+		return self.family.IF.difference(all_docids, positive)
 
 	def discriminate(self, obj, default):
 		value = super(SearchTimeFieldIndex, self).discriminate(obj, default)
@@ -187,11 +194,14 @@ class SearchTimeFieldIndex(FieldIndex):
 		return super(SearchTimeFieldIndex, self).notany(self.to_int(value))
 
 	def applyInRange(self, start, end, excludemin=False, excludemax=False):
-		return self.family.II.multiunion(
+		result = self.family.II.multiunion(
 			self._fwd_index.values(
 				self.to_int(start), self.to_int(end),
 				excludemin=excludemin, excludemax=excludemax)
 		)
+		if result is not None:
+			result = self.family.IF.LFSet(result)
+		return result
 
 	def inrange(self, start, end, excludemin=False, excludemax=False):
 		return super(SearchTimeFieldIndex, self).inrange(self.to_int(start),

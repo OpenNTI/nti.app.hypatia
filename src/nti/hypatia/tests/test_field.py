@@ -22,7 +22,7 @@ import unittest
 
 import BTrees
 from BTrees.IFBTree import IFSet
-from BTrees.LLBTree import LLSet
+from BTrees.LFBTree import LFSet
 
 from hypatia import query
 from hypatia import RangeValue
@@ -462,7 +462,7 @@ class TestSearchTimeFieldIndex(unittest.TestCase):
 	def test_applyIntersect(self):
 		index = self._makeOne()
 		self._populateIndex(index)
-		c1 = LLSet([5, 7, 8])
+		c1 = LFSet([5, 7, 8])
 		result = index.applyIntersect(one_ival, c1)
 		assert_that(list(result), is_([5]))
 		result = index.applyIntersect(one_ival, None)
