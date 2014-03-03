@@ -180,9 +180,8 @@ class IndexReactor(object):
 					logger.exception("%s could not connect to redis", self.pid)
 					break
 				except:
-					result = 33
 					logger.exception("Unhandled exception")
-					break
+					raise
 		finally:
 			self.processor = None
 		return result
