@@ -140,6 +140,7 @@ class IndexReactor(object):
 		random.seed()
 		self.stop = False
 		self.pid = os.getpid()
+		result = 0
 		try:
 			logger.info("Index reactor started")
 			batch_size = self.limit
@@ -169,15 +170,22 @@ class IndexReactor(object):
 								   duration, batch_size)
 						sleep(duration)
 				except component.ComponentLookupError:
+					result = 99
 					logger.error("process could not get component", self.pid)
 					break
 				except KeyboardInterrupt:
 					break
 				except ConnectionError:
+					result = 66
 					logger.exception("%s could not connect to redis", self.pid)
+					break
+				except:
+					result = 33
+					logger.exception("Unhandled exception")
 					break
 		finally:
 			self.processor = None
+		return result
 
 	__call__ = run
 

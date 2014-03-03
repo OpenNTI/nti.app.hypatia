@@ -110,7 +110,8 @@ def _process_args(args):
 	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter(ei))
 
 	target = reactor.IndexReactor(mintime, maxtime, limit, args.redis)
-	target(time.sleep)
+	result = target(time.sleep)
+	sys.exit(result)
 
 if __name__ == '__main__':
 	main()
