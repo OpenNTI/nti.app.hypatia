@@ -9,6 +9,11 @@ entry_points = {
     ],
 }
 
+import platform
+py_impl = getattr(platform, 'python_implementation', lambda: None)
+IS_PYPY = py_impl() == 'PyPy'
+
+
 setup(
     name='nti.hypatia',
     version=VERSION,
@@ -34,7 +39,7 @@ setup(
 		'setuptools',
         'hypatia',
         'zc.catalogqueue',
-        'zopyx.txng3.ext'
+        'zopyx.txng3.ext' if not IS_PYPY else '' # extensions dont build
 	],
 	entry_points=entry_points
 )
