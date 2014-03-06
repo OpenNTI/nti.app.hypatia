@@ -68,7 +68,7 @@ def main():
 	args = arg_parser.parse_args()
 	env_dir = args.env_dir
 
-	context = _create_context()
+	context = _create_context(env_dir)
 	conf_packages = ('nti.appserver', 'nti.hypatia')
 	run_with_dataserver(environment_dir=env_dir,
 						xmlconfig_packages=conf_packages,
@@ -77,21 +77,24 @@ def main():
 						minimal_ds=True,
 						function=lambda: _process_args(args))
 
-def _create_context():
-	context = None
-	if 	os.getenv('DATASERVER_DIR') or os.getenv('DATASERVER_ETC_DIR'):
+def _create_context(env_dir):
+	env_dir = os.path.expanduser(env_dir)
 
-		etc = os.getenv('DATASERVER_ETC_DIR') or \
-			  os.path.join(os.getenv('DATASERVER_DIR'), 'etc')
+	# find the ds etc directory
+	etc = os.getenv('DATASERVER_ETC_DIR') or \
+		  os.path.join(os.getenv('DATASERVER_DIR'), 'etc')
+	etc = etc or os.path.join(env_dir, 'etc')
+	etc = os.path.expanduser(etc)
 
-		slugs = os.path.join(etc, 'package-includes')
-		if os.path.exists(slugs) and os.path.isdir(slugs):
-			context = config.ConfigurationMachine()
-			xmlconfig.registerCommonDirectives(context)
-			package = dottedname.resolve('nti.dataserver')
-			context = xmlconfig.file('configure.zcml', package=package, context=context)
-			xmlconfig.include(context, files=os.path.join(slugs, '*.zcml'),
-							  package='nti.appserver')
+	context = config.ConfigurationMachine()
+	xmlconfig.registerCommonDirectives(context)
+
+	slugs = os.path.join(etc, 'package-includes')
+	if os.path.exists(slugs) and os.path.isdir(slugs):
+		package = dottedname.resolve('nti.dataserver')
+		context = xmlconfig.file('configure.zcml', package=package, context=context)
+		xmlconfig.include(context, files=os.path.join(slugs, '*.zcml'),
+						  package='nti.appserver')
 
 	return context
 
