@@ -46,7 +46,6 @@ def main():
 	arg_parser = argparse.ArgumentParser(description="Index processor")
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
-	arg_parser.add_argument('env_dir', help="Dataserver environment root directory")
 	arg_parser.add_argument('-m', '--mintime',
 							 dest='mintime',
 							 help="Min poll time interval (secs)",
@@ -66,7 +65,9 @@ def main():
 							 dest='redis')
 
 	args = arg_parser.parse_args()
-	env_dir = args.env_dir
+	env_dir = os.getenv('DATASERVER_DIR')
+	if not env_dir or not os.path.exists(env_dir) and not os.path.isdir(env_dir):
+		raise IOError("Invalid dataserver environment root directory")
 
 	context = _create_context(env_dir)
 	conf_packages = ('nti.appserver', 'nti.hypatia')
@@ -80,10 +81,7 @@ def main():
 def _create_context(env_dir):
 	env_dir = os.path.expanduser(env_dir)
 
-	# find the ds etc directory
-	etc = os.getenv('DATASERVER_ETC_DIR') or \
-		  os.path.join(os.getenv('DATASERVER_DIR'), 'etc')
-	etc = etc or os.path.join(env_dir, 'etc')
+	etc = os.getenv('DATASERVER_ETC_DIR') or os.path.join(env_dir, 'etc')
 	etc = os.path.expanduser(etc)
 
 	context = config.ConfigurationMachine()
