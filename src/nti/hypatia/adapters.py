@@ -58,6 +58,7 @@ class _HypatiaUserIndexController(object):
 			result = memberships.intersection(acl)
 
 		result = result and not nti_interfaces.IDeletedObjectPlaceholder.providedBy(obj)
+		return result
 
 	def get_object(self, uid):
 		result = discriminators.query_object(uid)
