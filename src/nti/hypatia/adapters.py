@@ -57,7 +57,7 @@ class _HypatiaUserIndexController(object):
 			memberships = set(get_usernames_of_dynamic_memberships(self.entity))
 			result = memberships.intersection(acl)
 
-		return result
+		result = result and not nti_interfaces.IDeletedObjectPlaceholder.providedBy(obj)
 
 	def get_object(self, uid):
 		result = discriminators.query_object(uid)
