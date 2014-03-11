@@ -13,3 +13,11 @@ Conceptual Documentation
 .. toctree::
 	:maxdepth: 2
 
+	interfaces
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
