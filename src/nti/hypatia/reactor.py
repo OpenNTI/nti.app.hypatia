@@ -161,7 +161,7 @@ class IndexReactor(object):
 							duration = min(duration * 2.0, MAX_INTERVAL * 3.0)
 						elif duration < MAX_INTERVAL:
 							batch_size = int(batch_size * 1.5)
-							half = duration / 2.0
+							half = int(duration / 2.0)
 							secs = random.randint(self.min_wait_time,
 												  max(self.min_wait_time, half))
 							duration = secs
