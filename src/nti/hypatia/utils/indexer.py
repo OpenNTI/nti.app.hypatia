@@ -16,7 +16,6 @@ import os
 import sys
 import time
 import signal
-import logging
 import argparse
 
 import zope.exceptions
@@ -46,6 +45,8 @@ def main():
 	arg_parser = argparse.ArgumentParser(description="Index processor")
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
+	arg_parser.add_argument('-d', '--devmode', help="Dev mode", action='store_true',
+							 dest='devmode')
 	arg_parser.add_argument('-m', '--mintime',
 							 dest='mintime',
 							 help="Min poll time interval (secs)",
@@ -69,16 +70,17 @@ def main():
 	if not env_dir or not os.path.exists(env_dir) and not os.path.isdir(env_dir):
 		raise IOError("Invalid dataserver environment root directory")
 
-	context = _create_context(env_dir)
+	context = _create_context(env_dir, args.devmode)
 	conf_packages = ('nti.appserver', 'nti.hypatia')
 	run_with_dataserver(environment_dir=env_dir,
 						xmlconfig_packages=conf_packages,
 						verbose=args.verbose,
 						context=context,
 						minimal_ds=True,
+						config_features=("devmode",),
 						function=lambda: _process_args(args))
 
-def _create_context(env_dir):
+def _create_context(env_dir, devmode):
 	env_dir = os.path.expanduser(env_dir)
 
 	etc = os.getenv('DATASERVER_ETC_DIR') or os.path.join(env_dir, 'etc')
@@ -86,6 +88,9 @@ def _create_context(env_dir):
 
 	context = config.ConfigurationMachine()
 	xmlconfig.registerCommonDirectives(context)
+
+	if devmode:
+		context.provideFeature("devmode")
 
 	slugs = os.path.join(etc, 'package-includes')
 	if os.path.exists(slugs) and os.path.isdir(slugs):
@@ -97,9 +102,14 @@ def _create_context(env_dir):
 	return context
 
 def _process_args(args):
+	import logging
+
 	mintime = args.mintime
 	maxtime = args.maxtime
 	assert mintime <= maxtime and mintime > 0
+
+	if args.devmode:
+		logging.root.setLevel(logging.DEBUG)
 
 	limit = args.limit
 	assert limit > 0
