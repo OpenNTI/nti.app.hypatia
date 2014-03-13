@@ -32,10 +32,11 @@
 				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
 		
 	<!-- Adapters -->
-	
-	<adapter factory=".adapters._HypatiaUserIndexController"
-			 for="nti.dataserver.interfaces.IUser"
-			 provides=".interfaces.IHypatiaUserIndexController" />
+	<configure zcml:condition="not-have zopyx_index">
+		<adapter factory=".adapters._HypatiaUserIndexController"
+			 	for="nti.dataserver.interfaces.IUser"
+			 	provides=".interfaces.IHypatiaUserIndexController" />
+	</configure>
 	
 	<!-- Search Query -->
 	
