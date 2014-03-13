@@ -95,6 +95,7 @@ def _user_deleted(user, event):
 			component.getUtility(nti_interfaces.IDataserverTransactionRunner)
 		func = functools.partial(delete_userdata, username=username)
 		transaction_runner(func)
+		return True
 
 	transaction.get().addAfterCommitHook(
 					lambda success: success and gevent.spawn(_process_event))
@@ -105,4 +106,12 @@ from pyramid.interfaces import INewRequest
 
 @component.adapter(INewRequest)
 def requestIndexation(event):
-	transaction.get().addBeforeCommitHook(lambda *args, **kwargs: process_queue(-1))
+	def _process_event():
+		transaction_runner = \
+			component.getUtility(nti_interfaces.IDataserverTransactionRunner)
+		func = functools.partial(process_queue, limit=-1)
+		transaction_runner(func)
+		return True
+
+	transaction.get().addAfterCommitHook(
+					lambda success: success and gevent.spawn(_process_event))
