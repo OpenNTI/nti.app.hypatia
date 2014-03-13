@@ -31,7 +31,7 @@
 	<subscriber handler=".subscribers._object_modified"
 				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
 		
-	<configure zcml:condition="have testmode">
+	<configure zcml:condition="have autoindex">
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
 	
