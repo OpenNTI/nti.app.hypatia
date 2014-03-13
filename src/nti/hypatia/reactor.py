@@ -20,14 +20,12 @@ from zope import interface
 from ZODB import loglevels
 from ZODB.POSException import ConflictError
 
-import zope.intid
-
 from redis.connection import ConnectionError
 
 from nti.dataserver import interfaces as nti_interfaces
 
 from nti.hypatia import LOCK_NAME
-from nti.hypatia import search_queue
+from nti.hypatia import process_queue
 from nti.hypatia import interfaces as hypatia_interfaces
 
 MIN_INTERVAL = 5
@@ -48,29 +46,6 @@ class _LockingClient(object):
 
 	def release(self, *args, **kwargs):
 		pass
-
-def queue_length(queue):
-	try:
-		result = len(queue)
-	except ValueError:
-		result = 0
-		logger.error("Could not compute queue length. Using __len__ method (%s)", result)
-	return result
-
-def process_queue(limit=DEFAULT_QUEUE_LIMIT):
-	ids = component.getUtility(zope.intid.IIntIds)
-	catalog = component.getUtility(hypatia_interfaces.ISearchCatalog)
-	queue = search_queue()
-	queue_size = queue_length(queue)
-
-	limit = queue_size if limit == -1 else limit
-	to_process = min(limit, queue_size)
-	if queue_size > 0:
-		logger.info("Taking %s event(s) to process; current queue size %s",
-					to_process, queue_size)
-
-	queue.process(ids, (catalog,), to_process)
-	return to_process
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 					   client=None):
@@ -196,4 +171,3 @@ class IndexReactor(object):
 	def _spawn_index_processor(self):
 		result = gevent.spawn(self.run)
 		return result
-

@@ -12,6 +12,8 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
+import zope.intid
+
 from nti.contentsearch import interfaces as search_interfaces
 
 from nti.dataserver import users
@@ -20,6 +22,7 @@ from nti.dataserver import interfaces as nti_interfaces
 from . import interfaces
 
 LOCK_NAME = u"nti/hypatia/lock"
+DEFAULT_QUEUE_LIMIT = interfaces.DEFAULT_QUEUE_LIMIT
 
 def search_queue():
     result = component.getUtility(interfaces.ISearchCatalogQueue)
@@ -43,3 +46,26 @@ def get_usernames_of_dynamic_memberships(user):
 
 def is_indexable(x):
     return search_interfaces.ITypeResolver(x, None) is not None
+
+def queue_length(queue=None):
+    queue = queue if queue is not None else search_queue()
+    try:
+        result = len(queue)
+    except ValueError:
+        result = 0
+        logger.error("Could not compute queue length")
+    return result
+
+def process_queue(limit=DEFAULT_QUEUE_LIMIT):
+    ids = component.getUtility(zope.intid.IIntIds)
+    catalog = component.getUtility(interfaces.ISearchCatalog)
+    queue = search_queue()
+    queue_size = queue_length(queue)
+
+    limit = queue_size if limit == -1 else limit
+    to_process = min(limit, queue_size)
+    if queue_size > 0:
+        logger.info("Taking %s event(s) to process; current queue size %s",
+                    to_process, queue_size)
+    queue.process(ids, (catalog,), to_process)
+    return to_process

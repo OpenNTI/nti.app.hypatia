@@ -31,7 +31,12 @@
 	<subscriber handler=".subscribers._object_modified"
 				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
 		
+	<configure zcml:condition="have testmode">
+		<subscriber handler=".subscribers.requestIndexation" />
+	</configure>
+	
 	<!-- Adapters -->
+	
 	<configure zcml:condition="not-have zopyx_index">
 		<adapter factory=".adapters._HypatiaUserIndexController"
 			 	for="nti.dataserver.interfaces.IUser"

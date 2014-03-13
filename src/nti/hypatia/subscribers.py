@@ -24,6 +24,7 @@ from nti.dataserver import interfaces as nti_interfaces
 
 from . import is_indexable
 from . import search_queue
+from . import process_queue
 from . import search_catalog
 
 def add_2_queue(obj):
@@ -97,3 +98,11 @@ def _user_deleted(user, event):
 
 	transaction.get().addAfterCommitHook(
 					lambda success: success and gevent.spawn(_process_event))
+
+# test mode
+
+from pyramid.interfaces import INewRequest
+
+@component.adapter(INewRequest)
+def requestIndexation(event):
+	transaction.get().addBeforeCommitHook(lambda *args, **kwargs: process_queue(-1))
