@@ -60,7 +60,7 @@ def reindex_content(request):
 	if term:
 		usernames = username_search(term)
 	elif usernames and isinstance(usernames, six.string_types):
-		usernames = usernames.split()
+		usernames = usernames.split(',')
 	else:
 		usernames = ()  # ALL
 
