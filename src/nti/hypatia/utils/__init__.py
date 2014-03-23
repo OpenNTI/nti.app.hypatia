@@ -21,15 +21,12 @@ from nti.hypatia import is_indexable
 
 def all_indexable_objects_iids(users=()):
 	intids = component.getUtility(zope.intid.IIntIds)
-	usernames = {getattr(user, 'username', user) for user in users or ()}
+	usernames = {getattr(user, 'username', user).lower() for user in users or ()}
 	for uid, obj in intids.items():
 		try:
-			creator = getattr(obj, 'creator', None)
-			if 	is_indexable(obj) and \
-				(not usernames or getattr(creator, 'username', creator) in usernames):
+			creator = getattr(obj, 'creator', None) or u''
+			username = getattr(creator, 'username', creator).lower()
+			if is_indexable(obj) and (not usernames or username in usernames):
 				yield uid, obj
-		except POSKeyError:
-			logger.warn("Ignoring %r,%s", obj, uid)
-		except TypeError as e:
-			logger.error("Error getting creator for %s(%s); %s",
-						 type(obj), uid, e)
+		except (POSKeyError, TypeError) as e:
+			logger.error("Ignoring %s(%s); %s", type(obj), uid, e)
