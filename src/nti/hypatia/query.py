@@ -99,6 +99,6 @@ class _DefaultQueryParser(object):
 		user = get_user(user)
 		if user:
 			usernames = get_usernames_of_dynamic_memberships(user)
-			result = result & Any(catalog[acl_], usernames)
+			result = result & Any(catalog[acl_], list(usernames))
 
 		return result

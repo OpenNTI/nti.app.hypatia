@@ -10,6 +10,8 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
+import itertools
+
 from zope import component
 
 import zope.intid
@@ -40,8 +42,8 @@ def get_user(user):
 def get_usernames_of_dynamic_memberships(user):
     user  = get_user(user)
     dynamic_memberships = getattr(user, 'usernames_of_dynamic_memberships', ())
-    usernames = (user.username,) + tuple(dynamic_memberships)
-    result = [x.lower() for x in usernames]
+    usernames = itertools.chain((user.username,), dynamic_memberships)
+    result = {x.lower() for x in usernames}
     return result
 
 def is_indexable(x):

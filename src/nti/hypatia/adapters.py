@@ -36,10 +36,11 @@ from . import get_usernames_of_dynamic_memberships
 @interface.implementer(search_interfaces.IEntityIndexController)
 class _HypatiaUserIndexController(object):
 
-	__slots__ = ('entity',)
+	__slots__ = ('entity', 'memberships')
 
 	def __init__(self, entity):
 		self.entity = entity
+		self.memberships = get_usernames_of_dynamic_memberships(self.entity)
 
 	@property
 	def username(self):
@@ -49,8 +50,7 @@ class _HypatiaUserIndexController(object):
 		result = obj.isSharedDirectlyWith(self.entity)
 		if not result:
 			acl = set(discriminators.get_acl(obj, ()))
-			memberships = set(get_usernames_of_dynamic_memberships(self.entity))
-			result = memberships.intersection(acl)
+			result = self.memberships.intersection(acl)
 		result = result and not nti_interfaces.IDeletedObjectPlaceholder.providedBy(obj)
 		return result
 
