@@ -36,12 +36,12 @@ class TestAdminViews(ApplicationLayerTest):
 
 	layer = HypatiaApplicationTestLayer
 
-	def _create_note(self, msg, username, containerId=None, title=None):
+	def _create_note(self, msg, owner, containerId=None, title=None):
 		note = Note()
 		if title:
 			note.title = IPlainTextContentFragment(title)
 		note.body = [unicode(msg)]
-		note.creator = username
+		note.creator = owner
 		note.containerId = containerId or make_ntiid(nttype='bleach', specific='manga')
 		return note
 
@@ -73,8 +73,9 @@ class TestAdminViews(ApplicationLayerTest):
 	def test_reindex_content(self):
 		with mock_dataserver.mock_db_trans(self.ds):
 			for x in range(10):
-				usr = self._create_user(username='bankai%s' % x)
-				note = self._create_note(u'Shikai %s' % x, usr.username)
+				username = 'bankai%s' % x
+				usr = self._create_user(username=username)
+				note = self._create_note(u'Shikai %s' % x, usr)
 				usr.addContainedObject(note)
 				
 		testapp = TestApp(self.app)
@@ -90,21 +91,35 @@ class TestAdminViews(ApplicationLayerTest):
 		assert_that(result, has_entry('Total', is_(10)))
 
 		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
-							  json.dumps({'term':'bank'}),
+							  json.dumps({'term':'bank', 'limit': 100}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
 
 		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
-							  json.dumps({'limit': 100, 'usernames':'bankai1 bankai2'}),
+							  json.dumps({'onlyMissing':True, 'limit': 100}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
 
 		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
-							  json.dumps({'limit': 'xyz', 'usernames':'bankai1 bankai2'}),
+							  json.dumps({'limit': 100, 'usernames':'bankai1,bankai2'}),
+							  extra_environ=self._make_extra_environ(),
+							  status=200)
+		result = result.json
+		assert_that(result, has_entry('Total', is_(2)))
+
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+							  json.dumps({'limit': 100, 'usernames':'foo,foo2'}),
+							  extra_environ=self._make_extra_environ(),
+							  status=200)
+		result = result.json
+		assert_that(result, has_entry('Total', is_(0)))
+
+		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+							  json.dumps({'limit': 'xyz', 'usernames':'bankai1,bankai2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=422)
 

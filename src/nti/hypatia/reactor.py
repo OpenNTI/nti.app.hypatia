@@ -83,6 +83,7 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 class IndexReactor(object):
 
 	stop = False
+	start_time = 0
 	min_wait_time = 10
 	max_wait_time = 30
 	limit = DEFAULT_QUEUE_LIMIT
@@ -115,6 +116,7 @@ class IndexReactor(object):
 		random.seed()
 		self.stop = False
 		self.pid = os.getpid()
+		self.start_time = time.time()
 		result = 0
 		try:
 			logger.info("Index reactor started")

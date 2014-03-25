@@ -19,6 +19,8 @@ from zope import component
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
 
+from nti.contentsearch.constants import type_
+
 from nti.dataserver import authorization as nauth
 from nti.dataserver import interfaces as nti_interfaces
 
@@ -30,6 +32,7 @@ from . import utils
 from . import views
 from . import reactor
 from . import search_queue
+from . import search_catalog
 from . import interfaces as hypatia_interfaces
 
 def _make_min_max_btree_range(search_term):
@@ -57,6 +60,8 @@ def reindex_content(request):
 	usernames = values.get('usernames')
 	queue_limit = values.get('limit', None)
 	term = values.get('term', values.get('search', None))
+	missing = values.get('onlyMissing', values.get('missing', None)) or u''
+	missing = str(missing).lower() in ('1', 'true', 't', 'yes', 'y', 'on')
 	if term:
 		usernames = username_search(term)
 	elif usernames and isinstance(usernames, six.string_types):
@@ -73,10 +78,12 @@ def reindex_content(request):
 
 	total = 0
 	now = time.time()
+	type_index = search_catalog()[type_] if missing else None
 	for iid, _ in utils.all_indexable_objects_iids(usernames):
 		try:
-			search_queue().add(iid)
-			total += 1
+			if not missing or not type_index.has_doc(iid):
+				search_queue().add(iid)
+				total += 1
 		except TypeError:
 			pass
 
