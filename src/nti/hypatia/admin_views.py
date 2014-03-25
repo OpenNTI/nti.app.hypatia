@@ -90,9 +90,12 @@ def reindex_content(request):
 	if queue_limit is not None:
 		reactor.process_queue(queue_limit)
 		
+	elapsed = time.time() - now
 	result = LocatedExternalDict()
-	result['Elapsed'] = time.time() - now
+	result['Elapsed'] = elapsed
 	result['Total'] = total
+
+	logger.info("%s object(s) processed in %s(s)", total, elapsed)
 	return result
 
 @view_config(route_name='objects.generic.traversal',
