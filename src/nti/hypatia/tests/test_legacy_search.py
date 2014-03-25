@@ -55,12 +55,13 @@ class TestLegacySearch(unittest.TestCase):
 
 	layer = SharedConfiguringTestLayer
 
-	def _create_note(self, msg, username, containerId=None, title=None):
+	def _create_note(self, msg, owner, containerId=None, title=None, inReplyTo=None):
 		note = Note()
 		if title:
 			note.title = IPlainTextContentFragment(title)
 		note.body = [unicode(msg)]
-		note.creator = username
+		note.creator = owner
+		note.inReplyTo = inReplyTo
 		note.containerId = containerId or make_ntiid(nttype='bleach', specific='manga')
 		return note
 
@@ -374,6 +375,32 @@ class TestLegacySearch(unittest.TestCase):
 		hits = rim.search(query)
 		assert_that(hits, has_length(0))
 
+	@WithMockDSTrans
+	def test_inReplyTo(self):
+		username = 'ichigo@bleach.com'
+		user = _create_user(username=username)
+		note1 = self._create_note(u'ichigo', user, title=u'Bleach')
+		note1 = user.addContainedObject(note1)
+
+		note2 = self._create_note(u'shikai', user, title=u'Bleach', inReplyTo=note1)
+		note2 = user.addContainedObject(note2)
+
+		note3 = self._create_note(u'bankai', user, title=u'Bleach', inReplyTo=note2)
+		note3 = user.addContainedObject(note3)
+
+		# index
+		reactor.process_queue()
+
+		rim = hypatia_interfaces.IHypatiaUserIndexController(user)
+
+		results = rim.search("ichigo")
+		assert_that(results, has_length(1))
+
+		results = rim.search("shikai")
+		assert_that(results, has_length(1))
+
+		results = rim.search("bankai")
+		assert_that(results, has_length(1))
 
 # app search
 
