@@ -17,9 +17,12 @@ import transaction
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
+from pyramid.events import ApplicationCreated
+
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import acl_
 
+from nti.dataserver.users import Entity
 from nti.dataserver import interfaces as nti_interfaces
 
 from . import is_indexable
@@ -40,7 +43,7 @@ def queue_added(obj):
 		try:
 			return add_2_queue(obj)
 		except TypeError:
-			logger.exception("Error adding object to queue")
+			pass
 	return False
 
 def queue_modified(obj):
@@ -52,7 +55,7 @@ def queue_modified(obj):
 				search_queue().update(iid)
 				return True
 			except TypeError:
-				logger.exception("Error adding object to queue for update")
+				pass
 		else:
 			logger.debug("Could not find iid for %r", obj)
 	return False
@@ -99,6 +102,34 @@ def _user_deleted(user, event):
 
 	transaction.get().addAfterCommitHook(
 					lambda success: success and gevent.spawn(_process_event))
+
+# on change listener
+
+_changeType_events = (nti_interfaces.SC_CREATED,
+					  nti_interfaces.SC_SHARED,
+					  nti_interfaces.SC_MODIFIED)
+
+def onChange(datasvr, change, target=None, broadcast=None, **kwargs):
+	changeType, changeObject = change.type, change.object
+	entity = Entity.get_entity(str(target)) \
+			 if not nti_interfaces.IEntity.providedBy(target) else target
+
+	should_process = nti_interfaces.IUser.providedBy(entity)
+	if should_process:
+		if not broadcast and changeType in _changeType_events:
+			should_process = changeObject.isSharedDirectlyWith(entity)
+
+	if should_process:
+		if changeType != nti_interfaces.SC_DELETED:
+			queue_added(changeObject)
+
+	return should_process
+
+@component.adapter(ApplicationCreated)
+def _set_change_listener(database_event):
+	dataserver = component.queryUtility(nti_interfaces.IDataserver)
+	if dataserver is not None:
+		dataserver.add_change_listener(onChange)
 
 # test mode
 

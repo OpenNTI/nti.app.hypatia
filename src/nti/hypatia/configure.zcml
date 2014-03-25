@@ -35,6 +35,11 @@
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
 	
+	<configure zcml:condition="have devmode">
+		<subscriber handler=".subscribers._set_change_listener"
+					for="pyramid.events.ApplicationCreated" />
+	</configure>
+	
 	<!-- Adapters -->
 	
 	<adapter factory=".adapters._HypatiaUserIndexController"
