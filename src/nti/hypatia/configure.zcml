@@ -16,13 +16,6 @@
 	<!-- Subscribers -->
 		 		
 	<subscriber handler=".subscribers._user_deleted" />
-	
-	<subscriber handler=".subscribers._object_added"
-				for="nti.dataserver.interfaces.IModeledContent zope.intid.interfaces.IIntIdAddedEvent"/>
-	<subscriber handler=".subscribers._object_removed"
-				for="nti.dataserver.interfaces.IModeledContent zope.intid.interfaces.IIntIdRemovedEvent"/>
-	<subscriber handler=".subscribers._object_modified"
-				for="nti.dataserver.interfaces.IModeledContent zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
 				
 	<subscriber handler=".subscribers._object_added"
 				for="nti.dataserver.interfaces.ICreated zope.intid.interfaces.IIntIdAddedEvent"/>
