@@ -30,6 +30,10 @@ from .interfaces import ISearchCatalog
 from .keyword import SearchKeywordIndex
 from .field import SearchTimeFieldIndex
 
+@interface.implementer(ISearchCatalog)
+class SearchCatalog(Catalog):
+	family = BTrees.family64
+
 def get_type(obj, default=None):
 	result = discriminators.get_type(obj, default)
 	result = (result,) if result and result is not default else default
@@ -41,8 +45,7 @@ def create_catalog(lexicon=None, ngram_lexicon=None):
 	lexicon = defaultLexicon() if lexicon is None else lexicon
 	ngram_lexicon = lexicon if ngram_lexicon is None else ngram_lexicon
 
-	result = Catalog(family=family64)
-	interface.alsoProvides(result, ISearchCatalog)
+	result = SearchCatalog(family=family64)
 
 	result[type_] = SearchKeywordIndex(discriminator=get_type, family=family64)
 

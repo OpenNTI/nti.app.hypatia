@@ -27,6 +27,10 @@ class SearchKeywordIndex(KeywordIndex):
 			result = tuple(self._rev_index[docid])
 		return result
 
+	@property
+	def num_docs(self):
+		return self._num_docs.value
+		
 	def index_doc(self, docid, obj):
 		__traceback_info__ = docid, obj
 		result = super(SearchKeywordIndex, self).index_doc(docid, obj)
