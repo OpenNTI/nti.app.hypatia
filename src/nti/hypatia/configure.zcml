@@ -25,12 +25,19 @@
 				for="nti.dataserver.interfaces.IModeledContent zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
 				
 	<subscriber handler=".subscribers._object_added"
-				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.intid.interfaces.IIntIdAddedEvent"/>
+				for="nti.dataserver.interfaces.ICreated zope.intid.interfaces.IIntIdAddedEvent"/>
 	<subscriber handler=".subscribers._object_removed"
-				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.intid.interfaces.IIntIdRemovedEvent"/>
+				for="nti.dataserver.interfaces.ICreated zope.intid.interfaces.IIntIdRemovedEvent"/>
 	<subscriber handler=".subscribers._object_modified"
-				for="nti.dataserver.contenttypes.forums.interfaces.IForum zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
+				for="nti.dataserver.interfaces.ICreated zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
 		
+	<subscriber handler=".subscribers._object_added"
+				for="nti.dataserver.interfaces.ITitledContent zope.intid.interfaces.IIntIdAddedEvent"/>
+	<subscriber handler=".subscribers._object_removed"
+				for="nti.dataserver.interfaces.ITitledContent zope.intid.interfaces.IIntIdRemovedEvent"/>
+	<subscriber handler=".subscribers._object_modified"
+				for="nti.dataserver.interfaces.ITitledContent zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
+					
 	<configure zcml:condition="have testmode">
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
@@ -41,8 +48,8 @@
 	<!-- Adapters -->
 	
 	<adapter factory=".adapters._HypatiaUserIndexController"
-			for="nti.dataserver.interfaces.IUser"
-			provides=".interfaces.IHypatiaUserIndexController" />
+			 for="nti.dataserver.interfaces.IUser"
+			 provides=".interfaces.IHypatiaUserIndexController" />
 	
 	<!-- Search Query -->
 	
@@ -50,8 +57,8 @@
 	<utility factory=".query._DefaultQueryParser" name="en" />
 	
 	<adapter name="hypatia"
-		 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
-		 factory=".views.HypatiaPathAdapter"
-		 provides="zope.traversing.interfaces.IPathAdapter" />
+			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
+			 factory=".views.HypatiaPathAdapter"
+			 provides="zope.traversing.interfaces.IPathAdapter" />
 	
 </configure>
