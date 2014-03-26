@@ -34,7 +34,7 @@ MIN_BATCH_SIZE = 10
 DEFAULT_INTERVAL = 30
 DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
-class _LockingClient(object):
+class _MockLockingClient(object):
 
 	__slots__ = ()
 
@@ -49,7 +49,7 @@ class _LockingClient(object):
 
 def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 					   client=None):
-	client = client if client is not None else _LockingClient()
+	client = client if client is not None else _MockLockingClient()
 	try:
 		lock = client.lock(lockname, MAX_INTERVAL)
 		aquired = lock.acquire(blocking=False)
@@ -99,7 +99,7 @@ class IndexReactor(object):
 			self.limit = limit
 		# get locking client
 		self.lock_client = component.getUtility(nti_interfaces.IRedisClient) \
-						   if use_redis else _LockingClient()
+						   if use_redis else _MockLockingClient()
 
 	def __repr__(self):
 		return "%s" % (self.__class__.__name__.lower())
@@ -132,7 +132,7 @@ class IndexReactor(object):
 							batch_size = self.limit  # reset to default
 							secs = random.randint(self.min_wait_time, self.max_wait_time)
 							duration = secs
-						elif result < 0:  # conflict error
+						elif result < 0:  # conflict error/exception
 							factor = 0.33 if result == -1 else 0.2
 							batch_size = max(MIN_BATCH_SIZE, int(batch_size * factor))
 							duration = min(duration * 2.0, MAX_INTERVAL * 3.0)
