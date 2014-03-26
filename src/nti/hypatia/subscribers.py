@@ -56,8 +56,6 @@ def queue_modified(obj):
 				return True
 			except TypeError:
 				pass
-		else:
-			logger.debug("Could not find iid for %r", obj)
 	return False
 
 def queue_remove(obj):
