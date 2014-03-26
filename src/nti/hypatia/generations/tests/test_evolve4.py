@@ -75,7 +75,8 @@ class TestEvolve4(unittest.TestCase):
 		context = _context()
 		context.connection = conn
 
-		evolve4.do_evolve(context)
+		total = evolve4.do_evolve(context)
+		assert_that(total, is_(0))
 
 		new_catalog = search_catalog()
 		id_new = id(new_catalog)
