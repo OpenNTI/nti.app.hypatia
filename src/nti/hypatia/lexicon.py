@@ -18,7 +18,7 @@ from hypatia.text.lexicon import Lexicon, CaseNormalizer, Splitter
 
 from nti.contentsearch import interfaces as search_interfaces
 
-from .levenshtein import ratio
+from . import levenshtein
 from . import interfaces as hypatia_interfaces
 
 @interface.implementer(text_interfaces.IPipelineElement)
@@ -43,7 +43,10 @@ class SearchLexicon(Lexicon):
 			words = self._wids.keys(prefix, prefix + u'\uffff')
 		else:
 			words = self.words()
-		return [(w, ratio(w, term)) for w in words if ratio(w, term) > threshold]
+		for w in words:
+			r = levenshtein.ratio(w, term)
+			if r > threshold:
+				yield (w, r)
 
 	getSimiliarWords = get_similiar_words
 
