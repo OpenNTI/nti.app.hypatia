@@ -141,15 +141,17 @@ def empty_queue(request):
 		raise hexc.HTTPUnprocessableEntity('invalid limit size')
 
 	catalog_queue = search_queue()
+	catalog_queue.syncQueue()
+
 	length = len(catalog_queue)
 	limit = length if limit == -1 else min(length, limit)
 
 	done = 0
 	now = time.time()
-	for queue in catalog_queue._queues:
+	for queue in catalog_queue:
 		for _, _ in queue.process(limit - done).iteritems():
 			done += 1
-	catalog_queue._change_length(-done)
+	catalog_queue.changeLength(-done)
 
 	result = LocatedExternalDict()
 	result['Elapsed'] = time.time() - now
@@ -168,3 +170,15 @@ def queue_info(request):
 	result['QueueLength'] = len(catalog_queue)
 	result['EventQueueLength'] = catalog_queue.eventQueueLength()
 	return result
+
+@view_config(route_name='objects.generic.traversal',
+			 name='sync_queue',
+			 renderer='rest',
+			 request_method='POST',
+			 context=views.HypatiaPathAdapter,
+			 permission=nauth.ACT_MODERATE)
+def sync_queue(request):
+	catalog_queue = search_queue()
+	if catalog_queue.syncQueue():
+		logger.info("Queue synched")
+	return hexc.HTTPNoContent()

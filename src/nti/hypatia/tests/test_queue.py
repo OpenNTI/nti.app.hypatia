@@ -84,4 +84,5 @@ class TestQueue(unittest.TestCase):
 		queue = search_queue()
 		assert_that(queue, has_length(len(zanpakuto_commands)))
 		assert_that(queue.eventQueueLength(), is_(len(zanpakuto_commands)))
+		assert_that(queue.syncQueue(), is_(False))
 

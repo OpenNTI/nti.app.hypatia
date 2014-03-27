@@ -57,5 +57,10 @@ class SearchCatalogQueue(CatalogQueue, contained.Contained):
 		return old != new
 	sync = sync_queue = syncQueue
 
+	changeLength = CatalogQueue._change_length
+
 	def __getitem__(self, idx):
 		return self._queues[idx]
+
+	def __iter__(self):
+		return iter(self._queues)

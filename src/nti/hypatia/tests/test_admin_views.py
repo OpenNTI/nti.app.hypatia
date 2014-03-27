@@ -145,3 +145,17 @@ class TestAdminViews(ApplicationLayerTest):
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
+
+	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	def test_sync_queue(self):
+		with mock_dataserver.mock_db_trans(self.ds):
+			for x in range(10):
+				usr = self._create_user(username='bankai%s' % x)
+				note = self._create_note(u'Shikai %s' % x, usr.username)
+				usr.addContainedObject(note)
+
+		testapp = TestApp(self.app)
+		testapp.post('/dataserver2/hypatia/@@sync_queue',
+					  extra_environ=self._make_extra_environ(),
+			 		  status=204)
+
