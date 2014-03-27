@@ -53,8 +53,10 @@ class SearchCatalogQueue(CatalogQueue, contained.Contained):
 			length = self._length = BTrees.Length.Length()
 		old = length.value
 		new = self.eventQueueLength()
-		length.set(new)
-		return old != new
+		result = old != new
+		if result:  # only set if different
+			length.set(new)
+		return result
 	sync = sync_queue = syncQueue
 
 	changeLength = CatalogQueue._change_length
