@@ -51,13 +51,13 @@ def do_evolve(context):
 			new_event_queue._data.update(old_event_queue._data)
 			new_event_queue._conflict_policy = old_event_queue._conflict_policy
 
-		# reset length
-		new_catalog_queue.syncLength()
+		# sync
+		new_catalog_queue.syncQueue()
 
 		logger.info('Hypatia evolution gen 5 done')
 
 def evolve(context):
 	"""
-	Evolve to generation 4 by recreating the catalog
+	Evolve to generation 5 by recreating the search catalog queue
 	"""
 	do_evolve(context)

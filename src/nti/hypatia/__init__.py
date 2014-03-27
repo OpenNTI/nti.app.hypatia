@@ -58,7 +58,7 @@ def queue_length(queue=None):
         logger.error("Could not compute queue length")
     return result
 
-def process_queue(limit=DEFAULT_QUEUE_LIMIT):
+def process_queue(limit=DEFAULT_QUEUE_LIMIT, sync_queue=True):
     ids = component.getUtility(zope.intid.IIntIds)
     catalog = component.getUtility(interfaces.ISearchCatalog)
     queue = search_queue()
@@ -69,5 +69,8 @@ def process_queue(limit=DEFAULT_QUEUE_LIMIT):
     if queue_size > 0:
         logger.info("Taking %s event(s) to process; current queue size %s",
                     to_process, queue_size)
-    queue.process(ids, (catalog,), to_process)
+        queue.process(ids, (catalog,), to_process)
+    elif sync_queue:
+        queue.syncQueue()
+        
     return to_process

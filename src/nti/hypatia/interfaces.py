@@ -32,7 +32,7 @@ class ISearchCatalogQueue(ICatalogQueue):
 
 	buckets = interface.Attribute("number of event queues")
 
-	def syncLength():
+	def syncQueue():
 		"""
 		sync the length of this queue with its children event queues
 		"""
