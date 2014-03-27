@@ -51,7 +51,10 @@ class SearchCatalogQueue(CatalogQueue, contained.Contained):
 			length = self._length
 		except AttributeError:
 			length = self._length = BTrees.Length.Length()
-		length.set(self.eventQueueLength())
+		old = length.value
+		new = self.eventQueueLength()
+		length.set(new)
+		return old != new
 	sync = sync_queue = syncQueue
 
 	def __getitem__(self, idx):
