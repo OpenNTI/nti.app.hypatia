@@ -16,6 +16,8 @@ import zope.intid
 from zope import component
 from zope.component.hooks import site, setHooks
 
+from ZODB.POSException import POSKeyError
+
 from nti.contentsearch.constants import type_
 
 from .. import utils
@@ -61,7 +63,7 @@ def do_evolve(context):
 				if not type_index.has_doc(iid):
 					search_queue.add(iid)
 					total += 1
-			except TypeError:
+			except (POSKeyError, TypeError):
 				pass
 		logger.info('Hypatia evolution gen 4 done; %s missing object(s) indexed', total)
 		return total
