@@ -22,8 +22,9 @@ from nti.hypatia import is_indexable
 def all_indexable_objects_iids(users=()):
 	intids = component.getUtility(zope.intid.IIntIds)
 	usernames = {getattr(user, 'username', user).lower() for user in users or ()}
-	for uid, obj in intids.items():
+	for uid in intids:
 		try:
+			obj = intids.getObject(uid)
 			creator = getattr(obj, 'creator', None) or u''
 			username = getattr(creator, 'username', creator).lower()
 			if is_indexable(obj) and (not usernames or username in usernames):
