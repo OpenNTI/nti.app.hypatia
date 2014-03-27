@@ -154,3 +154,22 @@ def empty_queue(request):
 	result['Elapsed'] = time.time() - now
 	result['Total'] = done
 	return result
+
+@view_config(route_name='objects.generic.traversal',
+			 name='queue_info',
+			 renderer='rest',
+			 request_method='GET',
+			 context=views.HypatiaPathAdapter,
+			 permission=nauth.ACT_MODERATE)
+def queue_info(request):
+	catalog_queue = search_queue()
+	length = len(catalog_queue)
+
+	event = 0
+	for queue in catalog_queue._queues:
+		event += len(queue)
+			
+	result = LocatedExternalDict()
+	result['QueueLength'] = length
+	result['EventQueueLength'] = event
+	return result
