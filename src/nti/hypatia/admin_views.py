@@ -116,6 +116,7 @@ def process_queue(request):
 		raise hexc.HTTPUnprocessableEntity('invalid limit size')
 
 	now = time.time()
+	search_queue().syncQueue()
 	total = reactor.process_queue(limit)
 	result = LocatedExternalDict()
 	result['Elapsed'] = time.time() - now
