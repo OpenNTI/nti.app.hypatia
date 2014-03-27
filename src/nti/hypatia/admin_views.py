@@ -163,13 +163,7 @@ def empty_queue(request):
 			 permission=nauth.ACT_MODERATE)
 def queue_info(request):
 	catalog_queue = search_queue()
-	length = len(catalog_queue)
-
-	event = 0
-	for queue in catalog_queue._queues:
-		event += len(queue)
-			
 	result = LocatedExternalDict()
-	result['QueueLength'] = length
-	result['EventQueueLength'] = event
+	result['QueueLength'] = len(catalog_queue)
+	result['EventQueueLength'] = catalog_queue.eventQueueLength()
 	return result

@@ -9,16 +9,13 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-generation = 4
+generation = 5
 
 from zope.generations.generations import SchemaManager
 
-from zope import interface
-
 import zope.intid
 
-from zc.catalogqueue.queue import CatalogQueue
-
+from .. import queue as hypatia_queue
 from .. import catalog as hypatia_catalog
 from .. import lexicon as hypatia_lexicon
 from .. import interfaces as hypatia_interfaces
@@ -53,7 +50,6 @@ def install_hypatia(context):
 	catalog = hypatia_catalog.create_catalog(lexicon)
 	catalog.__parent__ = dataserver_folder
 	catalog.__name__ = '++etc++hypatia++catalog'
-
 	intids.register(catalog)
 	lsm.registerUtility(catalog, provided=hypatia_interfaces.ISearchCatalog)
 
@@ -67,11 +63,10 @@ def install_queue(context):
 	lsm = dataserver_folder.getSiteManager()
 	intids = lsm.getUtility(zope.intid.IIntIds)
 
-	queue = CatalogQueue()
+	queue = hypatia_queue.SearchCatalogQueue()
 	queue.__parent__ = dataserver_folder
 	queue.__name__ = '++etc++hypatia++catalogqueue'
 	intids.register(queue)
-	interface.alsoProvides(queue, hypatia_interfaces.ISearchCatalogQueue)
 	lsm.registerUtility(queue, provided=hypatia_interfaces.ISearchCatalogQueue)
 
 	return queue
