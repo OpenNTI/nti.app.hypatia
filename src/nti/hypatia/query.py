@@ -44,6 +44,7 @@ class _DefaultQueryParser(object):
 			text_idx = catalog[content_]
 			text_idx.parse_query(term)
 		except ParseError:
+			logger.warn("Could not parse text query '%s'", term)
 			term = '"%s"' % term
 		return term
 
