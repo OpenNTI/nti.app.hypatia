@@ -24,7 +24,7 @@ from nti.contentsearch.constants import type_
 from nti.dataserver import authorization as nauth
 from nti.dataserver import interfaces as nti_interfaces
 
-from nti.externalization.datastructures import LocatedExternalDict
+from nti.externalization.interfaces import LocatedExternalDict
 
 from nti.utils.maps import CaseInsensitiveDict
 
