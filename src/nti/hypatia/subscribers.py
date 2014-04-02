@@ -128,7 +128,6 @@ def _set_change_listener(database_event):
 	dataserver = component.queryUtility(nti_interfaces.IDataserver)
 	if dataserver is not None:
 		dataserver.add_change_listener(onChange)
-		logger.debug("Hypatia onChange listener registered")
 
 # test mode
 
