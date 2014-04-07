@@ -3,7 +3,7 @@
 """
 admin views.
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -47,6 +47,17 @@ def username_search(search_term):
 	usernames = list(_users.iterkeys(min_inclusive, max_exclusive, excludemax=True))
 	return usernames
 
+def readInput(request):
+	body = request.body
+	result = CaseInsensitiveDict()
+	if body:
+		try:
+			values = simplejson.loads(unicode(body, request.charset))
+		except UnicodeError:
+			values = simplejson.loads(unicode(body, 'iso-8859-1'))
+		result.update(**values)
+	return result
+
 @view_config(route_name='objects.generic.traversal',
 			 name='reindex_content',
 			 renderer='rest',
@@ -54,9 +65,7 @@ def username_search(search_term):
 			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def reindex_content(request):
-	values = simplejson.loads(unicode(request.body, request.charset)) \
-			 if request.body else {}
-	values = CaseInsensitiveDict(**values)
+	values = readInput(request)
 	usernames = values.get('usernames')
 	queue_limit = values.get('limit', None)
 	term = values.get('term', values.get('search', None))
@@ -105,9 +114,7 @@ def reindex_content(request):
 			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def process_queue(request):
-	values = simplejson.loads(unicode(request.body, request.charset)) \
-			 if request.body else {}
-	values = CaseInsensitiveDict(**values)
+	values = readInput(request)
 	limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
 	try:
 		limit = int(limit)
@@ -129,9 +136,7 @@ def process_queue(request):
 			 context=views.HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def empty_queue(request):
-	values = simplejson.loads(unicode(request.body, request.charset)) \
-			 if request.body else {}
-	values = CaseInsensitiveDict(**values)
+	values = readInput(request)
 	limit = values.get('limit', -1)
 	try:
 		limit = int(limit)
