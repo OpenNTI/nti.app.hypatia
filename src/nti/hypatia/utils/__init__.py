@@ -51,6 +51,7 @@ def all_cataloged_objects(users=()):
 		try:
 			obj = intids.getObject(uid)
 			getattr(obj, 'creator', None)
-			yield uid, None
+			if is_indexable(obj):
+				yield uid, obj
 		except (POSKeyError, TypeError) as e:
 			logger.error("Ignoring %s(%s); %s", type(obj), uid, e)
