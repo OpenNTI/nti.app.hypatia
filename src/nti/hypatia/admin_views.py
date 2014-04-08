@@ -160,6 +160,7 @@ def empty_queue(request):
 		for _, _ in queue.process(limit - done).iteritems():
 			done += 1
 	catalog_queue.changeLength(-done)
+	catalog_queue.syncQueue()
 
 	result = LocatedExternalDict()
 	result['Elapsed'] = time.time() - now
