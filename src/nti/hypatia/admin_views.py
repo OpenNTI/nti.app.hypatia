@@ -88,7 +88,11 @@ def reindex_content(request):
 	total = 0
 	now = time.time()
 	type_index = search_catalog()[type_] if missing else None
-	for iid, _ in utils.all_indexable_objects_iids(usernames):
+
+	generator = utils.all_cataloged_objects(usernames) \
+			    if missing else utils.all_indexable_objects_iids(usernames)
+
+	for iid, _ in generator:
 		try:
 			if not missing or not type_index.has_doc(iid):
 				search_queue().add(iid)

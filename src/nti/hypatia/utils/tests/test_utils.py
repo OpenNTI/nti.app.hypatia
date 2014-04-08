@@ -10,7 +10,9 @@ __docformat__ = "restructuredtext en"
 from hamcrest import has_length
 from hamcrest import assert_that
 
+import random
 import unittest
+import collections
 
 from nti.dataserver.users import User
 from nti.dataserver.contenttypes import Note
@@ -19,6 +21,7 @@ from nti.dataserver.contenttypes import Highlight
 from nti.ntiids.ntiids import make_ntiid
 
 from . import zanpakuto_commands
+from .. import all_cataloged_objects
 from .. import all_indexable_objects_iids
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
@@ -96,3 +99,25 @@ class TestUtils(unittest.TestCase):
 			self._create_note(u'Shikai %s' % x, usr)
 		iids = list(all_indexable_objects_iids(('BANKAI1', 'bankai2')))
 		assert_that(iids, has_length(2))
+
+	@WithMockDSTrans
+	def test_30_notes(self):
+		users = []
+		for x in xrange(5):
+			usr = self._create_user(username='shinigami_%s' % x)
+			users.append(usr)
+
+		collector = collections.defaultdict(int)
+		random.seed()
+		for x in xrange(30):
+			usr = random.choice(users)
+			self._create_note(u'Shikai %s' % x, usr)
+			collector[usr] += 1
+
+		sample = random.sample(users, 3)
+		accum = sum([collector[x] for x in sample])
+		iids = list(all_cataloged_objects(sample))
+		assert_that(iids, has_length(accum))
+
+		iids = list(all_cataloged_objects())
+		assert_that(iids, has_length(30))
