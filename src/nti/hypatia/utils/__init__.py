@@ -3,7 +3,7 @@
 """
 hypatia utils
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -35,7 +35,6 @@ def all_indexable_objects_iids(users=()):
 				yield uid, obj
 		except (POSKeyError, TypeError) as e:
 			logger.error("Ignoring %s(%s); %s", type(obj), uid, e)
-
 
 def all_cataloged_objects(users=()):
 	obj = None

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 """
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -26,10 +26,10 @@ class SearchCatalogEventQueue(CatalogEventQueue, contained.Contained):
 class SearchCatalogQueue(CatalogQueue, contained.Contained):
 
 	def __init__(self, buckets=1009):
-		CatalogQueue.__init__(self, 0)
-		self._queues = []
+		CatalogQueue.__init__(self, buckets=0)
+		self._queues = list()
 		self._buckets = buckets
-		for i in range(buckets):
+		for i in xrange(buckets):
 			queue = SearchCatalogEventQueue()
 			queue.__name__ = str(i)
 			queue.__parent__ = self
@@ -66,3 +66,7 @@ class SearchCatalogQueue(CatalogQueue, contained.Contained):
 
 	def __iter__(self):
 		return iter(self._queues)
+
+	def __str__(self):
+		return "%s(%s)" % (self.__class__.__name__, self._buckets)
+	__repr__ = __str__

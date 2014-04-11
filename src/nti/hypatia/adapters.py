@@ -3,7 +3,7 @@
 """
 hypatia adapters
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -94,6 +94,7 @@ class _HypatiaUserIndexController(object):
 		_, sequence = cq.query(parsed_query)
 		if not hasattr(sequence, "items"):
 			class _proxy(object):
+				__slots__ = ('_seq',)
 				def __init__(self, seq):
 					self._seq = seq
 				def items(self):
