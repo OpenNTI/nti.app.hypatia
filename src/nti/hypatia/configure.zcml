@@ -18,19 +18,12 @@
 	<subscriber handler=".subscribers._user_deleted" />
 				
 	<subscriber handler=".subscribers._object_added"
-				for="nti.dataserver.interfaces.ICreated zope.intid.interfaces.IIntIdAddedEvent"/>
+				for="* zope.intid.interfaces.IIntIdAddedEvent"/>
 	<subscriber handler=".subscribers._object_removed"
-				for="nti.dataserver.interfaces.ICreated zope.intid.interfaces.IIntIdRemovedEvent"/>
+				for="* zope.intid.interfaces.IIntIdRemovedEvent"/>
 	<subscriber handler=".subscribers._object_modified"
-				for="nti.dataserver.interfaces.ICreated zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
-		
-	<subscriber handler=".subscribers._object_added"
-				for="nti.dataserver.interfaces.ITitledContent zope.intid.interfaces.IIntIdAddedEvent"/>
-	<subscriber handler=".subscribers._object_removed"
-				for="nti.dataserver.interfaces.ITitledContent zope.intid.interfaces.IIntIdRemovedEvent"/>
-	<subscriber handler=".subscribers._object_modified"
-				for="nti.dataserver.interfaces.ITitledContent zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
-					
+				for="* zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
+							
 	<configure zcml:condition="have testmode">
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
