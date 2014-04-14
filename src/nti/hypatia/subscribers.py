@@ -143,4 +143,4 @@ def requestIndexation(event):
 		return True
 
 	transaction.get().addAfterCommitHook(
-					lambda success: success and gevent.spawn(_process_event))
+					lambda success: success and _process_event())
