@@ -3,7 +3,7 @@
 """
 hypatia keyword index
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -49,16 +49,16 @@ class SearchKeywordIndex(KeywordIndex):
 			docids = Set(self._fwd_index.get(word, Set()))
 			sets.append(docids)
 
-		for s in sets:
-			for docid in list(s):
+		for doc_set in sets:
+			for docid in list(doc_set):
 				ooset = self._rev_index[docid]
 				if len(ooset) != norm:
-					s.remove(docid)
+					doc_set.remove(docid)
 
 		sets.sort(key=len)
 		result = None
-		for s in sets:
-			result = self.family.IF.intersection(result, s)
+		for if_set in sets:
+			result = self.family.IF.intersection(result, if_set)
 			if not result:
 				break
 

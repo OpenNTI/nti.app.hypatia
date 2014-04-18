@@ -3,7 +3,7 @@
 """
 hypatia field index
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -78,11 +78,11 @@ class SearchTimeFieldIndex(FieldIndex):
 			self.unindex_doc(docid)
 
 		# Insert into forward index.
-		s = self._fwd_index.get(value)
-		if s is None:
-			s = self.family.II.TreeSet()
-			self._fwd_index[value] = s
-		s.insert(docid)
+		ii_set = self._fwd_index.get(value)
+		if ii_set is None:
+			ii_set = self.family.II.TreeSet()
+			self._fwd_index[value] = ii_set
+		ii_set.insert(docid)
 
 		# increment doc count
 		self._num_docs.change(1)
@@ -113,16 +113,16 @@ class SearchTimeFieldIndex(FieldIndex):
 			else:
 				q = (q, q)
 			values = self._fwd_index.values(*q)
-			s = self.family.II.multiunion(values)
-			sets.append(s)
+			ii_set = self.family.II.multiunion(values)
+			sets.append(ii_set)
 
 		result = None
 
 		if len(sets) == 1:
 			result = sets[0]
 		elif operator == 'and':
-			for _, s in sorted([(len(x), x) for x in sets]):
-				result = self.family.II.intersection(s, result)
+			for _, ii_set in sorted([(len(x), x) for x in sets]):
+				result = self.family.II.intersection(ii_set, result)
 		else:
 			result = self.family.II.multiunion(sets)
 

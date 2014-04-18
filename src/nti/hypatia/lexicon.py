@@ -10,10 +10,20 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import interface
 
+from hypatia.text import interfaces as text_interfaces
 from hypatia.text.lexicon import Lexicon, CaseNormalizer, Splitter
 
 from . import levenshtein
 from . import interfaces as hypatia_interfaces
+
+@interface.implementer(text_interfaces.IPipelineElement)
+class StopWordRemover(object):
+
+	def stopwords(self):
+		return ()
+
+	def process(self, words):
+		return words
 
 @interface.implementer(hypatia_interfaces.ISearchLexicon)
 class SearchLexicon(Lexicon):
@@ -24,13 +34,13 @@ class SearchLexicon(Lexicon):
 			words = self._wids.keys(prefix, prefix + u'\uffff')
 		else:
 			words = self.words()
-		for w in words:
-			r = levenshtein.ratio(w, term)
-			if r > threshold:
-				yield (w, r)
+		for word in words:
+			ratio = levenshtein.ratio(word, term)
+			if ratio > threshold:
+				yield (word, ratio)
 
 	getSimiliarWords = get_similiar_words
 
 def defaultLexicon():
-	result = SearchLexicon(Splitter(), CaseNormalizer())
+	result = SearchLexicon(Splitter(), CaseNormalizer(), StopWordRemover())
 	return result
