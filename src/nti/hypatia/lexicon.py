@@ -18,7 +18,10 @@ from . import interfaces as hypatia_interfaces
 
 @interface.implementer(text_interfaces.IPipelineElement)
 class StopWordRemover(object):
-
+	"""
+	deprecated pipeline. Stop word removal is handled in
+	the nti.contentsearch package
+	"""
 	def stopwords(self):
 		return ()
 
