@@ -41,6 +41,8 @@
 	
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
+	<utility factory=".query._DefaultQueryParser" name="es" />
+	<utility factory=".query._DefaultQueryParser" name="ru" />
 	
 	<adapter name="hypatia"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"

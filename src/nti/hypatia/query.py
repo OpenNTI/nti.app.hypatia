@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 """
-hypatia query
-
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -36,6 +34,13 @@ def can_use_ngram_field(query):
 
 @interface.implementer(hypatia_interfaces.ISearchQueryParser)
 class _DefaultQueryParser(object):
+
+	singleton = None
+
+	def __new__(cls, *args, **kwargs):
+		if not cls.singleton:
+			cls.singleton = super(_DefaultQueryParser, cls).__new__(cls)
+		return cls.singleton
 
 	def validate(self, query):
 		catalog = search_catalog()
