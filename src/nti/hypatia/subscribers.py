@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 """
-subscribers functionality
-
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -17,7 +15,7 @@ import transaction
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
-from pyramid.events import ApplicationCreated
+from pyramid import events as pyramid_events
 
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import acl_
@@ -123,7 +121,7 @@ def onChange(datasvr, change, target=None, broadcast=None, **kwargs):
 
 	return should_process
 
-@component.adapter(ApplicationCreated)
+@component.adapter(pyramid_events.ApplicationCreated)
 def _set_change_listener(database_event):
 	dataserver = component.queryUtility(nti_interfaces.IDataserver)
 	if dataserver is not None:
