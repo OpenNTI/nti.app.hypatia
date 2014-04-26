@@ -127,7 +127,7 @@ class _HypatiaUserIndexController(object):
 		words = textfield.lexicon.get_similiar_words(term=query.term,
 												  	 threshold=threshold,
 												 	 common_length=prefix)
-		results.add(map(lambda t: t[0], words))
+		results.add([t[0] for t in words])
 		return results
 
 	def suggest_and_search(self, query, store=None, **kwargs):

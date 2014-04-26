@@ -10,7 +10,7 @@ Author: Edward Loper <edloper@gmail.com>
 URL: <http://nltk.org/>
 For license information, see LICENSE.TXT
 
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -105,7 +105,7 @@ try:
 	@repoze.lru.lru_cache(1000)
 	def ratio(a, b):
 		return zopy_ratio(a, b)
-except ImportError:
+except ImportError:  # PyPy
 	ratio = nltk_ratio
 	distance = edit_distance
 	
