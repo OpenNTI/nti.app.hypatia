@@ -16,6 +16,7 @@ from zope import interface
 from perfmetrics import metricmethod
 
 from hypatia.catalog import CatalogQuery
+from hypatia.text.parsetree import ParseError
 
 from nti.contentprocessing import rank_words
 
@@ -91,7 +92,13 @@ class _HypatiaUserIndexController(object):
 		parsed_query = parser.parse(query, self.entity)
 
 		cq = CatalogQuery(search_catalog())
-		_, sequence = cq.query(parsed_query)
+		try:
+			_, sequence = cq.query(parsed_query)
+		except ParseError:
+			# If we failed to parse the query text return an empty set
+			logger.exception("Error parsing search query '%s'", query)
+			sequence = {}
+
 		if not hasattr(sequence, "items"):
 			class _proxy(object):
 				__slots__ = ('_seq',)
