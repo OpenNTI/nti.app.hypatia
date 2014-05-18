@@ -16,8 +16,6 @@ from hamcrest import greater_than_or_equal_to
 
 import unittest
 
-from hypatia.text import ParseError
-
 from nti.contentsearch.search_query import DateTimeRange
 from nti.contentsearch import interfaces as search_interfaces
 
@@ -90,17 +88,11 @@ class TestLegacySearch(unittest.TestCase):
 		results = rim.search("shield")
 		assert_that(results, has_length(1))
 
-		try:
-			rim.search("*")
-			self.fail("glob search should not be allowed")
-		except ParseError:
-			pass
+		results = rim.search("*")
+		assert_that(results, has_length(0))
 
-		try:
-			rim.search("?")
-			self.fail("glob search should not be allowed")
-		except ParseError:
-			pass
+		results = rim.search("?")
+		assert_that(results, has_length(0))
 
 		hits = rim.search("ra*")
 		assert_that(hits, has_length(3))
