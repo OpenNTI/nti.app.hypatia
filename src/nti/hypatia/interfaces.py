@@ -50,6 +50,9 @@ class ISearchCatalogQueue(ICatalogQueue):
 class ISearchCatalog(hypatia_interfaces.ICatalog):
 	pass
 
+class ISearchCatalogQuery(hypatia_interfaces.ICatalogQuery):
+	pass
+
 class ISearchKeywordIndex(interface.Interface):
 
 	def strictEq(query):

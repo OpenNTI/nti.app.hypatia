@@ -15,7 +15,6 @@ from zope import interface
 
 from perfmetrics import metricmethod
 
-from hypatia.catalog import CatalogQuery
 from hypatia.text.parsetree import ParseError
 
 from nti.contentprocessing import rank_words
@@ -32,6 +31,8 @@ from . import search_queue
 from . import search_catalog
 from . import interfaces as hypatia_interfaces
 from . import get_usernames_of_dynamic_memberships
+
+from .catalog import SearchCatalogQuery
 
 @component.adapter(nti_interfaces.IUser)
 @interface.implementer(search_interfaces.IEntityIndexController)
@@ -91,7 +92,7 @@ class _HypatiaUserIndexController(object):
 									  name=query.language)
 		parsed_query = parser.parse(query, self.entity)
 
-		cq = CatalogQuery(search_catalog())
+		cq = SearchCatalogQuery(search_catalog())
 		try:
 			_, sequence = cq.query(parsed_query)
 		except ParseError:

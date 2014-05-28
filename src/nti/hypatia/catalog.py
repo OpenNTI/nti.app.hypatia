@@ -17,6 +17,7 @@ from zope import interface
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
 from hypatia.field import FieldIndex
+from hypatia.catalog import CatalogQuery
 from hypatia.text.cosineindex import CosineIndex
 
 from nti.contentsearch import discriminators
@@ -26,9 +27,11 @@ from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywo
 										 creator_)
 
 from .lexicon import defaultLexicon
-from .interfaces import ISearchCatalog
 from .keyword import SearchKeywordIndex
 from .field import SearchTimeFieldIndex
+
+from .interfaces import ISearchCatalog
+from .interfaces import ISearchCatalogQuery
 
 @interface.implementer(ISearchCatalog)
 class SearchCatalog(Catalog):
@@ -100,3 +103,20 @@ def create_catalog(lexicon=None, ngram_lexicon=None, family=BTrees.family64):
 									  family=family)
 
 	return result
+
+@interface.implementer(ISearchCatalogQuery)
+class SearchCatalogQuery(CatalogQuery):
+	
+	def search(self, **query):
+		numdocs, result = super(SearchCatalogQuery, self).search(**query)
+		return numdocs, result
+	
+	def query(self, queryobject, sort_index=None, limit=None, sort_type=None,
+              reverse=False, names=None):
+		numdocs, result = super(SearchCatalogQuery, self).query(queryobject=queryobject,
+																sort_index=sort_index,
+																limit=limit,
+																sort_type=sort_type,
+																reverse=reverse,
+																names=names)
+		return numdocs, result
