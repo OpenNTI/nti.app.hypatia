@@ -27,8 +27,7 @@ from hypatia.text.cosineindex import CosineIndex
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywords_,
 										 redactionExplanation_, replacementContent_,
-										 createdTime_, lastModified_, type_, acl_,
-										 creator_)
+										 type_, acl_, creator_)
 
 from nti.dataserver import metadata_index
 
@@ -36,7 +35,6 @@ from nti.utils.property import Lazy
 
 from .lexicon import defaultLexicon
 from .keyword import SearchKeywordIndex
-from .field import SearchTimeFieldIndex
 
 from .interfaces import ISearchCatalog
 from .interfaces import ISearchCatalogQuery
@@ -95,14 +93,6 @@ def create_catalog(lexicon=None, ngram_lexicon=None, family=BTrees.family64):
 								  index=index,
 								  discriminator=discriminators.get_replacement_content,
 								  family=family)
-
-	result[createdTime_] = SearchTimeFieldIndex(
-									discriminator=discriminators.get_created_time,
-								 	family=family)
-
-	result[lastModified_] = SearchTimeFieldIndex(
-									discriminator=discriminators.get_last_modified,
-								 	family=family)
 
 	result[creator_] = FieldIndex(discriminator=discriminators.get_creator,
 								  family=family)
