@@ -92,23 +92,13 @@ class _HypatiaUserIndexController(object):
 									  name=query.language)
 		parsed_query = parser.parse(query, self.entity)
 
-		cq = SearchCatalogQuery(search_catalog())
+		cq = SearchCatalogQuery(search_catalog(), query)
 		try:
 			_, sequence = cq.query(parsed_query)
 		except ParseError:
 			# If we failed to parse the query text return an empty set
 			logger.exception("Error parsing search query '%s'", query)
 			sequence = {}
-
-		if not hasattr(sequence, "items"):
-			class _proxy(object):
-				__slots__ = ('_seq',)
-				def __init__(self, seq):
-					self._seq = seq
-				def items(self):
-					for x in self._seq:
-						yield x, 1.0
-			sequence = _proxy(sequence)
 
 		# get docs from db
 		for docid, score in sequence.items():

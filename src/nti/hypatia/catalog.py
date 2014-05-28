@@ -10,9 +10,13 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-import BTrees
-
+import sys
+from zope import component
 from zope import interface
+
+from zope.catalog.interfaces import ICatalog as ZOPE_ICATALOG
+
+import BTrees
 
 from hypatia.text import TextIndex
 from hypatia.catalog import Catalog
@@ -25,6 +29,10 @@ from nti.contentsearch.constants import (content_, ngrams_, title_, tags_, keywo
 										 redactionExplanation_, replacementContent_,
 										 createdTime_, lastModified_, type_, acl_,
 										 creator_)
+
+from nti.dataserver import metadata_index
+
+from nti.utils.property import Lazy
 
 from .lexicon import defaultLexicon
 from .keyword import SearchKeywordIndex
@@ -104,12 +112,77 @@ def create_catalog(lexicon=None, ngram_lexicon=None, family=BTrees.family64):
 
 	return result
 
+
+class _proxy(object):
+	
+	__slots__ = ('_seq',)
+	
+	def __init__(self, seq):
+		self._seq = seq
+		
+	def items(self):
+		for x in self._seq:
+			yield x, 1.0
+
+def to_proxy(source):
+	source = _proxy(source) if not hasattr(source, "items") else source
+	return source
+
+def to_map(source):
+	source = to_proxy(source)
+	result = {x:y for x, y in source.items()}
+	return result
+
 @interface.implementer(ISearchCatalogQuery)
 class SearchCatalogQuery(CatalogQuery):
 	
+	family = BTrees.family64
+
+	def __init__(self, catalog, search_query, family=None):
+		super(SearchCatalogQuery, self).__init__(catalog, family)
+		self.search_query = search_query
+		
+	@Lazy
+	def metadata(self):
+		return component.getUtility(ZOPE_ICATALOG, name=metadata_index.CATALOG_NAME)
+
+	def _query_index(self, index, dateRange, mapped):
+		# query meta-data index
+		startTime = dateRange.startTime or 0
+		endTime = dateRange.endTime or sys.maxint
+		docs = index.apply({'between': (startTime, endTime, True, True)})
+
+		# intersect result documents with previous docs
+		keys = self.family.IF.LFSet(mapped.iterkeys())
+		intersected = self.family.IF.intersection(docs, keys)
+
+		# return new result map (docid, score)
+		mapped = {x:mapped[x] for x in intersected} if intersected else {}
+		numdocs = len(mapped)
+		return numdocs, mapped
+
+	def _time_prune(self, numdocs, result):
+		creationTime = self.search_query.creationTime
+		modificationTime = self.search_query.modificationTime
+
+		if creationTime is not None or modificationTime is not None:
+			# if sort_index is used the sort order is lost
+			result = to_map(result)
+			if creationTime is not None:
+				index = self.metadata[metadata_index.IX_CREATEDTIME]
+				numdocs, result = self._query_index(index, creationTime, result)
+
+			if modificationTime is not None:
+				index = self.metadata[metadata_index.IX_LASTMODIFIED]
+				numdocs, result = self._query_index(index, modificationTime, result)
+		else:
+			result = to_proxy(result)
+
+		return numdocs, result
+
 	def search(self, **query):
 		numdocs, result = super(SearchCatalogQuery, self).search(**query)
-		return numdocs, result
+		return self._time_prune(numdocs, result)
 	
 	def query(self, queryobject, sort_index=None, limit=None, sort_type=None,
               reverse=False, names=None):
@@ -119,4 +192,5 @@ class SearchCatalogQuery(CatalogQuery):
 																sort_type=sort_type,
 																reverse=reverse,
 																names=names)
-		return numdocs, result
+
+		return self._time_prune(numdocs, result)

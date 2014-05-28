@@ -367,6 +367,16 @@ class TestLegacySearch(unittest.TestCase):
 		hits = rim.search(query)
 		assert_that(hits, has_length(0))
 
+		query = search_interfaces.ISearchQuery("bankai")
+		query.creationTime = DateTimeRange(startTime=now - 1000, endTime=now + 1000)
+		hits = rim.search(query)
+		assert_that(hits, has_length(1))
+		
+		query = search_interfaces.ISearchQuery("notinquery")
+		query.creationTime = DateTimeRange(startTime=now - 1000, endTime=now + 1000)
+		hits = rim.search(query)
+		assert_that(hits, has_length(0))
+
 	@WithMockDSTrans
 	def test_inReplyTo(self):
 		username = 'ichigo@bleach.com'
