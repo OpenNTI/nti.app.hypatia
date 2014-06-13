@@ -15,17 +15,11 @@ import unittest
 
 from nti.hypatia.levenshtein import ratio, edit_distance, nltk_ratio
 
-try:
-	from zopyx.txng3.ext.levenshtein import ratio as zopy_ratio
-	zopyx = True
-except ImportError:  # PyPy
-	zopyx = False
-
 class TestLevenshtein(unittest.TestCase):
 
 	def test_ratio(self):
 		r = ratio('ichigo', 'rukia')
-		if zopyx:
+		if ratio != nltk_ratio:
 			assert_that(r, is_(close_to(0.1818, 0.01)))
 		else:
 			assert_that(r, is_(close_to(0.54545, 0.01)))
