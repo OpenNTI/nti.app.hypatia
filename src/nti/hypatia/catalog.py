@@ -136,7 +136,7 @@ class SearchCatalogQuery(CatalogQuery):
 	def metadata(self):
 		return component.getUtility(ZOPE_ICATALOG, name=metadata_index.CATALOG_NAME)
 
-	def _query_index(self, index, dateRange, mapped):
+	def query_metadata_index(self, index, dateRange, mapped={}):
 		# query meta-data index
 		startTime = dateRange.startTime or 0
 		endTime = dateRange.endTime or sys.maxint
@@ -151,7 +151,7 @@ class SearchCatalogQuery(CatalogQuery):
 		numdocs = len(mapped)
 		return numdocs, mapped
 
-	def _time_prune(self, numdocs, result):
+	def query_by_time(self, numdocs, result):
 		creationTime = self.search_query.creationTime
 		modificationTime = self.search_query.modificationTime
 
@@ -160,11 +160,11 @@ class SearchCatalogQuery(CatalogQuery):
 			result = to_map(result)
 			if creationTime is not None:
 				index = self.metadata[metadata_index.IX_CREATEDTIME]
-				numdocs, result = self._query_index(index, creationTime, result)
+				numdocs, result = self.query_metadata_index(index, creationTime, result)
 
 			if modificationTime is not None:
 				index = self.metadata[metadata_index.IX_LASTMODIFIED]
-				numdocs, result = self._query_index(index, modificationTime, result)
+				numdocs, result = self.query_metadata_index(index, modificationTime, result)
 		else:
 			result = to_proxy(result)
 
@@ -172,7 +172,8 @@ class SearchCatalogQuery(CatalogQuery):
 
 	def search(self, **query):
 		numdocs, result = super(SearchCatalogQuery, self).search(**query)
-		return self._time_prune(numdocs, result)
+		numdocs, result = self.query_by_time(numdocs, result)
+		return numdocs, result
 	
 	def query(self, queryobject, sort_index=None, limit=None, sort_type=None,
               reverse=False, names=None):
@@ -182,5 +183,6 @@ class SearchCatalogQuery(CatalogQuery):
 																sort_type=sort_type,
 																reverse=reverse,
 																names=names)
+		numdocs, result = self.query_by_time(numdocs, result)
+		return numdocs, result
 
-		return self._time_prune(numdocs, result)
