@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
 """
 Copyright (c) 2011, Ionel Cristian Maries
 All rights reserved.
