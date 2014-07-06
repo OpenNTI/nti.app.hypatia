@@ -15,13 +15,12 @@ import transaction
 from zope import component
 from zope.lifecycleevent import interfaces as lce_interfaces
 
-from pyramid import events as pyramid_events
-
 from nti.contentsearch import discriminators
 from nti.contentsearch.constants import acl_
 
 from nti.dataserver.users import Entity
 from nti.dataserver import interfaces as nti_interfaces
+from nti.dataserver.interfaces import ITargetedStreamChangeEvent
 
 from . import is_indexable
 from . import search_queue
@@ -105,14 +104,17 @@ _changeType_events = (nti_interfaces.SC_CREATED,
 					  nti_interfaces.SC_SHARED,
 					  nti_interfaces.SC_MODIFIED)
 
-def onChange(datasvr, change, target=None, broadcast=None, **kwargs):
+@component.adapter(ITargetedStreamChangeEvent)
+def onChange(event):
+	change = event.object
+	target = event.target
 	changeType, changeObject = change.type, change.object
 	entity = Entity.get_entity(str(target)) \
 			 if not nti_interfaces.IEntity.providedBy(target) else target
 
 	should_process = nti_interfaces.IUser.providedBy(entity)
 	if should_process:
-		if not broadcast and changeType in _changeType_events:
+		if changeType in _changeType_events:
 			should_process = changeObject.isSharedDirectlyWith(entity)
 
 	if should_process:
@@ -120,12 +122,6 @@ def onChange(datasvr, change, target=None, broadcast=None, **kwargs):
 			queue_added(changeObject)
 
 	return should_process
-
-@component.adapter(pyramid_events.ApplicationCreated)
-def _set_change_listener(database_event):
-	dataserver = component.queryUtility(nti_interfaces.IDataserver)
-	if dataserver is not None:
-		dataserver.add_change_listener(onChange)
 
 # test mode
 

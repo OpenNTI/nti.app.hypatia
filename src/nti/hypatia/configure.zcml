@@ -8,45 +8,44 @@
 	<include package="zope.component" />
 
 	<!-- Generations -->
-	
+
 	<utility factory=".generations.install._HypatiaSearchSchemaManager"
 			 name="nti.dataserver-hypatia"
 			 provides="zope.generations.interfaces.IInstallableSchemaManager"/>
-	
+
 	<!-- Subscribers -->
-		 		
+
 	<subscriber handler=".subscribers._user_deleted" />
-				
+
 	<subscriber handler=".subscribers._object_added"
 				for="* zope.intid.interfaces.IIntIdAddedEvent"/>
 	<subscriber handler=".subscribers._object_removed"
 				for="* zope.intid.interfaces.IIntIdRemovedEvent"/>
 	<subscriber handler=".subscribers._object_modified"
-				for="* zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>		
-							
+				for="* zope.lifecycleevent.interfaces.IObjectModifiedEvent"/>
+
 	<configure zcml:condition="have testmode">
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
-	
-	<subscriber handler=".subscribers._set_change_listener"
-				for="pyramid.events.ApplicationCreated" />
-	
+
+	<subscriber handler=".subscribers.onChange" />
+
 	<!-- Adapters -->
-	
+
 	<adapter factory=".adapters._HypatiaUserIndexController"
 			 for="nti.dataserver.interfaces.IUser"
 			 provides=".interfaces.IHypatiaUserIndexController" />
-	
+
 	<!-- Search Query -->
-	
+
 	<utility factory=".query._DefaultQueryParser" />
 	<utility factory=".query._DefaultQueryParser" name="en" />
 	<utility factory=".query._DefaultQueryParser" name="es" />
 	<utility factory=".query._DefaultQueryParser" name="ru" />
-	
+
 	<adapter name="hypatia"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
 			 factory=".views.HypatiaPathAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
-	
+
 </configure>
