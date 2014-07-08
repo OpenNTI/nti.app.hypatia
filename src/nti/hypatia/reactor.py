@@ -16,6 +16,7 @@ import functools
 
 from zope import component
 from zope import interface
+from zope.component import ComponentLookupError
 
 from ZODB import loglevels
 from ZODB.POSException import ConflictError
@@ -71,12 +72,9 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 			except ConflictError, e:
 				logger.error(e)
 				result = -1
-			except TypeError: # Cache errors?
+			except (TypeError, StandardError): # Cache errors?
 				logger.exception('Cannot process index messages')
 				raise
-			except Exception:
-				logger.exception('Cannot process index messages')
-				result = -2
 	finally:
 		if aquired:
 			lock.release()
@@ -154,7 +152,7 @@ class IndexReactor(object):
 						logger.log(loglevels.TRACE, "Sleeping %s(secs). Batch size %s",
 								   duration, batch_size)
 						sleep(duration)
-				except component.ComponentLookupError:
+				except ComponentLookupError:
 					result = 99
 					logger.error("process could not get component", self.pid)
 					break
@@ -164,7 +162,7 @@ class IndexReactor(object):
 					result = 66
 					logger.exception("%s could not connect to redis", self.pid)
 					break
-				except TypeError:
+				except (TypeError, StandardError):
 					result = 77 # Cache errors?
 					break
 				except:
