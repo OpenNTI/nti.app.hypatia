@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -26,13 +26,13 @@ from nti.dataserver import interfaces as nti_interfaces
 
 from nti.hypatia import LOCK_NAME
 from nti.hypatia import process_queue
-from nti.hypatia import interfaces as hypatia_interfaces
+from nti.hypatia.interfaces import IIndexReactor
+from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
 
 MIN_INTERVAL = 5
 MAX_INTERVAL = 60
 MIN_BATCH_SIZE = 10
 DEFAULT_INTERVAL = 30
-DEFAULT_QUEUE_LIMIT = hypatia_interfaces.DEFAULT_QUEUE_LIMIT
 
 class _MockLockingClient(object):
 
@@ -68,9 +68,12 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 					result = transaction_runner(runner, retries=1, sleep=1)
 				else:
 					result = runner()
-			except ConflictError as e:
+			except ConflictError, e:
 				logger.error(e)
 				result = -1
+			except TypeError: # Cache errors?
+				logger.exception('Cannot process index messages')
+				raise
 			except Exception:
 				logger.exception('Cannot process index messages')
 				result = -2
@@ -79,7 +82,7 @@ def process_index_msgs(lockname, limit=DEFAULT_QUEUE_LIMIT, use_trx_runner=True,
 			lock.release()
 	return result
 
-@interface.implementer(hypatia_interfaces.IIndexReactor)
+@interface.implementer(IIndexReactor)
 class IndexReactor(object):
 
 	stop = False
@@ -160,6 +163,9 @@ class IndexReactor(object):
 				except ConnectionError:
 					result = 66
 					logger.exception("%s could not connect to redis", self.pid)
+					break
+				except TypeError:
+					result = 77 # Cache errors?
 					break
 				except:
 					logger.exception("Unhandled exception")
