@@ -7,6 +7,9 @@ entry_points = {
     'console_scripts': [
         "nti_hypatia_indexer = nti.hypatia.utils.indexer:main",
     ],
+    "z3c.autoinclude.plugin": [
+		'target = nti.dataserver',
+	],
 }
 
 import platform
