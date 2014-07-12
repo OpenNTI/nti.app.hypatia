@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-pyramid views.
-
-$Id$
+.. $Id$
 """
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
@@ -14,22 +12,11 @@ import six
 import time
 import simplejson
 
+from zope import component
 from zope import interface
 from zope.location.interfaces import IContained
 from zope.container import contained as zcontained
 from zope.traversing.interfaces import IPathAdapter
-
-@interface.implementer(IPathAdapter, IContained)
-class HypatiaPathAdapter(zcontained.Contained):
-
-    __name__ = 'hypatia'
-
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-        self.__parent__ = context
-
-from zope import component
 
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
@@ -41,14 +28,24 @@ from nti.dataserver import interfaces as nti_interfaces
 
 from nti.externalization.interfaces import LocatedExternalDict
 
+from nti.hypatia import search_queue
+from nti.hypatia import search_catalog
+from nti.hypatia.reactor import process_queue
+from nti.hypatia.utils import all_cataloged_objects
+from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
+from nti.hypatia.utils import all_indexable_objects_iids
+
 from nti.utils.maps import CaseInsensitiveDict
 
-from . import utils
-from . import views
-from . import reactor
-from . import search_queue
-from . import search_catalog
-from . import interfaces as hypatia_interfaces
+@interface.implementer(IPathAdapter, IContained)
+class HypatiaPathAdapter(zcontained.Contained):
+
+	__name__ = 'hypatia'
+
+	def __init__(self, context, request):
+		self.context = context
+		self.request = request
+		self.__parent__ = context
 
 def _make_min_max_btree_range(search_term):
 	min_inclusive = search_term  # start here
@@ -77,7 +74,7 @@ def readInput(request):
 			 name='reindex_content',
 			 renderer='rest',
 			 request_method='POST',
-			 context=views.HypatiaPathAdapter,
+			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def reindex_content(request):
 	values = readInput(request)
@@ -104,8 +101,8 @@ def reindex_content(request):
 	now = time.time()
 	type_index = search_catalog()[type_] if missing else None
 
-	generator = utils.all_cataloged_objects(usernames) \
-			    if missing else utils.all_indexable_objects_iids(usernames)
+	generator = all_cataloged_objects(usernames) \
+				if missing else all_indexable_objects_iids(usernames)
 
 	queue = search_queue()
 	for iid, _ in generator:
@@ -117,7 +114,7 @@ def reindex_content(request):
 			pass
 
 	if queue_limit is not None:
-		reactor.process_queue(queue_limit)
+		process_queue(queue_limit)
 		
 	elapsed = time.time() - now
 	result = LocatedExternalDict()
@@ -131,11 +128,11 @@ def reindex_content(request):
 			 name='process_queue',
 			 renderer='rest',
 			 request_method='POST',
-			 context=views.HypatiaPathAdapter,
+			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def process_queue(request):
 	values = readInput(request)
-	limit = values.get('limit', hypatia_interfaces.DEFAULT_QUEUE_LIMIT)
+	limit = values.get('limit', DEFAULT_QUEUE_LIMIT)
 	try:
 		limit = int(limit)
 		assert limit > 0 or limit == -1
@@ -143,7 +140,7 @@ def process_queue(request):
 		raise hexc.HTTPUnprocessableEntity('invalid limit size')
 
 	now = time.time()
-	total = reactor.process_queue(limit)
+	total = process_queue(limit)
 	result = LocatedExternalDict()
 	result['Elapsed'] = time.time() - now
 	result['Total'] = total
@@ -153,7 +150,7 @@ def process_queue(request):
 			 name='empty_queue',
 			 renderer='rest',
 			 request_method='POST',
-			 context=views.HypatiaPathAdapter,
+			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def empty_queue(request):
 	values = readInput(request)
@@ -187,7 +184,7 @@ def empty_queue(request):
 			 name='queue_info',
 			 renderer='rest',
 			 request_method='GET',
-			 context=views.HypatiaPathAdapter,
+			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def queue_info(request):
 	catalog_queue = search_queue()
@@ -200,7 +197,7 @@ def queue_info(request):
 			 name='sync_queue',
 			 renderer='rest',
 			 request_method='POST',
-			 context=views.HypatiaPathAdapter,
+			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 def sync_queue(request):
 	catalog_queue = search_queue()
