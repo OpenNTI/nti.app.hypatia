@@ -9,6 +9,9 @@ entry_points = {
     ],
     "z3c.autoinclude.plugin": [
 		'target = nti.dataserver',
+		# FIXME: The application views of this
+		# package need to move to an 'nti.app.hypatia' package
+		'target2 = nti.app',
 	],
 }
 
