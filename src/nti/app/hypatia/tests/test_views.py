@@ -27,7 +27,7 @@ from nti.appserver.tests.test_application import TestApp
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.hypatia.tests import HypatiaApplicationTestLayer
+from nti.app.hypatia.tests import HypatiaApplicationTestLayer
 
 from nti.app.testing.application_webtest import ApplicationLayerTest
 from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges
