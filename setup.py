@@ -4,14 +4,8 @@ from setuptools import setup, find_packages
 VERSION = '0.0.0'
 
 entry_points = {
-    'console_scripts': [
-        "nti_hypatia_indexer = nti.hypatia.utils.indexer:main",
-    ],
     "z3c.autoinclude.plugin": [
-		'target = nti.dataserver',
-		# FIXME: The application views of this
-		# package need to move to an 'nti.app.hypatia' package
-		'target2 = nti.app',
+		'target = nti.app',
 	],
 }
 
@@ -21,11 +15,11 @@ IS_PYPY = py_impl() == 'PyPy'
 
 
 setup(
-    name='nti.hypatia',
+    name='nti.app.hypatia',
     version=VERSION,
     author='Jason Madden',
     author_email='jason@nextthought.com',
-    description="NTI search hypatia",
+    description="NTI search hypatia app",
     long_description=codecs.open('README.rst', encoding='utf-8').read(),
     license='Proprietary',
     keywords='pyramid preference',
@@ -43,9 +37,7 @@ setup(
 	namespace_packages=['nti'],
 	install_requires=[
 		'setuptools',
-        'hypatia',
-        'zc.catalogqueue',
-        'zopyx.txng3.ext' if not IS_PYPY else '' # extensions dont build
+        'nti.hypatia',
 	],
 	entry_points=entry_points
 )
