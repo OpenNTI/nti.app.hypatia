@@ -26,7 +26,8 @@ class SharedConfiguringTestLayer(ZopeComponentLayer,
                                  GCLayerMixin,
                                  ConfiguringLayerMixin,
                                  DSInjectorMixin):
-    set_up_packages = ('nti.appserver', 'nti.app.hypatia')
+    
+    set_up_packages = ('nti.dataserver', 'nti.app.hypatia')
 
     @classmethod
     def setUp(cls):
