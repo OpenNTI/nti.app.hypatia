@@ -76,7 +76,7 @@ def readInput(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def reindex_content(request):
+def reindex_content_view(request):
 	values = readInput(request)
 	usernames = values.get('usernames')
 	queue_limit = values.get('limit', None)
@@ -130,7 +130,7 @@ def reindex_content(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def process_queue(request):
+def process_queue_view(request):
 	values = readInput(request)
 	limit = values.get('limit', DEFAULT_QUEUE_LIMIT)
 	try:
@@ -152,7 +152,7 @@ def process_queue(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def empty_queue(request):
+def empty_queue_view(request):
 	values = readInput(request)
 	limit = values.get('limit', -1)
 	try:
@@ -186,7 +186,7 @@ def empty_queue(request):
 			 request_method='GET',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def queue_info(request):
+def queue_info_view(request):
 	catalog_queue = search_queue()
 	result = LocatedExternalDict()
 	result['QueueLength'] = len(catalog_queue)
@@ -199,7 +199,7 @@ def queue_info(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def sync_queue(request):
+def sync_queue_view(request):
 	catalog_queue = search_queue()
 	if catalog_queue.syncQueue():
 		logger.info("Queue synched")
