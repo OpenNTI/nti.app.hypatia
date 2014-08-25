@@ -15,4 +15,8 @@
 			 factory=".views.HypatiaPathAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
 
+	<configure zcml:condition="have testmode">
+		<subscriber handler=".subscribers.requestIndexation" />
+	</configure>
+	
 </configure>
