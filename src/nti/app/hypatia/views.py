@@ -52,7 +52,7 @@ def _make_min_max_btree_range(search_term):
 	max_exclusive = search_term[0:-1] + unichr(ord(search_term[-1]) + 1)
 	return min_inclusive, max_exclusive
 
-def _is_true(s):
+def is_true(s):
 	return s and str(s).lower() in ('1', 'true', 't', 'yes', 'y', 'on')
 
 def username_search(search_term):
@@ -87,11 +87,7 @@ def reindex_content_view(request):
 	
 	# missing flag
 	missing = values.get('onlyMissing') or values.get('missing') or u''
-	missing = _is_true(missing)
-	
-	# force
-	force = values.get('force') or 'false'
-	force = _is_true(force)
+	missing = is_true(missing)
 	
 	# user search
 	if term:
@@ -114,12 +110,12 @@ def reindex_content_view(request):
 	type_index = search_catalog()[type_] if missing else None
 
 	generator = all_cataloged_objects(usernames) \
-				if missing and not force else all_indexable_objects_iids(usernames)
+				if missing else all_indexable_objects_iids(usernames)
 
 	queue = search_queue()
 	for iid, _ in generator:
 		try:
-			if not missing or force or not type_index.has_doc(iid):
+			if not missing or not type_index.has_doc(iid):
 				queue.add(iid)
 				total += 1
 		except TypeError:
