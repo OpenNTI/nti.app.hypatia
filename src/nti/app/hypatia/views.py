@@ -14,8 +14,7 @@ import simplejson
 
 from zope import component
 from zope import interface
-from zope.location.interfaces import IContained
-from zope.container import contained as zcontained
+from zope.container.contained import Contained
 from zope.traversing.interfaces import IPathAdapter
 
 from pyramid.view import view_config
@@ -24,7 +23,8 @@ from pyramid import httpexceptions as hexc
 from nti.contentsearch.constants import type_
 
 from nti.dataserver import authorization as nauth
-from nti.dataserver import interfaces as nti_interfaces
+from nti.dataserver.interfaces import IDataserver
+from nti.dataserver.interfaces import IShardLayout
 
 from nti.externalization.interfaces import LocatedExternalDict
 
@@ -37,8 +37,8 @@ from nti.hypatia.utils import all_indexable_objects_iids
 
 from nti.utils.maps import CaseInsensitiveDict
 
-@interface.implementer(IPathAdapter, IContained)
-class HypatiaPathAdapter(zcontained.Contained):
+@interface.implementer(IPathAdapter)
+class HypatiaPathAdapter(Contained):
 
 	__name__ = 'hypatia'
 
@@ -54,8 +54,8 @@ def _make_min_max_btree_range(search_term):
 
 def username_search(search_term):
 	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
-	dataserver = component.getUtility(nti_interfaces.IDataserver)
-	_users = nti_interfaces.IShardLayout(dataserver).users_folder
+	dataserver = component.getUtility(IDataserver)
+	_users = IShardLayout(dataserver).users_folder
 	usernames = list(_users.iterkeys(min_inclusive, max_exclusive, excludemax=True))
 	return usernames
 
