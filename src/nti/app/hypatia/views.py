@@ -21,6 +21,9 @@ from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
 
 from nti.contentsearch.constants import type_
+from nti.contentsearch.constants import invalid_type_
+from nti.contentsearch.interfaces import ITypeResolver
+from nti.contentsearch.common import get_type_from_mimetype
 
 from nti.dataserver import authorization as nauth
 from nti.dataserver.interfaces import IDataserver
@@ -53,7 +56,11 @@ def _make_min_max_btree_range(search_term):
 	return min_inclusive, max_exclusive
 
 def is_true(s):
-	return s and str(s).lower() in ('1', 'true', 't', 'yes', 'y', 'on')
+	return bool(s and str(s).lower() in ('1', 'true', 't', 'yes', 'y', 'on'))
+
+def get_type(obj):
+	resolver = ITypeResolver(obj, None)
+	return resolver.type if resolver else None
 
 def username_search(search_term):
 	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
@@ -97,6 +104,15 @@ def reindex_content_view(request):
 	else:
 		usernames = ()  # ALL
 
+	accept = values.get('accept') or values.get('mimeTypes') or u''
+	accept = set(accept.split(',')) if accept else ()
+	if accept and '*/*' not in accept:
+		accept = {get_type_from_mimetype(e) for e in accept}
+		accept.discard(None)
+		accept = accept if accept else (invalid_type_,)
+	else:
+		accept = ()
+
 	# queue limit
 	if queue_limit is not None:
 		try:
@@ -113,9 +129,10 @@ def reindex_content_view(request):
 				if missing else all_indexable_objects_iids(usernames)
 
 	queue = search_queue()
-	for iid, _ in generator:
+	for iid, obj in generator:
 		try:
-			if not missing or not type_index.has_doc(iid):
+			if 	(not missing or not type_index.has_doc(iid)) and \
+				(not accept or get_type(obj) in accept):
 				queue.add(iid)
 				total += 1
 		except TypeError:
