@@ -54,7 +54,7 @@ class TestAdminViews(ApplicationLayerTest):
 			ichigo.addContainedObject(note)
 
 		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/@@process_queue',
+		testapp.post('/dataserver2/hypatia/process_queue',
 					 extra_environ=self._make_extra_environ(),
 					 status=200)
 
@@ -64,7 +64,7 @@ class TestAdminViews(ApplicationLayerTest):
 			hits = rim.search('fear')
 			assert_that(hits, has_length(1))
 			
-		testapp.post('/dataserver2/hypatia/@@process_queue',
+		testapp.post('/dataserver2/hypatia/process_queue',
 					 json.dumps({'limit': 'xyt'}),
 					 extra_environ=self._make_extra_environ(),
 					 status=422)
@@ -79,11 +79,11 @@ class TestAdminViews(ApplicationLayerTest):
 				usr.addContainedObject(note)
 				
 		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/@@process_queue',
+		testapp.post('/dataserver2/hypatia/process_queue',
 					 extra_environ=self._make_extra_environ(),
 					 status=200)
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'limit': 100,
 										  'accept':'application/vnd.nextthought.redaction'}),
 							  extra_environ=self._make_extra_environ(),
@@ -98,35 +98,35 @@ class TestAdminViews(ApplicationLayerTest):
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'term':'bank', 'limit': 100}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(10)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'onlyMissing':True, 'limit': 100}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'limit': 100, 'usernames':'bankai1,bankai2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(2)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'limit': 100, 'usernames':'foo,foo2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=200)
 		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
 
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
+		result = testapp.post('/dataserver2/hypatia/reindex_content',
 							  json.dumps({'limit': 'xyz', 'usernames':'bankai1,bankai2'}),
 							  extra_environ=self._make_extra_environ(),
 							  status=422)
@@ -140,7 +140,7 @@ class TestAdminViews(ApplicationLayerTest):
 				usr.addContainedObject(note)
 
 		testapp = TestApp(self.app)
-		result = testapp.post('/dataserver2/hypatia/@@empty_queue',
+		result = testapp.post('/dataserver2/hypatia/empty_queue',
 							  extra_environ=self._make_extra_environ(),
 					 		  status=200)
 
@@ -163,7 +163,16 @@ class TestAdminViews(ApplicationLayerTest):
 				usr.addContainedObject(note)
 
 		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/@@sync_queue',
-					  extra_environ=self._make_extra_environ(),
-			 		  status=204)
+		testapp.post('/dataserver2/hypatia/sync_queue',
+					 extra_environ=self._make_extra_environ(),
+					 status=204)
+		
+	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	def test_unindex_missing(self):
+		testapp = TestApp(self.app)
+		result = testapp.post('/dataserver2/hypatia/unindex_missing',
+					  		  extra_environ=self._make_extra_environ(),
+			 		 		  status=200)
+		result = result.json
+		assert_that(result, has_entry('Total', is_(0)))
 

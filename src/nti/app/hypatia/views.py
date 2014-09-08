@@ -11,10 +11,14 @@ logger = __import__('logging').getLogger(__name__)
 import six
 import time
 
+import zope.intid
+
 from zope import component
 from zope import interface
 from zope.container.contained import Contained
 from zope.traversing.interfaces import IPathAdapter
+
+from ZODB.POSException import POSKeyError
 
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
@@ -250,8 +254,34 @@ class QueueInfoView(AbstractAuthenticatedView):
 class SyncQueueView(AbstractAuthenticatedView, 
 					ModeledContentUploadRequestUtilsMixin):
 	
-	def _do_call(self):
+	def __call__(self):
 		catalog_queue = search_queue()
 		if catalog_queue.syncQueue():
 			logger.info("Queue synched")
 		return hexc.HTTPNoContent()
+
+@view_config(route_name='objects.generic.traversal',
+			 name='unindex_missing',
+			 renderer='rest',
+			 request_method='POST',
+			 context=HypatiaPathAdapter,
+			 permission=nauth.ACT_MODERATE)
+class UnindexMissingView(AbstractAuthenticatedView, 
+							ModeledContentUploadRequestUtilsMixin):
+	
+	def __call__(self):
+		catalog = search_catalog()
+		type_index = catalog[type_]
+		intids = component.getUtility(zope.intid.IIntIds)
+		result = LocatedExternalDict()
+		missing = result['Missing'] = []
+		for uid in type_index.indexed():
+			try:
+				obj = intids.queryObject(uid)
+				if obj is None:
+					catalog.unindex_doc(uid)
+					missing.append(uid)
+			except POSKeyError:
+				logger.warn("Ignoring broken object %s,%r", uid, obj)
+		result['Total'] = len(missing)
+		return result
