@@ -10,7 +10,6 @@ logger = __import__('logging').getLogger(__name__)
 
 import six
 import time
-import simplejson
 
 from zope import component
 from zope import interface
@@ -19,6 +18,9 @@ from zope.traversing.interfaces import IPathAdapter
 
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
+
+from nti.app.base.abstract_views import AbstractAuthenticatedView
+from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
 from nti.contentsearch.constants import type_
 from nti.contentsearch.constants import invalid_type_
@@ -69,85 +71,84 @@ def username_search(search_term):
 	usernames = list(_users.iterkeys(min_inclusive, max_exclusive, excludemax=True))
 	return usernames
 
-def readInput(request):
-	body = request.body
-	result = CaseInsensitiveDict()
-	if body:
-		try:
-			values = simplejson.loads(unicode(body, request.charset))
-		except UnicodeError:
-			values = simplejson.loads(unicode(body, 'iso-8859-1'))
-		result.update(**values)
-	return result
-
 @view_config(route_name='objects.generic.traversal',
 			 name='reindex_content',
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def reindex_content_view(request):
-	values = readInput(request)
-	usernames = values.get('usernames')
-	queue_limit = values.get('limit', None)
-	term = values.get('term', values.get('search', None))
+class ReIndexContentView(AbstractAuthenticatedView, 
+						 ModeledContentUploadRequestUtilsMixin):
 	
-	# missing flag
-	missing = values.get('onlyMissing') or values.get('missing') or u''
-	missing = is_true(missing)
+	def readInput(self):
+		result = {}
+		if self.request.body:
+			values = super(ReIndexContentView, self).readInput()
+			result = CaseInsensitiveDict(values)
+		return result
 	
-	# user search
-	if term:
-		usernames = username_search(term)
-	elif usernames and isinstance(usernames, six.string_types):
-		usernames = usernames.split(',')
-	else:
-		usernames = ()  # ALL
-
-	accept = values.get('accept') or values.get('mimeTypes') or u''
-	accept = set(accept.split(',')) if accept else ()
-	if accept and '*/*' not in accept:
-		accept = {get_type_from_mimetype(e) for e in accept}
-		accept.discard(None)
-		accept = accept if accept else (invalid_type_,)
-	else:
-		accept = ()
-
-	# queue limit
-	if queue_limit is not None:
-		try:
-			queue_limit = int(queue_limit)
-			assert queue_limit > 0 or queue_limit == -1
-		except (ValueError, AssertionError):
-			raise hexc.HTTPUnprocessableEntity('invalid queue size')
-
-	total = 0
-	now = time.time()
-	type_index = search_catalog()[type_] if missing else None
-
-	generator = all_cataloged_objects(usernames) \
-				if missing else all_indexable_objects_iids(usernames)
-
-	queue = search_queue()
-	for iid, obj in generator:
-		try:
-			if 	(not missing or not type_index.has_doc(iid)) and \
-				(not accept or get_type(obj) in accept):
-				queue.add(iid)
-				total += 1
-		except TypeError:
-			pass
-
-	if queue_limit is not None:
-		process_queue(queue_limit)
+	def _do_call(self):
+		values = self.readInput()
+		usernames = values.get('usernames')
+		queue_limit = values.get('limit', None)
+		term = values.get('term', values.get('search', None))
 		
-	elapsed = time.time() - now
-	result = LocatedExternalDict()
-	result['Elapsed'] = elapsed
-	result['Total'] = total
-
-	logger.info("%s object(s) processed in %s(s)", total, elapsed)
-	return result
+		# missing flag
+		missing = values.get('onlyMissing') or values.get('missing') or u''
+		missing = is_true(missing)
+		
+		# user search
+		if term:
+			usernames = username_search(term)
+		elif usernames and isinstance(usernames, six.string_types):
+			usernames = usernames.split(',')
+		else:
+			usernames = ()  # ALL
+	
+		accept = values.get('accept') or values.get('mimeTypes') or u''
+		accept = set(accept.split(',')) if accept else ()
+		if accept and '*/*' not in accept:
+			accept = {get_type_from_mimetype(e) for e in accept}
+			accept.discard(None)
+			accept = accept if accept else (invalid_type_,)
+		else:
+			accept = ()
+	
+		# queue limit
+		if queue_limit is not None:
+			try:
+				queue_limit = int(queue_limit)
+				assert queue_limit > 0 or queue_limit == -1
+			except (ValueError, AssertionError):
+				raise hexc.HTTPUnprocessableEntity('invalid queue size')
+	
+		total = 0
+		now = time.time()
+		type_index = search_catalog()[type_] if missing else None
+	
+		generator = all_cataloged_objects(usernames) \
+					if missing else all_indexable_objects_iids(usernames)
+	
+		queue = search_queue()
+		for iid, obj in generator:
+			try:
+				if 	(not missing or not type_index.has_doc(iid)) and \
+					(not accept or get_type(obj) in accept):
+					queue.add(iid)
+					total += 1
+			except TypeError:
+				pass
+	
+		if queue_limit is not None:
+			process_queue(queue_limit)
+			
+		elapsed = time.time() - now
+		result = LocatedExternalDict()
+		result['Elapsed'] = elapsed
+		result['Total'] = total
+	
+		logger.info("%s object(s) processed in %s(s)", total, elapsed)
+		return result
 
 @view_config(route_name='objects.generic.traversal',
 			 name='process_queue',
@@ -155,21 +156,31 @@ def reindex_content_view(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def process_queue_view(request):
-	values = readInput(request)
-	limit = values.get('limit', DEFAULT_QUEUE_LIMIT)
-	try:
-		limit = int(limit)
-		assert limit > 0 or limit == -1
-	except (ValueError, AssertionError):
-		raise hexc.HTTPUnprocessableEntity('invalid limit size')
+class ProcessQueueView(AbstractAuthenticatedView, 
+					   ModeledContentUploadRequestUtilsMixin):
 
-	now = time.time()
-	total = process_queue(limit)
-	result = LocatedExternalDict()
-	result['Elapsed'] = time.time() - now
-	result['Total'] = total
-	return result
+	def readInput(self):
+		result = {}
+		if self.request.body:
+			values = super(ProcessQueueView, self).readInput()
+			result = CaseInsensitiveDict(values)
+		return result
+	
+	def _do_call(self):
+		values = self.readInput()
+		limit = values.get('limit', DEFAULT_QUEUE_LIMIT)
+		try:
+			limit = int(limit)
+			assert limit > 0 or limit == -1
+		except (ValueError, AssertionError):
+			raise hexc.HTTPUnprocessableEntity('invalid limit size')
+	
+		now = time.time()
+		total = process_queue(limit)
+		result = LocatedExternalDict()
+		result['Elapsed'] = time.time() - now
+		result['Total'] = total
+		return result
 
 @view_config(route_name='objects.generic.traversal',
 			 name='empty_queue',
@@ -177,33 +188,43 @@ def process_queue_view(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def empty_queue_view(request):
-	values = readInput(request)
-	limit = values.get('limit', -1)
-	try:
-		limit = int(limit)
-		assert limit > 0 or limit == -1
-	except (ValueError, AssertionError):
-		raise hexc.HTTPUnprocessableEntity('invalid limit size')
-
-	catalog_queue = search_queue()
-	catalog_queue.syncQueue()
-
-	length = len(catalog_queue)
-	limit = length if limit == -1 else min(length, limit)
-
-	done = 0
-	now = time.time()
-	for queue in catalog_queue:
-		for _, _ in queue.process(limit - done).iteritems():
-			done += 1
-	catalog_queue.changeLength(-done)
-	catalog_queue.syncQueue()
-
-	result = LocatedExternalDict()
-	result['Elapsed'] = time.time() - now
-	result['Total'] = done
-	return result
+class EmptyQueueView(AbstractAuthenticatedView, 
+					 ModeledContentUploadRequestUtilsMixin):
+	
+	def readInput(self):
+		result = {}
+		if self.request.body:
+			values = super(EmptyQueueView, self).readInput()
+			result = CaseInsensitiveDict(values)
+		return result
+	
+	def _do_call(self):
+		values = self.readInput()
+		limit = values.get('limit', -1)
+		try:
+			limit = int(limit)
+			assert limit > 0 or limit == -1
+		except (ValueError, AssertionError):
+			raise hexc.HTTPUnprocessableEntity('invalid limit size')
+	
+		catalog_queue = search_queue()
+		catalog_queue.syncQueue()
+	
+		length = len(catalog_queue)
+		limit = length if limit == -1 else min(length, limit)
+	
+		done = 0
+		now = time.time()
+		for queue in catalog_queue:
+			for _, _ in queue.process(limit - done).iteritems():
+				done += 1
+		catalog_queue.changeLength(-done)
+		catalog_queue.syncQueue()
+	
+		result = LocatedExternalDict()
+		result['Elapsed'] = time.time() - now
+		result['Total'] = done
+		return result
 
 @view_config(route_name='objects.generic.traversal',
 			 name='queue_info',
@@ -211,12 +232,14 @@ def empty_queue_view(request):
 			 request_method='GET',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def queue_info_view(request):
-	catalog_queue = search_queue()
-	result = LocatedExternalDict()
-	result['QueueLength'] = len(catalog_queue)
-	result['EventQueueLength'] = catalog_queue.eventQueueLength()
-	return result
+class QueueInfoView(AbstractAuthenticatedView):
+	
+	def __call__(self):
+		catalog_queue = search_queue()
+		result = LocatedExternalDict()
+		result['QueueLength'] = len(catalog_queue)
+		result['EventQueueLength'] = catalog_queue.eventQueueLength()
+		return result
 
 @view_config(route_name='objects.generic.traversal',
 			 name='sync_queue',
@@ -224,8 +247,11 @@ def queue_info_view(request):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
-def sync_queue_view(request):
-	catalog_queue = search_queue()
-	if catalog_queue.syncQueue():
-		logger.info("Queue synched")
-	return hexc.HTTPNoContent()
+class SyncQueueView(AbstractAuthenticatedView, 
+					ModeledContentUploadRequestUtilsMixin):
+	
+	def _do_call(self):
+		catalog_queue = search_queue()
+		if catalog_queue.syncQueue():
+			logger.info("Queue synched")
+		return hexc.HTTPNoContent()
