@@ -36,6 +36,8 @@ from nti.dataserver.interfaces import IDataserver
 from nti.dataserver.interfaces import IShardLayout
 
 from nti.externalization.interfaces import LocatedExternalDict
+from nti.externalization.externalization import to_external_object
+from nti.externalization.externalization import NonExternalizableObjectError
 
 from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
@@ -245,6 +247,34 @@ class QueueInfoView(AbstractAuthenticatedView):
 		result['EventQueueLength'] = catalog_queue.eventQueueLength()
 		return result
 
+@view_config(route_name='objects.generic.traversal',
+			 name='queued_objects',
+			 renderer='rest',
+			 request_method='GET',
+			 context=HypatiaPathAdapter,
+			 permission=nauth.ACT_MODERATE)
+class QueuedObjectsView(AbstractAuthenticatedView):
+	
+	def __call__(self):
+		intids = component.getUtility(zope.intid.IIntIds)
+		catalog_queue = search_queue()
+		result = LocatedExternalDict()
+		items = result['Items'] = {}
+		for key in catalog_queue.keys():
+			try:
+				obj = intids.queryObject(key)
+				if obj is not None:
+					items[key] = to_external_object(obj)
+			except NonExternalizableObjectError:
+				items[key] = { 	'Object': str(type(obj)) }
+			except Exception as e:
+				items[key] = {	'Message': str(e),
+								'Object': str(type(obj)),
+								'Exception': str(type(e))}
+			
+		result['Total'] = len(items)
+		return result
+	
 @view_config(route_name='objects.generic.traversal',
 			 name='sync_queue',
 			 renderer='rest',
