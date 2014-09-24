@@ -59,7 +59,6 @@ def get_course_rids(course):
 @component.adapter(ICourseInstanceAvailableEvent)
 def on_course_instance_available(event):
 	course = event.object
-	
 	## CS: Ignore legacy commmunity courses as these are
 	## added to the global catalog during application start up
 	## and they are no longer modifiable
@@ -86,15 +85,15 @@ def on_course_instance_available(event):
 			if not item.has_feedback():
 				continue
 			for feedback in item.Feedback.values():
-				uid = intids.queryIdI(feedback)
+				uid = intids.queryId(feedback)
 				if uid is None:
 					continue
 
 				# get expanded course acl
-				creator = getattr(feedback.creator, 'username', None)
 				expanded = set(course_rids)
-				expanded.add(creator)
-				expanded.discard(None)
+				creator = getattr(feedback.creator, 'username', None)
+				if creator:
+					expanded.add(creator.lower())
 				
 				# feedback acl
 				words = acl_index.get_words(uid)
