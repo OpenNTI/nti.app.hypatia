@@ -19,4 +19,8 @@
 		<subscriber handler=".subscribers.requestIndexation" />
 	</configure>
 	
+	<configure zcml:condition="have devmode">
+		<subscriber	handler=".subscribers.on_course_instance_available" />
+	</configure>
+	
 </configure>
