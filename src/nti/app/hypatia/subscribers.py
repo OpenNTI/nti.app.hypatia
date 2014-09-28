@@ -70,7 +70,7 @@ def on_course_instance_available(event):
 	if not course_rids:
 		return
 	
-	catalog  = search_catalog()
+	catalog = search_catalog()
 	acl_index = catalog[acl_]
 	intids = component.getUtility(zope.intid.IIntIds)
 	

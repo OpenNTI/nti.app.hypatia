@@ -14,13 +14,10 @@
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
 			 factory=".views.HypatiaPathAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
+	
+	<subscriber	handler=".subscribers.on_course_instance_available" />
 
 	<configure zcml:condition="have testmode">
 		<subscriber handler=".subscribers.requestIndexation" />
-	</configure>
-	
-	<configure zcml:condition="have devmode">
-		<subscriber	handler=".subscribers.on_course_instance_available" />
-	</configure>
-	
+	</configure>	
 </configure>

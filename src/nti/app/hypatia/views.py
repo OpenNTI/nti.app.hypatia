@@ -297,7 +297,7 @@ class SyncQueueView(AbstractAuthenticatedView,
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_MODERATE)
 class UnindexMissingView(AbstractAuthenticatedView, 
-							ModeledContentUploadRequestUtilsMixin):
+						 ModeledContentUploadRequestUtilsMixin):
 	
 	def __call__(self):
 		catalog = search_catalog()
@@ -312,6 +312,6 @@ class UnindexMissingView(AbstractAuthenticatedView,
 					catalog.unindex_doc(uid)
 					missing.append(uid)
 			except POSKeyError:
-				logger.warn("Ignoring broken object %s,%r", uid, obj)
+				logger.warn("Ignoring broken object %s,%s", uid, type(obj))
 		result['Total'] = len(missing)
 		return result
