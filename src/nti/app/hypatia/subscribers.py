@@ -13,6 +13,8 @@ import transaction
 
 from zope import component
 
+from ZODB.POSException import POSKeyError
+
 from pyramid.interfaces import INewRequest
 
 from nti.contentsearch.constants import acl_
@@ -78,7 +80,10 @@ def on_course_instance_available(event):
 	## to reindex to make sure their ACL is updated
 	enrollments = ICourseEnrollments(course)
 	for record in enrollments.iter_enrollments():
-		principal = record.Principal
+		try:
+			principal = record.Principal
+		except POSKeyError:
+			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
 		for item in history.values():
