@@ -38,6 +38,7 @@ setup(
 	install_requires=[
 		'setuptools',
         'nti.hypatia',
+        'nti.app.assessment'
 	],
 	entry_points=entry_points
 )
