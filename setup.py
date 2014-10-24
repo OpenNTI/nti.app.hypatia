@@ -27,18 +27,17 @@ setup(
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-		'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
-        ],
-	packages=find_packages('src'),
-	package_dir={'': 'src'},
-	namespace_packages=['nti','nti.app'],
-	install_requires=[
-		'setuptools',
-        'nti.hypatia',
-        'nti.app.assessment'
-	],
-	entry_points=entry_points
+    ],
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    namespace_packages=['nti','nti.app'],
+    install_requires=[
+        'setuptools',
+        'nti.hypatia'
+    ],
+    entry_points=entry_points
 )
