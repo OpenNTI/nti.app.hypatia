@@ -18,7 +18,4 @@
 	<configure zcml:condition="installed nti.app.assessment">
 		<subscriber	handler=".courses.on_course_instance_available" />
 	</configure>
-	<configure zcml:condition="have testmode">
-		<subscriber handler=".subscribers.requestIndexation" />
-	</configure>	
 </configure>
