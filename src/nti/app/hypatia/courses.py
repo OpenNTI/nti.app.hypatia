@@ -66,6 +66,8 @@ def on_course_instance_available(event):
 			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
+		if not history:
+			continue
 		for item in history.values():
 			if not item.has_feedback():
 				continue
