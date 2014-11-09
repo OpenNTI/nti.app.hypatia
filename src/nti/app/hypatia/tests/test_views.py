@@ -145,13 +145,6 @@ class TestAdminViews(ApplicationLayerTest):
 					 		  status=200)
 
 		result = result.json
-		assert_that(result, has_entry('Total', is_(10)))
-
-		result = testapp.post('/dataserver2/hypatia/@@empty_queue',
-							  json.dumps({'limit': 100}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
 		assert_that(result, has_entry('Total', is_(0)))
 
 	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)

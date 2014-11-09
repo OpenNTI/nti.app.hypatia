@@ -146,7 +146,7 @@ class ReIndexContentView(AbstractAuthenticatedView,
 				pass
 	
 		if queue_limit is not None:
-			process_queue(queue_limit)
+			process_queue(limit=queue_limit)
 			
 		elapsed = time.time() - now
 		result = LocatedExternalDict()
@@ -182,7 +182,7 @@ class ProcessQueueView(AbstractAuthenticatedView,
 			raise hexc.HTTPUnprocessableEntity('invalid limit size')
 	
 		now = time.time()
-		total = process_queue(limit)
+		total = process_queue(limit=limit)
 		result = LocatedExternalDict()
 		result['Elapsed'] = time.time() - now
 		result['Total'] = total
