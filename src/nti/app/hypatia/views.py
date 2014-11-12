@@ -304,14 +304,17 @@ class UnindexMissingView(AbstractAuthenticatedView,
 		type_index = catalog[type_]
 		intids = component.getUtility(zope.intid.IIntIds)
 		result = LocatedExternalDict()
+		broken = result['Broken'] = {}
 		missing = result['Missing'] = []
-		for uid in type_index.indexed():
+		for uid in list(type_index.indexed()):
 			try:
 				obj = intids.queryObject(uid)
 				if obj is None:
 					catalog.unindex_doc(uid)
 					missing.append(uid)
 			except POSKeyError:
-				logger.warn("Ignoring broken object %s,%s", uid, type(obj))
-		result['Total'] = len(missing)
+				broken[uid] = str(type(obj))
+				logger.debug("Ignoring broken object %s,%s", uid, type(obj))
+		result['TotalBroken'] = len(broken)
+		result['TotalMissing'] = len(missing)
 		return result
