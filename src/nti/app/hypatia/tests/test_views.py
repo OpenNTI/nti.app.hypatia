@@ -167,5 +167,6 @@ class TestAdminViews(ApplicationLayerTest):
 					  		  extra_environ=self._make_extra_environ(),
 			 		 		  status=200)
 		result = result.json
-		assert_that(result, has_entry('Total', is_(0)))
+		assert_that(result, has_entry('TotalBroken', is_(0)))
+		assert_that(result, has_entry('TotalMissing', is_(0)))
 
