@@ -95,10 +95,10 @@ class ReIndexContentView(AbstractAuthenticatedView,
 	
 	def _do_call(self):
 		values = self.readInput()
-		usernames = values.get('usernames')
 		queue_limit = values.get('limit', None)
-		term = values.get('term', values.get('search', None))
-		
+		term = values.get('term') or values.get('search')
+		usernames = values.get('usernames') or values.get('username')
+				
 		# missing flag
 		missing = values.get('onlyMissing') or values.get('missing') or u''
 		missing = is_true(missing)
@@ -130,10 +130,13 @@ class ReIndexContentView(AbstractAuthenticatedView,
 	
 		total = 0
 		now = time.time()
-		type_index = search_catalog()[type_] if missing else None
-	
-		generator = all_cataloged_objects(usernames) \
-					if missing else all_indexable_objects_iids(usernames)
+		resolve = bool(queue_limit is not None)
+		if missing:
+			type_index = search_catalog()[type_] 
+			generator = all_cataloged_objects(usernames, resolve=resolve)
+		else:
+			type_index = None
+			generator = all_indexable_objects_iids(usernames, resolve=resolve)
 	
 		queue = search_queue()
 		for iid, obj in generator:
