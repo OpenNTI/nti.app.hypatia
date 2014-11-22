@@ -26,10 +26,8 @@ from pyramid import httpexceptions as hexc
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
-from nti.contentsearch.constants import type_
-from nti.contentsearch.constants import invalid_type_
-from nti.contentsearch.interfaces import ITypeResolver
 from nti.contentsearch.common import get_type_from_mimetype
+from nti.contentsearch.constants import type_, invalid_type_
 
 from nti.dataserver import authorization as nauth
 from nti.dataserver.interfaces import IDataserver
@@ -42,11 +40,11 @@ from nti.externalization.externalization import NonExternalizableObjectError
 from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
 from nti.hypatia.reactor import process_queue
-from nti.hypatia.utils import all_cataloged_objects
 from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
-from nti.hypatia.utils import all_indexable_objects_iids
 
 from nti.utils.maps import CaseInsensitiveDict
+
+from .reindexer import reindex
 
 @interface.implementer(IPathAdapter)
 class HypatiaPathAdapter(Contained):
@@ -65,10 +63,6 @@ def _make_min_max_btree_range(search_term):
 
 def is_true(s):
 	return bool(s and str(s).lower() in ('1', 'true', 't', 'yes', 'y', 'on'))
-
-def get_type(obj):
-	resolver = ITypeResolver(obj, None)
-	return resolver.type if resolver else None
 
 def username_search(search_term):
 	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
@@ -128,35 +122,10 @@ class ReIndexContentView(AbstractAuthenticatedView,
 			except (ValueError, AssertionError):
 				raise hexc.HTTPUnprocessableEntity('invalid queue size')
 	
-		total = 0
-		now = time.time()
-		resolve = bool(queue_limit is not None)
-		if missing:
-			type_index = search_catalog()[type_] 
-			generator = all_cataloged_objects(usernames, resolve=resolve)
-		else:
-			type_index = None
-			generator = all_indexable_objects_iids(usernames, resolve=resolve)
-	
-		queue = search_queue()
-		for iid, obj in generator:
-			try:
-				if 	(not missing or not type_index.has_doc(iid)) and \
-					(not accept or get_type(obj) in accept):
-					queue.add(iid)
-					total += 1
-			except TypeError:
-				pass
-	
-		if queue_limit is not None:
-			process_queue(limit=queue_limit)
-			
-		elapsed = time.time() - now
-		result = LocatedExternalDict()
-		result['Elapsed'] = elapsed
-		result['Total'] = total
-	
-		logger.info("%s object(s) processed in %s(s)", total, elapsed)
+		result = reindex(usernames=usernames, 
+						 accept=accept, 
+						 missing=missing, 
+						 queue_limit=queue_limit)
 		return result
 
 @view_config(route_name='objects.generic.traversal',

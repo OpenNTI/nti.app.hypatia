@@ -12,8 +12,6 @@ from hamcrest import has_entry
 from hamcrest import has_length
 from hamcrest import assert_that
 
-import json
-
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
@@ -21,9 +19,7 @@ from nti.dataserver.contenttypes import Note
 
 from nti.ntiids.ntiids import make_ntiid
 
-from nti.hypatia import interfaces as hypatia_interfaces
-
-from nti.appserver.tests.test_application import TestApp
+from nti.hypatia.interfaces import IHypatiaUserIndexController
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
@@ -53,23 +49,20 @@ class TestAdminViews(ApplicationLayerTest):
 			note = self._create_note(u'As Nodt Fear', ichigo.username)
 			ichigo.addContainedObject(note)
 
-		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/process_queue',
-					 extra_environ=self._make_extra_environ(),
-					 status=200)
+		testapp = self.testapp
+		testapp.post_json('/dataserver2/hypatia/process_queue', status=200)
 
 		with mock_dataserver.mock_db_trans(self.ds):
 			user = User.get_user(username)
-			rim = hypatia_interfaces.IHypatiaUserIndexController(user)
+			rim = IHypatiaUserIndexController(user)
 			hits = rim.search('fear')
 			assert_that(hits, has_length(1))
 			
-		testapp.post('/dataserver2/hypatia/process_queue',
-					 json.dumps({'limit': 'xyt'}),
-					 extra_environ=self._make_extra_environ(),
-					 status=422)
+		testapp.post_json('/dataserver2/hypatia/process_queue',
+					 	  {'limit': 'xyt'},
+					 	  status=422)
 
-	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
 	def test_reindex_content(self):
 		with mock_dataserver.mock_db_trans(self.ds):
 			for x in range(10):
@@ -78,60 +71,45 @@ class TestAdminViews(ApplicationLayerTest):
 				note = self._create_note(u'Shikai %s' % x, usr)
 				usr.addContainedObject(note)
 				
-		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/process_queue',
-					 extra_environ=self._make_extra_environ(),
-					 status=200)
+		testapp = self.testapp
+		testapp.post_json('/dataserver2/hypatia/process_queue', status=200)
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'limit': 100,
-										  'accept':'application/vnd.nextthought.redaction'}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(0)))
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							  	   {'limit': 100,
+									'accept':'application/vnd.nextthought.redaction'},
+							 		status=200)
+		assert_that(result.json_body, has_entry('Total', 0))
 		
-		result = testapp.post('/dataserver2/hypatia/@@reindex_content',
-							  json.dumps({'limit': 100}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(10)))
+		result = testapp.post_json('/dataserver2/hypatia/@@reindex_content',
+							 	   {'limit': 100},
+							  	   status=200)
+		assert_that(result.json_body, has_entry('Total', 10))
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'term':'bank', 'limit': 100}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(10)))
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							  	   {'term':'bank', 'limit': 100},
+							  	   status=200)
+		assert_that(result.json_body, has_entry('Total', 10))
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'onlyMissing':True, 'limit': 100}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(0)))
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							  	   {'onlyMissing':True, 'limit': 100},
+							 	   status=200)
+		assert_that(result.json_body, has_entry('Total', is_(0)))
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'limit': 100, 'usernames':'bankai1,bankai2'}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(2)))
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							  	   {'limit': 100, 'usernames':'bankai1,bankai2'},
+							  	   status=200)
+		assert_that(result.json_body, has_entry('Total', is_(2)))
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'limit': 100, 'usernames':'foo,foo2'}),
-							  extra_environ=self._make_extra_environ(),
-							  status=200)
-		result = result.json
-		assert_that(result, has_entry('Total', is_(0)))
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							 	   {'limit': 100, 'usernames':'foo,foo2'},
+							  	   status=200)
+		assert_that(result.json_body, has_entry('Total', 0))
 
-		result = testapp.post('/dataserver2/hypatia/reindex_content',
-							  json.dumps({'limit': 'xyz', 'usernames':'bankai1,bankai2'}),
-							  extra_environ=self._make_extra_environ(),
-							  status=422)
+		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
+							  		{'limit': 'xyz', 'usernames':'bankai1,bankai2'},
+							  		status=422)
 
-	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
 	def test_empty_queue(self):
 		with mock_dataserver.mock_db_trans(self.ds):
 			for x in range(10):
@@ -139,15 +117,11 @@ class TestAdminViews(ApplicationLayerTest):
 				note = self._create_note(u'Shikai %s' % x, usr.username)
 				usr.addContainedObject(note)
 
-		testapp = TestApp(self.app)
-		result = testapp.post('/dataserver2/hypatia/empty_queue',
-							  extra_environ=self._make_extra_environ(),
-					 		  status=200)
+		testapp = self.testapp
+		result = testapp.post_json('/dataserver2/hypatia/empty_queue',  status=200)
+		assert_that(result.json_body, has_entry('Total', is_(0)))
 
-		result = result.json
-		assert_that(result, has_entry('Total', is_(0)))
-
-	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
 	def test_sync_queue(self):
 		with mock_dataserver.mock_db_trans(self.ds):
 			for x in range(10):
@@ -155,18 +129,12 @@ class TestAdminViews(ApplicationLayerTest):
 				note = self._create_note(u'Shikai %s' % x, usr.username)
 				usr.addContainedObject(note)
 
-		testapp = TestApp(self.app)
-		testapp.post('/dataserver2/hypatia/sync_queue',
-					 extra_environ=self._make_extra_environ(),
-					 status=204)
+		testapp = self.testapp
+		testapp.post_json('/dataserver2/hypatia/sync_queue', status=204)
 		
-	@WithSharedApplicationMockDSHandleChanges(testapp=False, users=True)
+	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
 	def test_unindex_missing(self):
-		testapp = TestApp(self.app)
-		result = testapp.post('/dataserver2/hypatia/unindex_missing',
-					  		  extra_environ=self._make_extra_environ(),
-			 		 		  status=200)
-		result = result.json
-		assert_that(result, has_entry('TotalBroken', is_(0)))
-		assert_that(result, has_entry('TotalMissing', is_(0)))
-
+		testapp = self.testapp
+		result = testapp.post_json('/dataserver2/hypatia/unindex_missing', status=200)
+		assert_that(result.json_body, has_entry('TotalBroken', is_(0)))
+		assert_that(result.json_body, has_entry('TotalMissing', is_(0)))
