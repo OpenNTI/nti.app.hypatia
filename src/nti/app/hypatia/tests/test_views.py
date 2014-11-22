@@ -85,6 +85,11 @@ class TestAdminViews(ApplicationLayerTest):
 							  	   status=200)
 		assert_that(result.json_body, has_entry('Total', 10))
 
+		result = testapp.post_json('/dataserver2/hypatia/@@reindex_content',
+							 	   {'cataloged': True},
+							  	   status=200)
+		assert_that(result.json_body, has_entry('Total', 10))
+		
 		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
 							  	   {'term':'bank', 'limit': 100},
 							  	   status=200)
