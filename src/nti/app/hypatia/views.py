@@ -18,7 +18,7 @@ from zope import interface
 from zope.container.contained import Contained
 from zope.traversing.interfaces import IPathAdapter
 
-from ZODB.POSException import POSKeyError
+from ZODB.POSException import POSError
 
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
@@ -26,6 +26,7 @@ from pyramid import httpexceptions as hexc
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
+from nti.contentsearch.interfaces import ITypeResolver
 from nti.contentsearch.common import get_type_from_mimetype
 from nti.contentsearch.constants import type_, invalid_type_
 
@@ -289,9 +290,12 @@ class UnindexMissingView(AbstractAuthenticatedView,
 				if obj is None:
 					catalog.unindex_doc(uid)
 					missing.append(uid)
-			except POSKeyError:
+				else:
+					## load object to validate it
+					ITypeResolver(obj).type
+			except (TypeError, POSError):
+				catalog.unindex_doc(uid)
 				broken[uid] = str(type(obj))
-				logger.debug("Ignoring broken object %s,%s", uid, type(obj))
 		result['TotalBroken'] = len(broken)
 		result['TotalMissing'] = len(missing)
 		return result
