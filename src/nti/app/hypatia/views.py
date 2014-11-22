@@ -80,11 +80,11 @@ def username_search(search_term):
 class ReIndexContentView(AbstractAuthenticatedView, 
 						 ModeledContentUploadRequestUtilsMixin):
 	
-	def readInput(self):
-		result = {}
+	def readInput(self, value=None):
+		result = CaseInsensitiveDict()
 		if self.request.body:
-			values = super(ReIndexContentView, self).readInput()
-			result = CaseInsensitiveDict(values)
+			values = super(ReIndexContentView, self).readInput(value=value)
+			result.update(**values)
 		return result
 	
 	def _do_call(self):
@@ -142,11 +142,11 @@ class ReIndexContentView(AbstractAuthenticatedView,
 class ProcessQueueView(AbstractAuthenticatedView, 
 					   ModeledContentUploadRequestUtilsMixin):
 
-	def readInput(self):
-		result = {}
+	def readInput(self, value=None):
+		result = CaseInsensitiveDict()
 		if self.request.body:
-			values = super(ProcessQueueView, self).readInput()
-			result = CaseInsensitiveDict(values)
+			values = super(ProcessQueueView, self).readInput(value=value)
+			result.update(**values)
 		return result
 	
 	def _do_call(self):
@@ -174,13 +174,13 @@ class ProcessQueueView(AbstractAuthenticatedView,
 class EmptyQueueView(AbstractAuthenticatedView, 
 					 ModeledContentUploadRequestUtilsMixin):
 	
-	def readInput(self):
-		result = {}
+	def readInput(self, value=None):
+		result = CaseInsensitiveDict()
 		if self.request.body:
-			values = super(EmptyQueueView, self).readInput()
-			result = CaseInsensitiveDict(values)
+			values = super(EmptyQueueView, self).readInput(value=value)
+			result.update(**values)
 		return result
-	
+
 	def _do_call(self):
 		values = self.readInput()
 		limit = values.get('limit', -1)

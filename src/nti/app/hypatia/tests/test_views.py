@@ -72,7 +72,9 @@ class TestAdminViews(ApplicationLayerTest):
 				usr.addContainedObject(note)
 				
 		testapp = self.testapp
-		testapp.post_json('/dataserver2/hypatia/process_queue', status=200)
+		testapp.post_json('/dataserver2/hypatia/process_queue', 
+						   {'limit':-1},
+						   status=200)
 
 		result = testapp.post_json('/dataserver2/hypatia/reindex_content',
 							  	   {'limit': 100,
@@ -123,7 +125,9 @@ class TestAdminViews(ApplicationLayerTest):
 				usr.addContainedObject(note)
 
 		testapp = self.testapp
-		result = testapp.post_json('/dataserver2/hypatia/empty_queue',  status=200)
+		result = testapp.post_json('/dataserver2/hypatia/empty_queue', 
+								 	{'limit':-1},
+								 	status=200)
 		assert_that(result.json_body, has_entry('Total', is_(0)))
 
 	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
