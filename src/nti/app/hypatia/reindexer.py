@@ -26,13 +26,14 @@ def get_type(obj):
 	resolver = ITypeResolver(obj, None)
 	return resolver.type if resolver else None
 
-def reindex(usernames=(), accept=(), cataloged=True,
+def reindex(usernames=(), accept=(), cataloged=True, sharedWith=True,
 			missing=False, queue_limit=None):
 	total = 0
 	resolve = bool(queue_limit is not None)
 	type_index = search_catalog()[type_] 
 	if cataloged:
-		generator = all_cataloged_objects(usernames, resolve=resolve)
+		generator = all_cataloged_objects(usernames, sharedWith=sharedWith, 
+										  resolve=resolve)
 	else:
 		generator = all_indexable_objects_iids(usernames, resolve=resolve)
 
@@ -125,6 +126,7 @@ def _process_args(args):
 					 queue_limit=args.limit,
 					 cataloged=not args.all,
 					 accept=args.types or (),
+					 sharedWith=args.sharedWith,
 					 usernames=args.usernames or ())
 		
 	if args.verbose:
@@ -139,10 +141,6 @@ def main():
 							 help="Reindex only missing objects", 
 							 action='store_true',
 							 dest='missing')
-	arg_parser.add_argument('-a', '--all', 
-							 help="Reindex all intid objects", 
-							 action='store_true',
-							 dest='all')
 	arg_parser.add_argument('-t', '--types',
 							dest='types',
 							nargs="+",
@@ -155,6 +153,16 @@ def main():
 							 dest='limit',
 							 help="Queue limit",
 							 type=int)
+	
+	site_group = arg_parser.add_mutually_exclusive_group()
+	site_group.add_argument('-a', '--all', 
+							 help="Reindex all intid objects", 
+							 action='store_true',
+							 dest='all')
+	site_group.add_argument('-s', '--shared',
+							 dest='sharedWith',
+							 action='store_true',
+							 help="Inclued sharedWith objects (if users specified).")
 
 	args = arg_parser.parse_args()
 	env_dir = os.getenv('DATASERVER_DIR')
