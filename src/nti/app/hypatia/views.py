@@ -98,8 +98,8 @@ class ReIndexContentView(AbstractAuthenticatedView,
 		missing = is_true(missing)
 		
 		# cataloged flag
-		cataloged = values.get('cataloged')
-		cataloged = is_true(cataloged)
+		uncataloged = values.get('uncataloged')
+		uncataloged = is_true(uncataloged)
 		
 		# user search
 		if term:
@@ -128,9 +128,9 @@ class ReIndexContentView(AbstractAuthenticatedView,
 	
 		result = reindex(accept=accept, 
 						 missing=missing, 
-						 cataloged=cataloged,
 						 usernames=usernames, 
-						 queue_limit=queue_limit)
+						 queue_limit=queue_limit,
+						 cataloged=not uncataloged)
 		return result
 
 @view_config(route_name='objects.generic.traversal',

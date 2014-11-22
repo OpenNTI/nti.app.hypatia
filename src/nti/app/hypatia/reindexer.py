@@ -26,7 +26,7 @@ def get_type(obj):
 	resolver = ITypeResolver(obj, None)
 	return resolver.type if resolver else None
 
-def reindex(usernames=(), accept=(), cataloged=False,
+def reindex(usernames=(), accept=(), cataloged=True,
 			missing=False, queue_limit=None):
 	total = 0
 	resolve = bool(queue_limit is not None)
@@ -123,8 +123,8 @@ def _create_context(env_dir, devmode=False):
 def _process_args(args):
 	result = reindex(missing=args.missing,
 					 queue_limit=args.limit,
+					 cataloged=not args.all,
 					 accept=args.types or (),
-					 cataloged=args.cataloged,
 					 usernames=args.usernames or ())
 		
 	if args.verbose:
@@ -139,10 +139,10 @@ def main():
 							 help="Reindex only missing objects", 
 							 action='store_true',
 							 dest='missing')
-	arg_parser.add_argument('-c', '--cataloged', 
-							 help="Reindex only cataloged objects", 
+	arg_parser.add_argument('-a', '--all', 
+							 help="Reindex all intid objects", 
 							 action='store_true',
-							 dest='cataloged')
+							 dest='all')
 	arg_parser.add_argument('-t', '--types',
 							dest='types',
 							nargs="+",

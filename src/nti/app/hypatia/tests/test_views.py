@@ -86,7 +86,7 @@ class TestAdminViews(ApplicationLayerTest):
 		assert_that(result.json_body, has_entry('Total', 10))
 
 		result = testapp.post_json('/dataserver2/hypatia/@@reindex_content',
-							 	   {'cataloged': True},
+							 	   {'uncataloged': True},
 							  	   status=200)
 		assert_that(result.json_body, has_entry('Total', 10))
 		
