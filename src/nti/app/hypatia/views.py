@@ -18,6 +18,7 @@ from zope import interface
 from zope.container.contained import Contained
 from zope.traversing.interfaces import IPathAdapter
 
+from ZODB.interfaces import IBroken
 from ZODB.POSException import POSError
 
 from pyramid.view import view_config
@@ -290,6 +291,9 @@ class UnindexMissingView(AbstractAuthenticatedView,
 				if obj is None:
 					catalog.unindex_doc(uid)
 					missing.append(uid)
+				elif IBroken.providedBy(obj):
+					catalog.unindex_doc(uid)
+					broken[uid] = str(type(obj))
 				else:
 					## load object to validate it
 					ITypeResolver(obj).type
