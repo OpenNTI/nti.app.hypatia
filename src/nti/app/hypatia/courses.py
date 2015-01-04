@@ -10,7 +10,7 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
-from ZODB.POSException import POSKeyError
+from ZODB.POSException import POSError
 
 from nti.contentsearch.constants import acl_
 
@@ -28,6 +28,8 @@ from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseInstanceAvailableEvent
 
 from nti.hypatia import search_catalog
+
+from nti.wref.interfaces import IWeakRef
 
 def get_course_rids(course):
 	result = set()
@@ -62,7 +64,8 @@ def on_course_instance_available(event):
 	for record in enrollments.iter_enrollments():
 		try:
 			principal = record.Principal
-		except POSKeyError:
+			IWeakRef(principal)
+		except (TypeError, POSError):
 			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
