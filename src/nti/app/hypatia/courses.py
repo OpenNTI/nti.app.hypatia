@@ -40,6 +40,16 @@ def get_course_rids(course):
 			result.update(x[0].lower() for x in settings)
 	return result
 
+def get_principal(record):
+	try:
+		## CS: get the record principal. 
+		## Get a IWeakRef to make sure the user has not been deleted
+		principal = record.Principal
+		IWeakRef(principal)
+	except (TypeError, POSError):
+		principal = None
+	return principal
+
 @component.adapter(ICourseInstanceAvailableEvent)
 def on_course_instance_available(event):
 	course = event.object
@@ -62,10 +72,8 @@ def on_course_instance_available(event):
 	## to reindex to make sure their ACL is updated
 	enrollments = ICourseEnrollments(course)
 	for record in enrollments.iter_enrollments():
-		try:
-			principal = record.Principal
-			IWeakRef(principal)
-		except (TypeError, POSError):
+		principal = get_principal(record)
+		if principal is None:
 			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
