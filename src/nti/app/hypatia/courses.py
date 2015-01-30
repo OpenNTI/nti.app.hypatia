@@ -3,24 +3,25 @@
 """
 .. $Id$
 """
+
 from __future__ import print_function, unicode_literals, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-from zope import component
-
-from ZODB.POSException import POSError
-
-from nti.contentsearch.constants import acl_
-
 import zope.intid
 
+from zope import component
+
 from zope.securitypolicy.interfaces import IPrincipalRoleMap
+
+from ZODB.POSException import POSError
 
 from nti.app.products.courseware.interfaces import ILegacyCommunityBasedCourseInstance
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
+
+from nti.contentsearch.constants import acl_
 
 from nti.contenttypes.courses.interfaces import RID_TA
 from nti.contenttypes.courses.interfaces import RID_INSTRUCTOR
