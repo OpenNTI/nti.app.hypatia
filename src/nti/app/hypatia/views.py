@@ -28,6 +28,8 @@ from pyramid import httpexceptions as hexc
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
+from nti.common.maps import CaseInsensitiveDict
+
 from nti.contentsearch.interfaces import ITypeResolver
 from nti.contentsearch.common import get_type_from_mimetype
 from nti.contentsearch.constants import type_, invalid_type_
@@ -44,8 +46,6 @@ from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
 from nti.hypatia.reactor import process_queue
 from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
-
-from nti.utils.maps import CaseInsensitiveDict
 
 from .reindexer import reindex
 
