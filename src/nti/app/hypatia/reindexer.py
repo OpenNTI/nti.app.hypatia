@@ -70,54 +70,8 @@ import os
 import pprint
 import argparse
 
-import zope.browserpage
-
-from zope.container.contained import Contained
-from zope.configuration import xmlconfig, config
-from zope.dottedname import resolve as dottedname
-
-from z3c.autoinclude.zcml import includePluginsDirective
-
 from nti.dataserver.utils import run_with_dataserver
-
-class PluginPoint(Contained):
-
-	def __init__(self, name):
-		self.__name__ = name
-
-PP_APP = PluginPoint('nti.app')
-PP_APP_SITES = PluginPoint('nti.app.sites')
-PP_APP_PRODUCTS = PluginPoint('nti.app.products')
-
-def _create_context(env_dir):
-	etc = os.getenv('DATASERVER_ETC_DIR') or os.path.join(env_dir, 'etc')
-	etc = os.path.expanduser(etc)
-
-	context = config.ConfigurationMachine()
-	xmlconfig.registerCommonDirectives(context)
-		
-	slugs = os.path.join(etc, 'package-includes')
-	if os.path.exists(slugs) and os.path.isdir(slugs):
-		package = dottedname.resolve('nti.dataserver')
-		context = xmlconfig.file('configure.zcml', package=package, context=context)
-		xmlconfig.include(context, files=os.path.join(slugs, '*.zcml'),
-						  package='nti.appserver')
-
-	library_zcml = os.path.join(etc, 'library.zcml')
-	if not os.path.exists(library_zcml):
-		raise Exception("could not locate library zcml file %s", library_zcml)
-	xmlconfig.include(context, file=library_zcml)
-	
-	# Include zope.browserpage.meta.zcm for tales:expressiontype
-	# before including the products
-	xmlconfig.include(context, file="meta.zcml", package=zope.browserpage)
-
-	# include plugins
-	includePluginsDirective(context, PP_APP)
-	includePluginsDirective(context, PP_APP_SITES)
-	includePluginsDirective(context, PP_APP_PRODUCTS)
-	
-	return context
+from nti.dataserver.utils.base_script import create_context
 
 def _process_args(args):
 	result = reindex(missing=args.missing,
@@ -167,7 +121,7 @@ def main():
 	if not env_dir or not os.path.exists(env_dir) and not os.path.isdir(env_dir):
 		raise IOError("Invalid dataserver environment root directory")
 
-	context = _create_context(env_dir)
+	context = create_context(env_dir)
 	conf_packages = ('nti.appserver', 'nti.app.hypatia')
 
 	run_with_dataserver(environment_dir=env_dir,
