@@ -79,7 +79,7 @@ def username_search(search_term):
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class ReIndexContentView(AbstractAuthenticatedView, 
 						 ModeledContentUploadRequestUtilsMixin):
 	
@@ -141,7 +141,7 @@ class ReIndexContentView(AbstractAuthenticatedView,
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class ProcessQueueView(AbstractAuthenticatedView, 
 					   ModeledContentUploadRequestUtilsMixin):
 
@@ -173,7 +173,7 @@ class ProcessQueueView(AbstractAuthenticatedView,
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class EmptyQueueView(AbstractAuthenticatedView, 
 					 ModeledContentUploadRequestUtilsMixin):
 	
@@ -217,7 +217,7 @@ class EmptyQueueView(AbstractAuthenticatedView,
 			 renderer='rest',
 			 request_method='GET',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class QueueInfoView(AbstractAuthenticatedView):
 	
 	def __call__(self):
@@ -232,7 +232,7 @@ class QueueInfoView(AbstractAuthenticatedView):
 			 renderer='rest',
 			 request_method='GET',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class QueuedObjectsView(AbstractAuthenticatedView):
 	
 	def __call__(self):
@@ -260,7 +260,7 @@ class QueuedObjectsView(AbstractAuthenticatedView):
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class SyncQueueView(AbstractAuthenticatedView, 
 					ModeledContentUploadRequestUtilsMixin):
 	
@@ -275,7 +275,7 @@ class SyncQueueView(AbstractAuthenticatedView,
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_MODERATE)
+			 permission=nauth.ACT_NTI_ADMIN)
 class UnindexMissingView(AbstractAuthenticatedView, 
 						 ModeledContentUploadRequestUtilsMixin):
 	
