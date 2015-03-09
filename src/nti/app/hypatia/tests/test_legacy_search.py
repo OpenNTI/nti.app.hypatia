@@ -23,11 +23,8 @@ from nti.hypatia.interfaces import IHypatiaUserIndexController
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.hypatia.tests import HypatiaApplicationTestLayer
-
+from nti.app.testing.decorators import WithSharedApplicationMockDS
 from nti.app.testing.application_webtest import ApplicationLayerTest
-from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges as \
-									   WithSharedApplicationMockDS
 
 from nti.appserver.tests.test_application import TestApp as _TestApp
 
@@ -87,10 +84,7 @@ class UserCommunityFixture(object):
 	def __getattr__(self, name):
 		return getattr(self.test, name)
 
-
 class TestAppLegacySearch(ApplicationLayerTest):
-
-	layer = HypatiaApplicationTestLayer
 
 	default_entityname = 'TheCommunity'
 	forum_ntiid = 'tag:nextthought.com,2011-10:TheCommunity-Forum:GeneralCommunity-Forum'
@@ -297,4 +291,3 @@ class TestAppLegacySearch(ApplicationLayerTest):
 
 			hits = rim.search('yachiru'.upper())
 			assert_that(hits, has_length(1))
-
