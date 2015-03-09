@@ -13,6 +13,7 @@ import zope.intid
 
 from zope import component
 
+from zope.securitypolicy.interfaces import Allow
 from zope.securitypolicy.interfaces import IPrincipalRoleMap
 
 from ZODB.POSException import POSError
@@ -28,25 +29,22 @@ from nti.contenttypes.courses.interfaces import RID_INSTRUCTOR
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseInstanceAvailableEvent
 
+from nti.dataserver.interfaces import IUser
+
 from nti.hypatia import search_catalog
 
-from nti.wref.interfaces import IWeakRef
-
-def get_course_rids(course):
+def get_course_principals(course):
 	result = set()
 	role_map = IPrincipalRoleMap(course, None)
 	if role_map is not None:
 		for role in (RID_INSTRUCTOR, RID_TA):
 			settings = role_map.getPrincipalsForRole(role) or ()
-			result.update(x[0].lower() for x in settings)
+			result.update(x[0].lower() for x in settings if x[1] == Allow)
 	return result
 
 def get_principal(record):
 	try:
-		## CS: get the record principal. 
-		## Get a IWeakRef to make sure the user has not been deleted
-		principal = record.Principal
-		IWeakRef(principal)
+		principal = IUser(record.Principal, None)
 	except (TypeError, POSError):
 		principal = None
 	return principal
@@ -61,8 +59,8 @@ def on_course_instance_available(event):
 		return
 	
 	## CS: No roles return
-	course_rids = get_course_rids(course)
-	if not course_rids:
+	course_principals = get_course_principals(course)
+	if not course_principals:
 		return
 	
 	catalog = search_catalog()
@@ -74,7 +72,7 @@ def on_course_instance_available(event):
 	enrollments = ICourseEnrollments(course)
 	for record in enrollments.iter_enrollments():
 		principal = get_principal(record)
-		if principal is None:
+		if principal is None: # ignore dup enrollments
 			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
@@ -83,13 +81,14 @@ def on_course_instance_available(event):
 		for item in history.values():
 			if not item.has_feedback():
 				continue
+			
 			for feedback in item.Feedback.values():
 				uid = intids.queryId(feedback)
 				if uid is None:
 					continue
 
 				# get expanded course acl
-				expanded = set(course_rids)
+				expanded = set(course_principals)
 				creator = getattr(feedback.creator, 'username', None)
 				if creator:
 					expanded.add(creator.lower())
