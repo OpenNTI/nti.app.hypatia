@@ -23,14 +23,10 @@ from nti.hypatia.interfaces import IHypatiaUserIndexController
 
 import nti.dataserver.tests.mock_dataserver as mock_dataserver
 
-from nti.app.hypatia.tests import HypatiaApplicationTestLayer
-
 from nti.app.testing.application_webtest import ApplicationLayerTest
 from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges
 
 class TestAdminViews(ApplicationLayerTest):
-
-	layer = HypatiaApplicationTestLayer
 
 	def _create_note(self, msg, owner, containerId=None, title=None):
 		note = Note()
