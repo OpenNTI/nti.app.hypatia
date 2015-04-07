@@ -89,18 +89,22 @@ def main():
 	arg_parser = argparse.ArgumentParser(description="Hypatia content reindexer")
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
+
 	arg_parser.add_argument('-m', '--missing', 
 							 help="Reindex only missing objects", 
 							 action='store_true',
 							 dest='missing')
+
 	arg_parser.add_argument('-t', '--types',
 							dest='types',
 							nargs="+",
 							help="The object types to index")
+
 	arg_parser.add_argument('-u', '--usernames',
 							dest='usernames',
 							nargs="+",
 							help="The object creator user names")
+
 	arg_parser.add_argument('-l', '--limit',
 							 dest='limit',
 							 help="Queue limit",
@@ -111,6 +115,7 @@ def main():
 							 help="Reindex all intid objects", 
 							 action='store_true',
 							 dest='all')
+
 	site_group.add_argument('-s', '--shared',
 							 dest='sharedWith',
 							 action='store_true',

@@ -19,9 +19,6 @@ from zope import interface
 from zope.container.contained import Contained
 from zope.traversing.interfaces import IPathAdapter
 
-from ZODB.interfaces import IBroken
-from ZODB.POSException import POSError
-
 from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
 
@@ -30,7 +27,6 @@ from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtils
 
 from nti.common.maps import CaseInsensitiveDict
 
-from nti.contentsearch.interfaces import ITypeResolver
 from nti.contentsearch.common import get_type_from_mimetype
 from nti.contentsearch.constants import type_, invalid_type_
 
@@ -46,6 +42,8 @@ from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
 from nti.hypatia.reactor import process_queue
 from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
+
+from nti.zope_catalog.catalog import is_broken
 
 from .reindexer import reindex
 
@@ -287,18 +285,11 @@ class UnindexMissingView(AbstractAuthenticatedView,
 		broken = result['Broken'] = {}
 		missing = result['Missing'] = []
 		for uid in list(type_index.indexed()):
-			try:
-				obj = intids.queryObject(uid)
-				if obj is None:
-					catalog.unindex_doc(uid)
-					missing.append(uid)
-				elif IBroken.providedBy(obj):
-					catalog.unindex_doc(uid)
-					broken[uid] = str(type(obj))
-				else:
-					## load object to validate it
-					ITypeResolver(obj).type
-			except (TypeError, POSError):
+			obj = intids.queryObject(uid)
+			if obj is None:
+				catalog.unindex_doc(uid)
+				missing.append(uid)
+			elif is_broken(obj, uid):
 				catalog.unindex_doc(uid)
 				broken[uid] = str(type(obj))
 		result['TotalBroken'] = len(broken)

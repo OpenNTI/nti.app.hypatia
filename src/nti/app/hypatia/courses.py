@@ -63,8 +63,7 @@ def on_course_instance_available(event):
 	if not course_principals:
 		return
 	
-	catalog = search_catalog()
-	acl_index = catalog[acl_]
+	acl_index = search_catalog()[acl_]
 	intids = component.getUtility(zope.intid.IIntIds)
 	
 	## CS: Get all the feedbacks items and force them
