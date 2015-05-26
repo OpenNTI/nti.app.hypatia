@@ -52,13 +52,13 @@ def get_principal(record):
 @component.adapter(ICourseInstanceAvailableEvent)
 def on_course_instance_available(event):
 	course = event.object
-	## CS: Ignore legacy commmunity courses as these are
-	## added to the global catalog during application start up
-	## and they are no longer modifiable
+	# CS: Ignore legacy commmunity courses as these are
+	# added to the global catalog during application start up
+	# and they are no longer modifiable
 	if ILegacyCommunityBasedCourseInstance.providedBy(course):
 		return
 	
-	## CS: No roles return
+	# CS: No roles return
 	course_principals = get_course_principals(course)
 	if not course_principals:
 		return
@@ -66,8 +66,8 @@ def on_course_instance_available(event):
 	acl_index = search_catalog()[acl_]
 	intids = component.getUtility(zope.intid.IIntIds)
 	
-	## CS: Get all the feedbacks items and force them
-	## to reindex to make sure their ACL is updated
+	# CS: Get all the feedbacks items and force them
+	# to reindex to make sure their ACL is updated
 	enrollments = ICourseEnrollments(course)
 	for record in enrollments.iter_enrollments():
 		principal = get_principal(record)

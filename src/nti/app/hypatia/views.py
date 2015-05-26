@@ -78,30 +78,30 @@ def username_search(search_term):
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
-class ReIndexContentView(AbstractAuthenticatedView, 
+class ReIndexContentView(AbstractAuthenticatedView,
 						 ModeledContentUploadRequestUtilsMixin):
-	
+
 	def readInput(self, value=None):
 		result = CaseInsensitiveDict()
 		if self.request.body:
 			values = super(ReIndexContentView, self).readInput(value=value)
 			result.update(**values)
 		return result
-	
+
 	def _do_call(self):
 		values = self.readInput()
 		queue_limit = values.get('limit', None)
 		term = values.get('term') or values.get('search')
 		usernames = values.get('usernames') or values.get('username')
-				
+
 		# missing flag
 		missing = values.get('onlyMissing') or values.get('missing') or u''
 		missing = is_true(missing)
-		
+
 		# cataloged flag
 		uncataloged = values.get('uncataloged')
 		uncataloged = is_true(uncataloged)
-		
+
 		# user search
 		if term:
 			usernames = username_search(term)
@@ -109,7 +109,7 @@ class ReIndexContentView(AbstractAuthenticatedView,
 			usernames = usernames.split(',')
 		else:
 			usernames = ()  # ALL
-	
+
 		accept = values.get('accept') or values.get('mimeTypes') or u''
 		accept = set(accept.split(',')) if accept else ()
 		if accept and '*/*' not in accept:
@@ -118,18 +118,18 @@ class ReIndexContentView(AbstractAuthenticatedView,
 			accept = accept if accept else (invalid_type_,)
 		else:
 			accept = ()
-	
+
 		# queue limit
 		if queue_limit is not None:
 			try:
 				queue_limit = int(queue_limit)
 				assert queue_limit > 0 or queue_limit == -1
 			except (ValueError, AssertionError):
-				raise hexc.HTTPUnprocessableEntity('invalid queue size')
-	
-		result = reindex(accept=accept, 
-						 missing=missing, 
-						 usernames=usernames, 
+				raise hexc.HTTPUnprocessableEntity('Invalid queue size')
+
+		result = reindex(accept=accept,
+						 missing=missing,
+						 usernames=usernames,
 						 queue_limit=queue_limit,
 						 cataloged=not uncataloged)
 		return result
@@ -140,7 +140,7 @@ class ReIndexContentView(AbstractAuthenticatedView,
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
-class ProcessQueueView(AbstractAuthenticatedView, 
+class ProcessQueueView(AbstractAuthenticatedView,
 					   ModeledContentUploadRequestUtilsMixin):
 
 	def readInput(self, value=None):
@@ -149,7 +149,7 @@ class ProcessQueueView(AbstractAuthenticatedView,
 			values = super(ProcessQueueView, self).readInput(value=value)
 			result.update(**values)
 		return result
-	
+
 	def _do_call(self):
 		values = self.readInput()
 		limit = values.get('limit', DEFAULT_QUEUE_LIMIT)
@@ -157,8 +157,8 @@ class ProcessQueueView(AbstractAuthenticatedView,
 			limit = int(limit)
 			assert limit > 0 or limit == -1
 		except (ValueError, AssertionError):
-			raise hexc.HTTPUnprocessableEntity('invalid limit size')
-	
+			raise hexc.HTTPUnprocessableEntity('Invalid limit size')
+
 		now = time.time()
 		total = process_queue(limit=limit)
 		result = LocatedExternalDict()
@@ -172,9 +172,9 @@ class ProcessQueueView(AbstractAuthenticatedView,
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
-class EmptyQueueView(AbstractAuthenticatedView, 
+class EmptyQueueView(AbstractAuthenticatedView,
 					 ModeledContentUploadRequestUtilsMixin):
-	
+
 	def readInput(self, value=None):
 		result = CaseInsensitiveDict()
 		if self.request.body:
@@ -190,13 +190,13 @@ class EmptyQueueView(AbstractAuthenticatedView,
 			assert limit > 0 or limit == -1
 		except (ValueError, AssertionError):
 			raise hexc.HTTPUnprocessableEntity('invalid limit size')
-	
+
 		catalog_queue = search_queue()
 		catalog_queue.syncQueue()
-	
+
 		length = len(catalog_queue)
 		limit = length if limit == -1 else min(length, limit)
-	
+
 		done = 0
 		now = time.time()
 		for queue in catalog_queue:
@@ -204,7 +204,7 @@ class EmptyQueueView(AbstractAuthenticatedView,
 				done += 1
 		catalog_queue.changeLength(-done)
 		catalog_queue.syncQueue()
-	
+
 		result = LocatedExternalDict()
 		result['Elapsed'] = time.time() - now
 		result['Total'] = done
@@ -217,7 +217,7 @@ class EmptyQueueView(AbstractAuthenticatedView,
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
 class QueueInfoView(AbstractAuthenticatedView):
-	
+
 	def __call__(self):
 		catalog_queue = search_queue()
 		result = LocatedExternalDict()
@@ -232,7 +232,7 @@ class QueueInfoView(AbstractAuthenticatedView):
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
 class QueuedObjectsView(AbstractAuthenticatedView):
-	
+
 	def __call__(self):
 		intids = component.getUtility(zope.intid.IIntIds)
 		catalog_queue = search_queue()
@@ -249,19 +249,19 @@ class QueuedObjectsView(AbstractAuthenticatedView):
 				items[key] = {	'Message': str(e),
 								'Object': str(type(obj)),
 								'Exception': str(type(e))}
-			
+
 		result['Total'] = len(items)
 		return result
-	
+
 @view_config(route_name='objects.generic.traversal',
 			 name='sync_queue',
 			 renderer='rest',
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
-class SyncQueueView(AbstractAuthenticatedView, 
+class SyncQueueView(AbstractAuthenticatedView,
 					ModeledContentUploadRequestUtilsMixin):
-	
+
 	def __call__(self):
 		catalog_queue = search_queue()
 		if catalog_queue.syncQueue():
@@ -274,9 +274,9 @@ class SyncQueueView(AbstractAuthenticatedView,
 			 request_method='POST',
 			 context=HypatiaPathAdapter,
 			 permission=nauth.ACT_NTI_ADMIN)
-class UnindexMissingView(AbstractAuthenticatedView, 
+class UnindexMissingView(AbstractAuthenticatedView,
 						 ModeledContentUploadRequestUtilsMixin):
-	
+
 	def __call__(self):
 		catalog = search_catalog()
 		type_index = catalog[type_]

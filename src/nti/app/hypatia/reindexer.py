@@ -31,9 +31,9 @@ def reindex(usernames=(), accept=(), cataloged=True, sharedWith=True,
 			missing=False, queue_limit=None):
 	total = 0
 	resolve = bool(queue_limit is not None)
-	type_index = search_catalog()[type_] 
+	type_index = search_catalog()[type_]
 	if cataloged:
-		generator = all_cataloged_objects(usernames, sharedWith=sharedWith, 
+		generator = all_cataloged_objects(usernames, sharedWith=sharedWith,
 										  resolve=resolve)
 	else:
 		generator = all_indexable_objects_iids(usernames, resolve=resolve)
@@ -48,19 +48,19 @@ def reindex(usernames=(), accept=(), cataloged=True, sharedWith=True,
 				(not accept or obj_type in accept):
 				queue.add(iid)
 				total += 1
-				type_count[obj_type] = type_count[obj_type] + 1 
+				type_count[obj_type] = type_count[obj_type] + 1
 		except TypeError:
 			pass
 
 	if queue_limit is not None:
 		process_queue(limit=queue_limit)
-		
+
 	elapsed = time.time() - now
 	result = LocatedExternalDict()
 	result['Total'] = total
 	result['Elapsed'] = elapsed
 	result['TypeCount'] = dict(type_count)
-	
+
 	logger.info("%s object(s) processed in %s(s)", total, elapsed)
 	return result
 
@@ -80,18 +80,18 @@ def _process_args(args):
 					 accept=args.types or (),
 					 sharedWith=args.sharedWith,
 					 usernames=args.usernames or ())
-		
+
 	if args.verbose:
 		pprint.pprint(result)
 	return result
-	
+
 def main():
 	arg_parser = argparse.ArgumentParser(description="Hypatia content reindexer")
 	arg_parser.add_argument('-v', '--verbose', help="Be verbose", action='store_true',
 							 dest='verbose')
 
-	arg_parser.add_argument('-m', '--missing', 
-							 help="Reindex only missing objects", 
+	arg_parser.add_argument('-m', '--missing',
+							 help="Reindex only missing objects",
 							 action='store_true',
 							 dest='missing')
 
@@ -109,10 +109,10 @@ def main():
 							 dest='limit',
 							 help="Queue limit",
 							 type=int)
-	
+
 	site_group = arg_parser.add_mutually_exclusive_group()
-	site_group.add_argument('-a', '--all', 
-							 help="Reindex all intid objects", 
+	site_group.add_argument('-a', '--all',
+							 help="Reindex all intid objects",
 							 action='store_true',
 							 dest='all')
 
