@@ -8,6 +8,7 @@ __docformat__ = "restructuredtext en"
 # pylint: disable=W0212,R0904
 
 from hamcrest import is_
+from hamcrest import has_key
 from hamcrest import has_entry
 from hamcrest import has_length
 from hamcrest import assert_that
@@ -34,7 +35,7 @@ class TestAdminViews(ApplicationLayerTest):
 			note.title = IPlainTextContentFragment(title)
 		note.body = [unicode(msg)]
 		note.creator = owner
-		note.containerId = containerId or make_ntiid(nttype='bleach', specific='manga')
+		note.containerId = containerId or make_ntiid(nttype='OID', specific='manga')
 		return note
 
 	@WithSharedApplicationMockDSHandleChanges(users=True, testapp=True)
@@ -43,15 +44,17 @@ class TestAdminViews(ApplicationLayerTest):
 		with mock_dataserver.mock_db_trans(self.ds):
 			ichigo = self._create_user(username=username)
 			note = self._create_note(u'As Nodt Fear', ichigo.username)
+			mock_dataserver.current_transaction.add(note)
 			ichigo.addContainedObject(note)
 
 		testapp = self.testapp
-		testapp.post_json('/dataserver2/hypatia/process_queue', status=200)
-
+		res = testapp.post_json('/dataserver2/hypatia/process_queue', status=200)
+		assert_that(res.json_body, has_key('Total'))
+		
 		with mock_dataserver.mock_db_trans(self.ds):
 			user = User.get_user(username)
 			rim = IHypatiaUserIndexController(user)
-			hits = rim.search('fear')
+			hits = rim.search('Fear')
 			assert_that(hits, has_length(1))
 			
 		testapp.post_json('/dataserver2/hypatia/process_queue',
