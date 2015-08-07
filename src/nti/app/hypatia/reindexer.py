@@ -19,7 +19,9 @@ from nti.externalization.interfaces import LocatedExternalDict
 
 from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
+
 from nti.hypatia.reactor import process_queue
+
 from nti.hypatia.utils import all_cataloged_objects
 from nti.hypatia.utils import all_indexable_objects_iids
 

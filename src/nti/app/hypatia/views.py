@@ -12,11 +12,13 @@ logger = __import__('logging').getLogger(__name__)
 import six
 import time
 
-import zope.intid
-
 from zope import component
 from zope import interface
+
 from zope.container.contained import Contained
+
+from zope.intid import IIntIds
+
 from zope.traversing.interfaces import IPathAdapter
 
 from pyramid.view import view_config
@@ -25,6 +27,7 @@ from pyramid import httpexceptions as hexc
 from nti.app.base.abstract_views import AbstractAuthenticatedView
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
+from nti.common.string import TRUE_VALUES
 from nti.common.maps import CaseInsensitiveDict
 
 from nti.contentsearch.common import get_type_from_mimetype
@@ -63,7 +66,7 @@ def _make_min_max_btree_range(search_term):
 	return min_inclusive, max_exclusive
 
 def is_true(s):
-	return bool(s and str(s).lower() in ('1', 'true', 't', 'yes', 'y', 'on'))
+	return bool(s and str(s).lower() in TRUE_VALUES)
 
 def username_search(search_term):
 	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
@@ -106,7 +109,7 @@ class ReIndexContentView(AbstractAuthenticatedView,
 		if term:
 			usernames = username_search(term)
 		elif usernames and isinstance(usernames, six.string_types):
-			usernames = usernames.split(',')
+			usernames = tuple(set(usernames.split(',')))
 		else:
 			usernames = ()  # ALL
 
@@ -234,7 +237,7 @@ class QueueInfoView(AbstractAuthenticatedView):
 class QueuedObjectsView(AbstractAuthenticatedView):
 
 	def __call__(self):
-		intids = component.getUtility(zope.intid.IIntIds)
+		intids = component.getUtility(IIntIds)
 		catalog_queue = search_queue()
 		result = LocatedExternalDict()
 		items = result['Items'] = {}
@@ -280,7 +283,7 @@ class UnindexMissingView(AbstractAuthenticatedView,
 	def __call__(self):
 		catalog = search_catalog()
 		type_index = catalog[type_]
-		intids = component.getUtility(zope.intid.IIntIds)
+		intids = component.getUtility(IIntIds)
 		result = LocatedExternalDict()
 		broken = result['Broken'] = {}
 		missing = result['Missing'] = []
