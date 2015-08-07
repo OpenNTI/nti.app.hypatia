@@ -9,9 +9,9 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-import zope.intid
-
 from zope import component
+
+from zope.intid import IIntIds
 
 from zope.securitypolicy.interfaces import Allow
 from zope.securitypolicy.interfaces import IPrincipalRoleMap
@@ -45,7 +45,7 @@ def get_course_principals(course):
 def get_principal(record):
 	try:
 		principal = IUser(record.Principal, None)
-	except (TypeError, POSError):
+	except (TypeError, POSError):  # dup enrollments
 		principal = None
 	return principal
 
@@ -57,21 +57,21 @@ def on_course_instance_available(event):
 	# and they are no longer modifiable
 	if ILegacyCommunityBasedCourseInstance.providedBy(course):
 		return
-	
+
 	# CS: No roles return
 	course_principals = get_course_principals(course)
 	if not course_principals:
 		return
-	
+
 	acl_index = search_catalog()[acl_]
-	intids = component.getUtility(zope.intid.IIntIds)
-	
+	intids = component.getUtility(IIntIds)
+
 	# CS: Get all the feedbacks items and force them
 	# to reindex to make sure their ACL is updated
 	enrollments = ICourseEnrollments(course)
 	for record in enrollments.iter_enrollments():
 		principal = get_principal(record)
-		if principal is None: # ignore dup enrollments
+		if principal is None:
 			continue
 		history = component.queryMultiAdapter((course, principal),
 											  IUsersCourseAssignmentHistory)
@@ -80,7 +80,7 @@ def on_course_instance_available(event):
 		for item in history.values():
 			if not item.has_feedback():
 				continue
-			
+
 			for feedback in item.Feedback.values():
 				uid = intids.queryId(feedback)
 				if uid is None:
@@ -91,11 +91,11 @@ def on_course_instance_available(event):
 				creator = getattr(feedback.creator, 'username', None)
 				if creator:
 					expanded.add(creator.lower())
-				
+
 				# feedback acl
 				words = acl_index.get_words(uid)
 				words = set(words or ())
-				
+
 				# if acl changed - reindex
 				if expanded.difference(words):
 					acl_index.reindex_doc(uid, feedback)
