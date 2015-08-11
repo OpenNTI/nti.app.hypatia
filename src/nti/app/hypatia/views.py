@@ -241,7 +241,7 @@ class QueuedObjectsView(AbstractAuthenticatedView):
 		catalog_queue = search_queue()
 		result = LocatedExternalDict()
 		items = result['Items'] = {}
-		for key in catalog_queue.keys():
+		for key in list(catalog_queue.keys()):
 			try:
 				obj = intids.queryObject(key)
 				if obj is not None:
