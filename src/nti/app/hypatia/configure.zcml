@@ -16,7 +16,7 @@
 			 provides="zope.traversing.interfaces.IPathAdapter" />
 	
 	<configure zcml:condition="installed nti.app.assessment">
-		<subscriber	handler=".courses.on_course_instance_available" />
+		<subscriber	handler=".courses.on_course_roles_synchronized" />
 	</configure>
 
 </configure>

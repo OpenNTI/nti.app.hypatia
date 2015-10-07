@@ -27,7 +27,7 @@ from nti.contentsearch.constants import acl_
 from nti.contenttypes.courses.interfaces import RID_TA
 from nti.contenttypes.courses.interfaces import RID_INSTRUCTOR
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
-from nti.contenttypes.courses.interfaces import ICourseInstanceAvailableEvent
+from nti.contenttypes.courses.interfaces import ICourseRolesSynchronized
 
 from nti.dataserver.interfaces import IUser
 
@@ -49,8 +49,8 @@ def get_principal(record):
 		principal = None
 	return principal
 
-@component.adapter(ICourseInstanceAvailableEvent)
-def on_course_instance_available(event):
+@component.adapter(ICourseRolesSynchronized)
+def on_course_roles_synchronized(event):
 	course = event.object
 	# CS: Ignore legacy commmunity courses as these are
 	# added to the global catalog during application start up
