@@ -11,14 +11,12 @@ logger = __import__('logging').getLogger(__name__)
 
 from zope import component
 
-from zope.intid import IIntIds
+from zope.intid.interfaces import IIntIds
 
 from zope.securitypolicy.interfaces import Allow
 from zope.securitypolicy.interfaces import IPrincipalRoleMap
 
 from ZODB.POSException import POSError
-
-from nti.app.products.courseware.interfaces import ILegacyCommunityBasedCourseInstance
 
 from nti.app.assessment.interfaces import IUsersCourseAssignmentHistory
 
@@ -28,6 +26,8 @@ from nti.contenttypes.courses.interfaces import RID_TA
 from nti.contenttypes.courses.interfaces import RID_INSTRUCTOR
 from nti.contenttypes.courses.interfaces import ICourseEnrollments
 from nti.contenttypes.courses.interfaces import ICourseRolesSynchronized
+
+from nti.contenttypes.courses.legacy_catalog import ILegacyCourseInstance
 
 from nti.dataserver.interfaces import IUser
 
@@ -55,7 +55,7 @@ def on_course_roles_synchronized(event):
 	# CS: Ignore legacy commmunity courses as these are
 	# added to the global catalog during application start up
 	# and they are no longer modifiable
-	if ILegacyCommunityBasedCourseInstance.providedBy(course):
+	if ILegacyCourseInstance.providedBy(course):
 		return
 
 	# CS: No roles return
