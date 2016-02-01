@@ -17,38 +17,47 @@ from zope import interface
 
 from zope.container.contained import Contained
 
-from zope.intid import IIntIds
+from zope.intid.interfaces import IIntIds
 
 from zope.traversing.interfaces import IPathAdapter
 
-from pyramid.view import view_config
 from pyramid import httpexceptions as hexc
 
+from pyramid.view import view_config
+
 from nti.app.base.abstract_views import AbstractAuthenticatedView
+
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
-from nti.common.string import TRUE_VALUES
+from nti.app.hypatia.reindexer import reindex
+
 from nti.common.maps import CaseInsensitiveDict
 
+from nti.common.string import TRUE_VALUES
+
 from nti.contentsearch.common import get_type_from_mimetype
-from nti.contentsearch.constants import type_, invalid_type_
+
+from nti.contentsearch.constants import type_
+from nti.contentsearch.constants import invalid_type_
 
 from nti.dataserver import authorization as nauth
+
 from nti.dataserver.interfaces import IDataserver
 from nti.dataserver.interfaces import IShardLayout
 
-from nti.externalization.interfaces import LocatedExternalDict
 from nti.externalization.externalization import to_external_object
 from nti.externalization.externalization import NonExternalizableObjectError
 
+from nti.externalization.interfaces import LocatedExternalDict
+
 from nti.hypatia import search_queue
 from nti.hypatia import search_catalog
-from nti.hypatia.reactor import process_queue
+
 from nti.hypatia.interfaces import DEFAULT_QUEUE_LIMIT
 
-from nti.zope_catalog.catalog import is_broken
+from nti.hypatia.reactor import process_queue
 
-from .reindexer import reindex
+from nti.zope_catalog.catalog import is_broken
 
 @interface.implementer(IPathAdapter)
 class HypatiaPathAdapter(Contained):
