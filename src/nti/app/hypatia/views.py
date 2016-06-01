@@ -33,7 +33,7 @@ from nti.app.hypatia.reindexer import reindex
 
 from nti.common.maps import CaseInsensitiveDict
 
-from nti.common.string import TRUE_VALUES
+from nti.common.string import is_true
 
 from nti.contentsearch.common import get_type_from_mimetype
 
@@ -73,9 +73,6 @@ def _make_min_max_btree_range(search_term):
 	min_inclusive = search_term  # start here
 	max_exclusive = search_term[0:-1] + unichr(ord(search_term[-1]) + 1)
 	return min_inclusive, max_exclusive
-
-def is_true(s):
-	return bool(s and str(s).lower() in TRUE_VALUES)
 
 def username_search(search_term):
 	min_inclusive, max_exclusive = _make_min_max_btree_range(search_term)
