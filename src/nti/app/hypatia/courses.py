@@ -77,11 +77,11 @@ def on_course_roles_synchronized(event):
 											  IUsersCourseAssignmentHistory)
 		if not history:
 			continue
-		for item in history.values():
+		for item in list(history.values()):
 			if not item.has_feedback():
 				continue
 
-			for feedback in item.Feedback.values():
+			for feedback in list(item.Feedback.values()):
 				uid = intids.queryId(feedback)
 				if uid is None:
 					continue
