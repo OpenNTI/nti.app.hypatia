@@ -263,21 +263,6 @@ class QueuedObjectsView(AbstractAuthenticatedView):
 		return result
 
 @view_config(route_name='objects.generic.traversal',
-			 name='sync_queue',
-			 renderer='rest',
-			 request_method='POST',
-			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_NTI_ADMIN)
-class SyncQueueView(AbstractAuthenticatedView,
-					ModeledContentUploadRequestUtilsMixin):
-
-	def __call__(self):
-		catalog_queue = search_queue()
-		if catalog_queue.syncQueue():
-			logger.info("Queue synched")
-		return hexc.HTTPNoContent()
-
-@view_config(route_name='objects.generic.traversal',
 			 name='unindex_missing',
 			 renderer='rest',
 			 request_method='POST',

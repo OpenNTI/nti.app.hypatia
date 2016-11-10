@@ -14,9 +14,5 @@
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
 			 factory=".views.HypatiaPathAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
-	
-	<configure zcml:condition="installed nti.app.assessment">
-		<subscriber	handler=".courses.on_course_roles_synchronized" />
-	</configure>
 
 </configure>
