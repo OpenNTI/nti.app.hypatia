@@ -128,17 +128,6 @@ class TestAdminViews(ApplicationLayerTest):
 								 	{'limit':-1},
 								 	status=200)
 		assert_that(result.json_body, has_entry('Total', is_(0)))
-
-	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
-	def test_sync_queue(self):
-		with mock_dataserver.mock_db_trans(self.ds):
-			for x in range(10):
-				usr = self._create_user(username='bankai%s' % x)
-				note = self._create_note(u'Shikai %s' % x, usr.username)
-				usr.addContainedObject(note)
-
-		testapp = self.testapp
-		testapp.post_json('/dataserver2/hypatia/sync_queue', status=204)
 		
 	@WithSharedApplicationMockDSHandleChanges(testapp=True, users=True)
 	def test_unindex_missing(self):
