@@ -8,11 +8,13 @@
 	<include package="zope.component" />
 	<include package="zope.security" />
 
+	<!--
 	<include package="nti.hypatia" />
 	
 	<adapter name="hypatia"
 			 for="nti.dataserver.interfaces.IDataserverFolder pyramid.interfaces.IRequest"
 			 factory=".views.HypatiaPathAdapter"
 			 provides="zope.traversing.interfaces.IPathAdapter" />
+	-->
 
 </configure>

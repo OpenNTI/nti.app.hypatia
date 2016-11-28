@@ -6,6 +6,8 @@
 			
 	<include package="pyramid_zcml" />
 	
+	<!--
 	<pyramid:scan package='.views' />
+	-->
 
 </configure>
