@@ -13,6 +13,8 @@ from hamcrest import has_entry
 from hamcrest import has_length
 from hamcrest import assert_that
 
+import unittest
+
 from nti.contentfragments.interfaces import IPlainTextContentFragment
 
 from nti.dataserver.users import User
@@ -27,6 +29,7 @@ import nti.dataserver.tests.mock_dataserver as mock_dataserver
 from nti.app.testing.application_webtest import ApplicationLayerTest
 from nti.app.testing.decorators import WithSharedApplicationMockDSHandleChanges
 
+@unittest.SkipTest
 class TestAdminViews(ApplicationLayerTest):
 
 	def _create_note(self, msg, owner, containerId=None, title=None):

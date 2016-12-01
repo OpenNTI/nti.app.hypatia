@@ -11,6 +11,8 @@ from hamcrest import is_
 from hamcrest import has_length
 from hamcrest import assert_that
 
+import unittest
+
 import simplejson as json
 from urllib import quote as UQ
 
@@ -84,6 +86,7 @@ class UserCommunityFixture(object):
 	def __getattr__(self, name):
 		return getattr(self.test, name)
 
+@unittest.SkipTest
 class TestAppLegacySearch(ApplicationLayerTest):
 
 	default_entityname = 'TheCommunity'
