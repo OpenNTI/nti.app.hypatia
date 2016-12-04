@@ -9,7 +9,6 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-import six
 import time
 
 from zope import component
@@ -29,16 +28,7 @@ from nti.app.base.abstract_views import AbstractAuthenticatedView
 
 from nti.app.externalization.view_mixins import ModeledContentUploadRequestUtilsMixin
 
-from nti.app.hypatia.reindexer import reindex
-
 from nti.common.maps import CaseInsensitiveDict
-
-from nti.common.string import is_true
-
-from nti.contentsearch.common import get_type_from_mimetype
-
-from nti.contentsearch.constants import type_
-from nti.contentsearch.constants import invalid_type_
 
 from nti.dataserver import authorization as nauth
 
@@ -80,68 +70,6 @@ def username_search(search_term):
 	_users = IShardLayout(dataserver).users_folder
 	usernames = list(_users.iterkeys(min_inclusive, max_exclusive, excludemax=True))
 	return usernames
-
-@view_config(route_name='objects.generic.traversal',
-			 name='reindex_content',
-			 renderer='rest',
-			 request_method='POST',
-			 context=HypatiaPathAdapter,
-			 permission=nauth.ACT_NTI_ADMIN)
-class ReIndexContentView(AbstractAuthenticatedView,
-						 ModeledContentUploadRequestUtilsMixin):
-
-	def readInput(self, value=None):
-		result = CaseInsensitiveDict()
-		if self.request.body:
-			values = super(ReIndexContentView, self).readInput(value=value)
-			result.update(**values)
-		return result
-
-	def _do_call(self):
-		values = self.readInput()
-		queue_limit = values.get('limit', None)
-		term = values.get('term') or values.get('search')
-		usernames = values.get('usernames') or values.get('username')
-
-		# missing flag
-		missing = values.get('onlyMissing') or values.get('missing') or u''
-		missing = is_true(missing)
-
-		# cataloged flag
-		uncataloged = values.get('uncataloged')
-		uncataloged = is_true(uncataloged)
-
-		# user search
-		if term:
-			usernames = username_search(term)
-		elif usernames and isinstance(usernames, six.string_types):
-			usernames = tuple(set(usernames.split(',')))
-		else:
-			usernames = ()  # ALL
-
-		accept = values.get('accept') or values.get('mimeTypes') or u''
-		accept = set(accept.split(',')) if accept else ()
-		if accept and '*/*' not in accept:
-			accept = {get_type_from_mimetype(e) for e in accept}
-			accept.discard(None)
-			accept = accept if accept else (invalid_type_,)
-		else:
-			accept = ()
-
-		# queue limit
-		if queue_limit is not None:
-			try:
-				queue_limit = int(queue_limit)
-				assert queue_limit > 0 or queue_limit == -1
-			except (ValueError, AssertionError):
-				raise hexc.HTTPUnprocessableEntity('Invalid queue size')
-
-		result = reindex(accept=accept,
-						 missing=missing,
-						 usernames=usernames,
-						 queue_limit=queue_limit,
-						 cataloged=not uncataloged)
-		return result
 
 @view_config(route_name='objects.generic.traversal',
 			 name='process_queue',
@@ -273,7 +201,7 @@ class UnindexMissingView(AbstractAuthenticatedView,
 
 	def __call__(self):
 		catalog = search_catalog()
-		type_index = catalog[type_]
+		type_index = catalog['type']
 		intids = component.getUtility(IIntIds)
 		result = LocatedExternalDict()
 		broken = result['Broken'] = {}
