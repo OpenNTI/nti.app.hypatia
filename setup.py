@@ -7,9 +7,6 @@ entry_points = {
 	"z3c.autoinclude.plugin": [
 		'target = nti.app',
 	],
-	"console_scripts": [
-		"nti_hypatia_content_reindexer = nti.app.hypatia.reindexer:main"
-	],
 }
 
 setup(
